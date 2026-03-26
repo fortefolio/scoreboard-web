@@ -64,7 +64,7 @@ export default function PublicParticipantsPage() {
 
       <main className="w-full max-w-2xl relative z-10 pt-12">
         <header className="text-center mb-16">
-          <Link href={`/tournament/${tournamentId}/signup`} className="text-2xl font-black text-indigo-500 italic tracking-tighter mb-8 inline-block">Score:Board</Link>
+          <Link href={`/tournament/${tournamentId}/signup`} className="text-2xl font-digital text-indigo-500 tracking-tighter mb-8 inline-block">SCORE:BOARD</Link>
           <p className="text-secondary font-label text-[10px] uppercase tracking-[0.3em] mb-2">{tournament?.sport_type} Roster</p>
           <h1 className="text-4xl font-headline font-black tracking-tight mb-4">{tournament?.name}</h1>
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-surface-container-high rounded-full border border-outline-variant/10">

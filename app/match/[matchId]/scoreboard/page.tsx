@@ -188,9 +188,9 @@ export default function UmpireMatchPage() {
       {/* TopNavBar */}
       <nav className="w-full z-50 bg-surface/80 backdrop-blur-xl flex justify-between items-center px-6 py-4 border-b border-white/5 mb-8">
         <div className="flex items-center gap-8">
-          <div className="text-xl font-black text-primary-container tracking-tighter italic uppercase flex items-center gap-2">
+          <div className="text-xl font-digital text-primary-container tracking-tighter flex items-center gap-2">
             <span className="w-2 h-6 bg-primary-container skew-x-[-15deg]"></span>
-            Score:Board
+            SCORE:BOARD
           </div>
           <div className="hidden md:flex gap-6 items-center text-xs font-bold uppercase tracking-widest text-slate-500">
             <button onClick={() => router.push(`/tournament/${match.tournament_id}`)} className="hover:text-primary-container transition-colors cursor-pointer">Live Bracket</button>

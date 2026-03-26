@@ -140,7 +140,7 @@ export default function Home() {
       {/* TopNavBar */}
       <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 transition-all duration-300 ease-out">
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto font-headline tracking-tight">
-          <div className="text-2xl font-black text-indigo-500 italic tracking-tighter">Score:Board</div>
+          <div className="text-2xl font-digital text-indigo-500 tracking-tighter">SCORE:BOARD</div>
           <div className="hidden md:flex gap-8 items-center">
             <Link className="text-slate-400 hover:text-indigo-300 transition-colors transition-all duration-300 ease-out active:scale-95" href="/#hero">Hero</Link>
             <Link className="text-slate-400 hover:text-indigo-300 transition-colors transition-all duration-300 ease-out active:scale-95" href="/#feed">Feed</Link>
@@ -657,8 +657,8 @@ export default function Home() {
       <footer className="w-full border-t border-slate-800/20 bg-slate-950">
         <div className="flex flex-col md:flex-row justify-between items-center px-12 py-10 w-full font-inter text-sm antialiased max-w-7xl mx-auto">
           <div className="mb-6 md:mb-0">
-            <div className="text-lg font-bold text-slate-200 mb-2">Score:Board</div>
-            <div className="text-slate-500">© 2024 Score:Board Kinetic Vault. All Rights Reserved.</div>
+            <div className="text-lg font-digital text-slate-200 mb-2">SCORE:BOARD</div>
+            <div className="text-slate-500">© 2024 SCORE:BOARD Kinetic Vault. All Rights Reserved.</div>
           </div>
           <div className="flex gap-8 items-center">
             <Link className="text-slate-500 hover:text-indigo-400 transition-colors opacity-80 hover:opacity-100" href="#">Privacy Policy</Link>
@@ -678,7 +678,7 @@ export default function Home() {
           
           <main className="w-full max-w-[480px] p-6 relative z-10 flex flex-col gap-8 animate-in zoom-in-95 duration-300">
             <header className="text-center space-y-4">
-              <h1 className="font-headline text-5xl font-black tracking-tighter text-on-surface">Score:Board</h1>
+              <h1 className="font-digital text-5xl tracking-tighter text-on-surface">SCORE:BOARD</h1>
               <p className="font-body text-on-surface-variant text-lg">
                 {authModal === 'login' ? 'Welcome Athlete or Organizer' : 'Create your organizer account'}
               </p>

@@ -105,7 +105,7 @@ export default function TournamentSignupPage() {
 
       <main className="w-full max-w-md relative z-10">
         <header className="text-center mb-12">
-          <div className="text-2xl font-black text-indigo-500 italic tracking-tighter mb-8">Score:Board</div>
+          <div className="text-2xl font-digital text-indigo-500 tracking-tighter mb-8">SCORE:BOARD</div>
           <p className="text-secondary font-label text-[10px] uppercase tracking-[0.3em] mb-2">{tournament.sport_type} Registration</p>
           <h1 className="text-4xl font-headline font-black tracking-tight">{tournament.name}</h1>
         </header>

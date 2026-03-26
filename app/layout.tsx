@@ -20,7 +20,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Score:Board | Don't just play. Be heard.",
+  title: "SCORE:BOARD | Don't just play. Be heard.",
   description: "The first tournament platform where every point is a post.",
 };
 
