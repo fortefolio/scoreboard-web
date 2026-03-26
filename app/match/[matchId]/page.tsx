@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export default function MatchDetailsPage() {
   const { matchId } = useParams();
@@ -12,6 +13,7 @@ export default function MatchDetailsPage() {
   const [rules, setRules] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [canStart, setCanStart] = useState(false);
+  const [isOrganizer, setIsOrganizer] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,11 +35,18 @@ export default function MatchDetailsPage() {
         // Only the invited umpire can start the scoreboard
         const isUmpire = currUser?.id === mData.umpire_id;
         setCanStart(isUmpire);
+        setIsOrganizer(currUser?.id === mData.tournaments.organizer_id);
       }
       setLoading(false);
     };
     fetchAll();
   }, [matchId]);
+
+  const copyInviteLink = () => {
+    const url = `${window.location.origin}/match/${matchId}/claim`;
+    navigator.clipboard.writeText(url);
+    toast.success("Umpire invite link copied!");
+  };
 
   const handleShare = async () => {
     const shareData = {
@@ -51,7 +60,7 @@ export default function MatchDetailsPage() {
         await navigator.share(shareData);
       } else {
         await navigator.clipboard.writeText(window.location.href);
-        alert("Link copied to clipboard!");
+        toast.success("Link copied to clipboard!");
       }
     } catch (err) {
       console.error("Error sharing:", err);
@@ -130,6 +139,45 @@ export default function MatchDetailsPage() {
           </div>
 
           <div className="mt-8">
+            {isOrganizer && (
+              <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-2xl p-6 mb-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-sm font-black uppercase tracking-widest text-indigo-400">Umpire Management</h3>
+                  <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${match.umpire_id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-amber-500/20 text-amber-300'}`}>
+                    {match.umpire_id ? "Umpire Assigned" : "No Umpire"}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed">
+                    Appoint an official umpire to manage the live scoreboard for this match.
+                  </p>
+                  <button 
+                    onClick={copyInviteLink}
+                    className="w-full py-3 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-400 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2"
+                  >
+                    <span className="material-symbols-outlined text-sm">share</span>
+                    Copy Invite Link
+                  </button>
+                  {match.umpire_id && (
+                    <button 
+                      onClick={async () => {
+                        const { error } = await supabase.from('matches').update({ umpire_id: null }).eq('id', matchId);
+                        if (!error) {
+                          setMatch({ ...match, umpire_id: null });
+                          toast.success("Umpire unassigned.");
+                        } else {
+                          toast.error("Error unassigning: " + error.message);
+                        }
+                      }}
+                      className="w-full py-3 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 text-red-400 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all"
+                    >
+                      Unassign Umpire
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             {canStart && !isCompleted ? (
               <button
                 onClick={() => router.push(`/match/${matchId}/scoreboard`)}
