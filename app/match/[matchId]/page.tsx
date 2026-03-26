@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function MatchDetailsPage() {
   const { matchId } = useParams();
@@ -90,6 +91,16 @@ export default function MatchDetailsPage() {
     if (error) {
       toast.error("Failed to appoint umpire: " + error.message);
     } else {
+      // Create notification for the umpire
+      await supabase
+        .from("notifications")
+        .insert({
+          user_id: selectedUser.id,
+          title: "New Umpire Assignment",
+          body: `You have been appointed to umpire the match: ${match.participants?.[0]?.name || "TBD"} vs ${match.participants?.[1]?.name || "TBD"} in ${match.tournaments?.name}.`,
+          data: { matchId: matchIdStr, type: 'umpire_assignment' }
+        });
+
       setMatch({ ...match, umpire_id: selectedUser.id, umpire: selectedUser });
       setUserSearch("");
       setSearchResults([]);
@@ -146,7 +157,8 @@ export default function MatchDetailsPage() {
             </button>
           </div>
 
-          <div className="absolute top-0 right-0 p-4">
+          <div className="absolute top-0 right-0 p-4 flex items-center gap-2">
+             <NotificationBell />
              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'}`}>
                {match.status}
              </span>

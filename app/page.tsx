@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function Home() {
   const [user, setUser] = useState<any>(null);
@@ -147,9 +148,11 @@ export default function Home() {
             <Link className="text-slate-400 hover:text-indigo-300 transition-colors transition-all duration-300 ease-out active:scale-95" href="/#leaderboard">Leaderboard</Link>
           </div>
           <div className="flex gap-4 items-center">
+            {user && <NotificationBell />}
             {user ? (
-              <button 
-                onClick={() => supabase.auth.signOut()} 
+              <button
+                onClick={() => supabase.auth.signOut()}
+ 
                 className="text-slate-400 hover:text-red-400 transition-colors font-semibold px-4 py-2"
               >
                 Sign Out
