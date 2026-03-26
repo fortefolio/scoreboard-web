@@ -1,14 +1,15 @@
 @import "tailwindcss";
 
 @font-face {
-  font-family: 'Digital-7';
+  font-family: 'Digital7';
   src: url('/fonts/digital-7.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @theme {
-  --font-digital: "Digital-7", monospace;
+  --font-digital: "Digital7", monospace;
   --color-background: #0c1324;
   --color-surface: #0c1324;
   --color-on-background: #dce1fb;
@@ -79,7 +80,13 @@
 :root {
   --background: #0c1324;
   --foreground: #dce1fb;
+  --font-digital: "Digital7", monospace;
 }
+
+@utility font-digital {
+  font-family: var(--font-digital) !important;
+}
+
 
 body {
   background: var(--background);

@@ -140,7 +140,7 @@ export default function Home() {
       {/* TopNavBar */}
       <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 transition-all duration-300 ease-out">
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto font-headline tracking-tight">
-          <div className="text-2xl font-digital text-indigo-500 tracking-tighter">SCORE:BOARD</div>
+          <div className="text-5xl font-digital text-white">SCORE:BOARD</div>
           <div className="hidden md:flex gap-8 items-center">
             <Link className="text-slate-400 hover:text-indigo-300 transition-colors transition-all duration-300 ease-out active:scale-95" href="/#hero">Hero</Link>
             <Link className="text-slate-400 hover:text-indigo-300 transition-colors transition-all duration-300 ease-out active:scale-95" href="/#feed">Feed</Link>
