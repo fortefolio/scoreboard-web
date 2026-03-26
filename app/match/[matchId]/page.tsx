@@ -8,6 +8,7 @@ import { toast } from "sonner";
 
 export default function MatchDetailsPage() {
   const { matchId } = useParams();
+  const matchIdStr = Array.isArray(matchId) ? matchId[0] : matchId;
   const router = useRouter();
   const [match, setMatch] = useState<any>(null);
   const [rules, setRules] = useState<any>(null);
@@ -16,17 +17,31 @@ export default function MatchDetailsPage() {
   const [isOrganizer, setIsOrganizer] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Search state
+  const [userSearch, setUserSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
   useEffect(() => {
     const fetchAll = async () => {
+      console.log("Fetching match for ID:", matchIdStr);
       const { data: { user: currUser } } = await supabase.auth.getUser();
       setUser(currUser);
 
-      const { data: mData } = await supabase
+      const { data: mData, error: mError } = await supabase
         .from("matches")
         .select("*, tournaments(*)")
-        .eq("id", matchId)
+        .eq("id", matchIdStr)
         .single();
       
+      if (mError) {
+        console.error("Supabase Error fetching match:", mError);
+        setLoading(false);
+        return;
+      }
+
+      console.log("Match data found:", mData);
+
       if (mData) {
         setMatch(mData);
         const tRules = mData.tournaments.settings?.overrides?.[mData.round_number] || mData.tournaments.settings?.default || { max_sets: 3, points_per_set: 21 };
@@ -40,12 +55,46 @@ export default function MatchDetailsPage() {
       setLoading(false);
     };
     fetchAll();
-  }, [matchId]);
+  }, [matchIdStr]);
 
-  const copyInviteLink = () => {
-    const url = `${window.location.origin}/match/${matchId}/claim`;
-    navigator.clipboard.writeText(url);
-    toast.success("Umpire invite link copied!");
+  useEffect(() => {
+    const searchUsers = async () => {
+      if (userSearch.trim().length < 2) {
+        setSearchResults([]);
+        return;
+      }
+
+      setIsSearching(true);
+      const { data, error } = await supabase
+        .from("users")
+        .select("id, name, email")
+        .or(`name.ilike.%${userSearch}%,email.ilike.%${userSearch}%`)
+        .limit(5);
+
+      if (!error && data) {
+        setSearchResults(data);
+      }
+      setIsSearching(false);
+    };
+
+    const debounceTimer = setTimeout(searchUsers, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [userSearch]);
+
+  const appointUmpire = async (selectedUser: any) => {
+    const { error } = await supabase
+      .from("matches")
+      .update({ umpire_id: selectedUser.id })
+      .eq("id", matchIdStr);
+
+    if (error) {
+      toast.error("Failed to appoint umpire: " + error.message);
+    } else {
+      setMatch({ ...match, umpire_id: selectedUser.id, umpire: selectedUser });
+      setUserSearch("");
+      setSearchResults([]);
+      toast.success(`${selectedUser.name} appointed as umpire!`);
+    }
   };
 
   const handleShare = async () => {
@@ -147,23 +196,59 @@ export default function MatchDetailsPage() {
                     {match.umpire_id ? "Umpire Assigned" : "No Umpire"}
                   </span>
                 </div>
-                <div className="flex flex-col gap-3">
-                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-relaxed">
-                    Appoint an official umpire to manage the live scoreboard for this match.
-                  </p>
-                  <button 
-                    onClick={copyInviteLink}
-                    className="w-full py-3 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-400 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-sm">share</span>
-                    Copy Invite Link
-                  </button>
+                
+                <div className="space-y-4">
+                  {match.umpire && (
+                    <div className="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/20 flex items-center gap-3">
+                      <div className="w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center">
+                        <span className="material-symbols-outlined text-indigo-400">person</span>
+                      </div>
+                      <div>
+                        <p className="text-white font-bold text-sm">{match.umpire.name || "Unknown User"}</p>
+                        <p className="text-indigo-400/60 text-[10px] uppercase font-black tracking-widest">{match.umpire.email}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="relative">
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400/50 text-sm">person_search</span>
+                      <input 
+                        type="text"
+                        placeholder="Search by name or email..."
+                        className="w-full pl-12 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-xs font-bold text-white outline-none focus:border-indigo-500/50 transition-all placeholder:text-gray-600"
+                        value={userSearch}
+                        onChange={(e) => setUserSearch(e.target.value)}
+                      />
+                      {isSearching && (
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                          <div className="w-3 h-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      )}
+                    </div>
+
+                    {searchResults.length > 0 && (
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-800 rounded-xl shadow-2xl z-50 overflow-hidden">
+                        {searchResults.map((u) => (
+                          <button
+                            key={u.id}
+                            onClick={() => appointUmpire(u)}
+                            className="w-full px-4 py-3 text-left hover:bg-indigo-500/10 transition-colors border-b last:border-b-0 border-gray-800 flex flex-col"
+                          >
+                            <span className="text-white font-bold text-xs">{u.name || "No Name"}</span>
+                            <span className="text-gray-500 text-[9px] uppercase font-black tracking-tighter">{u.email}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   {match.umpire_id && (
                     <button 
                       onClick={async () => {
-                        const { error } = await supabase.from('matches').update({ umpire_id: null }).eq('id', matchId);
+                        const { error } = await supabase.from('matches').update({ umpire_id: null }).eq('id', matchIdStr);
                         if (!error) {
-                          setMatch({ ...match, umpire_id: null });
+                          setMatch({ ...match, umpire_id: null, umpire: null });
                           toast.success("Umpire unassigned.");
                         } else {
                           toast.error("Error unassigning: " + error.message);
@@ -180,7 +265,7 @@ export default function MatchDetailsPage() {
 
             {canStart && !isCompleted ? (
               <button
-                onClick={() => router.push(`/match/${matchId}/scoreboard`)}
+                onClick={() => router.push(`/match/${matchIdStr}/scoreboard`)}
                 className="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2"
               >
                 ⚡ Start Scoreboard
@@ -198,7 +283,7 @@ export default function MatchDetailsPage() {
         </div>
 
         <div className="mt-8 text-center">
-           <p className="text-[10px] text-gray-600 uppercase font-black tracking-widest">Match ID: {matchId}</p>
+           <p className="text-[10px] text-gray-600 uppercase font-black tracking-widest">Match ID: {matchIdStr}</p>
         </div>
       </div>
     </div>
