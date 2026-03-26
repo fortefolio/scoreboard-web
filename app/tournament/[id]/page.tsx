@@ -9,6 +9,7 @@ import GroupStandingsView from "@/components/GroupStandingsView";
 import GroupMatchesView from "@/components/GroupMatchesView";
 import TournamentBracket from "@/components/TournamentBracket";
 import ConfirmationModal from "@/components/ConfirmationModal";
+import NotificationBell from "@/components/NotificationBell";
 
 const DEFAULT_TEAMS = [
   "Alpha", "Beta", "Gamma", "Delta", "Epsilon", 
@@ -233,6 +234,7 @@ export default function TournamentPage() {
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto font-headline tracking-tight">
           <Link href="/" className="text-2xl font-black text-indigo-500 italic tracking-tighter">Score:Board</Link>
           <div className="flex gap-4 items-center">
+             <NotificationBell />
              <button onClick={() => router.push('/')} className="text-slate-400 hover:text-indigo-300 transition-colors font-semibold px-4 py-2 flex items-center gap-2">
                 <span className="material-symbols-outlined text-sm">arrow_back</span>
                 Dashboard
