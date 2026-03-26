@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 
 export default function Home() {
   const [user, setUser] = useState<any>(null);
@@ -21,7 +22,7 @@ export default function Home() {
   const [newSport, setNewSport] = useState("Tennis");
   const [isGenerating, setIsGenerating] = useState(false);
   const [stage1Type, setStage1Type] = useState<'bracket' | 'groups' | 'double_elimination'>('bracket');
-  const [teamsPerGroup, setTeamsPerGroup] = useState(4);
+  const [maxTeams, setMaxTeams] = useState<number | "">("");
 
   useEffect(() => {
     setIsMounted(true);
@@ -55,7 +56,7 @@ export default function Home() {
       ? await supabase.auth.signInWithPassword({ email, password })
       : await supabase.auth.signUp({ email, password });
     if (error) {
-      alert(error.message);
+      toast.error(error.message);
     } else {
       setAuthModal(null);
     }
@@ -75,11 +76,11 @@ export default function Home() {
     }
 
     const settings = {
+      max_teams: maxTeams || 16,
       default: defaultSettings,
       stage_1: {
         type: stage1Type,
         ...(stage1Type === 'groups' && { 
-          teams_per_group: teamsPerGroup,
           advance_per_group: 2,
           advance_best_thirds: 0 
         })
@@ -95,8 +96,11 @@ export default function Home() {
     });
 
     if (!error) {
+      toast.success("Tournament created successfully!");
       setShowModal(false);
       fetchTournaments(user.id);
+    } else {
+      toast.error(`Error creating tournament: ${error.message}`);
     }
   };
 
@@ -117,10 +121,10 @@ export default function Home() {
         }
       });
       if (error) throw error;
-      alert("Bracket generated successfully!");
+      toast.success("Bracket generated successfully!");
       fetchTournaments(user.id);
     } catch (err: any) {
-      alert(`Error generating bracket: ${err.message}`);
+      toast.error(`Error generating bracket: ${err.message}`);
     } finally {
       setIsGenerating(false);
     }
@@ -815,17 +819,16 @@ export default function Home() {
                 </div>
               </div>
 
-              {stage1Type === 'groups' && (
-                <div className="p-6 bg-surface-container rounded-2xl border border-outline-variant/10">
-                  <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Teams per Group</label>
-                  <input 
-                    type="number" 
-                    value={teamsPerGroup} 
-                    onChange={(e) => setTeamsPerGroup(parseInt(e.target.value))}
-                    className="w-full bg-transparent text-2xl font-black text-on-surface outline-none"
-                  />
-                </div>
-              )}
+              <div className="p-6 bg-surface-container rounded-2xl border border-outline-variant/10">
+                <label className="block text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-2">Max teams</label>
+                <input 
+                  type="number" 
+                  value={maxTeams} 
+                  onChange={(e) => setMaxTeams(e.target.value === "" ? "" : parseInt(e.target.value))}
+                  placeholder="e.g. 16"
+                  className="w-full bg-transparent text-2xl font-black text-on-surface outline-none"
+                />
+              </div>
 
               {/* CONDITIONAL SETTINGS */}
               <div className="p-6 bg-surface-container rounded-2xl border border-outline-variant/10 space-y-4">

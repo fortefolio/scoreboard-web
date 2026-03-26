@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 import TennisScoreboard from "./TennisScoreboard";
 
 export default function UmpireMatchPage() {
@@ -37,9 +38,9 @@ export default function UmpireMatchPage() {
         const tRules = mData.tournaments.settings?.overrides?.[mData.round_number] || mData.tournaments.settings?.default || { max_sets: 3, points_per_set: 21 };
         setRules(tRules);
         
-        const isOrganizer = currUser?.id === mData.tournaments.organizer_id;
+        // Only the invited umpire can edit/score the match
         const isUmpire = currUser?.id === mData.umpire_id;
-        setCanEdit(isOrganizer || isUmpire);
+        setCanEdit(isUmpire);
       }
     };
     fetchAll();
@@ -104,10 +105,10 @@ export default function UmpireMatchPage() {
     });
 
     if (error) {
-      alert("🚨 SECURITY REJECTION: " + (error.message || "Invalid Match Data"));
+      toast.error("🚨 SECURITY REJECTION: " + (error.message || "Invalid Match Data"));
       setIsSubmitting(false);
     } else {
-      alert("✅ Match Verified & Advanced!");
+      toast.success("✅ Match Verified & Advanced!");
       router.push(`/tournament/${match.tournament_id}`);
     }
   };
