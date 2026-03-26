@@ -96,8 +96,8 @@ export default function MatchDetailsPage() {
         .from("notifications")
         .insert({
           user_id: selectedUser.id,
-          title: "New Umpire Assignment",
-          body: `You have been appointed to umpire the match: ${match.participants?.[0]?.name || "TBD"} vs ${match.participants?.[1]?.name || "TBD"} in ${match.tournaments?.name}.`,
+          title: "Umpire Invitation",
+          body: `You have been invited to score the match between ${match.participants?.[0]?.name || "TBD"} and ${match.participants?.[1]?.name || "TBD"} in ${match.tournaments?.name}.`,
           data: { matchId: matchIdStr, type: 'umpire_assignment' }
         });
 

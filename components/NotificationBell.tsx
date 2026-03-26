@@ -145,21 +145,21 @@ export default function NotificationBell() {
                   </div>
                   <p className="text-xs text-slate-400 mb-3 leading-relaxed">{n.body}</p>
                   
-                  <div className="flex justify-between items-center">
-                    {n.data?.matchId ? (
-                      <Link 
-                        href={`/match/${n.data.matchId}`}
-                        onClick={() => {
-                          markAsRead(n.id);
-                          setIsOpen(false);
-                        }}
-                        className="text-[10px] font-black uppercase tracking-widest text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
-                      >
-                        View Match <span className="material-symbols-outlined text-[10px]">arrow_forward</span>
-                      </Link>
-                    ) : (
-                      <div />
-                    )}
+                  {n.data?.matchId && (
+                    <Link 
+                      href={`/match/${n.data.matchId}`}
+                      onClick={() => {
+                        markAsRead(n.id);
+                        setIsOpen(false);
+                      }}
+                      className="mb-3 inline-flex items-center gap-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
+                    >
+                      <span className="material-symbols-outlined text-xs">sports_tennis</span>
+                      Enter Match Center
+                    </Link>
+                  )}
+
+                  <div className="flex justify-end items-center">
                     <span className="text-[9px] text-slate-600 font-bold uppercase">
                       {new Date(n.created_at).toLocaleDateString()}
                     </span>
@@ -175,8 +175,14 @@ export default function NotificationBell() {
           </div>
 
           {notifications.length > 0 && (
-            <div className="p-3 bg-slate-900/80 text-center">
-               <p className="text-[9px] text-slate-600 font-black uppercase tracking-[0.2em]">Kinetic Vault Pulse Engine</p>
+            <div className="p-3 bg-slate-900/80 text-center border-t border-slate-800">
+               <Link 
+                 href="/notifications" 
+                 onClick={() => setIsOpen(false)}
+                 className="text-[10px] text-indigo-400 hover:text-indigo-300 font-black uppercase tracking-[0.2em] transition-colors"
+               >
+                 See all notifications
+               </Link>
             </div>
           )}
         </div>

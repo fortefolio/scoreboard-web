@@ -232,7 +232,7 @@ export default function TournamentPage() {
       {/* TopNavBar */}
       <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 transition-all duration-300 ease-out">
         <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto font-headline tracking-tight">
-          <Link href="/" className="text-2xl font-black text-indigo-500 italic tracking-tighter">Score:Board</Link>
+          <Link href="/" className="text-2xl font-digital text-indigo-500 tracking-tighter">SCORE:BOARD</Link>
           <div className="flex gap-4 items-center">
              <NotificationBell />
              <button onClick={() => router.push('/')} className="text-slate-400 hover:text-indigo-300 transition-colors font-semibold px-4 py-2 flex items-center gap-2">

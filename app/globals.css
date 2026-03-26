@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Digital-7';
+  src: url('/fonts/digital-7.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @theme {
+  --font-digital: "Digital-7", monospace;
   --color-background: #0c1324;
   --color-surface: #0c1324;
   --color-on-background: #dce1fb;
