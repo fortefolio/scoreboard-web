@@ -4,8 +4,11 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { toast } from "sonner";
 import GroupStandingsView from "@/components/GroupStandingsView";
+import GroupMatchesView from "@/components/GroupMatchesView";
 import TournamentBracket from "@/components/TournamentBracket";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 const DEFAULT_TEAMS = [
   "Alpha", "Beta", "Gamma", "Delta", "Epsilon", 
@@ -16,18 +19,42 @@ const DEFAULT_TEAMS = [
 export default function TournamentPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'standings' | 'bracket' | 'teams' | 'settings'>('teams');
+  const [activeTab, setActiveTab] = useState<'standings' | 'group_matches' | 'bracket' | 'teams' | 'settings'>('teams');
   const [tournament, setTournament] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [participants, setParticipants] = useState<any[]>([]);
   const [teamNames, setTeamNames] = useState<string[]>(DEFAULT_TEAMS);
+  const [courts, setCourts] = useState<number>(1);
+  const [maxTeams, setMaxTeams] = useState<number>(16);
 
   const tournamentId = Array.isArray(id) ? id[0] : id;
 
   useEffect(() => {
     if (tournamentId) {
       loadTournament();
+
+      // Real-time listener for signups
+      const channel = supabase
+        .channel(`tournament-participants-${tournamentId}`)
+        .on('postgres_changes', 
+          { 
+            event: '*', 
+            schema: 'public', 
+            table: 'tournament_participants',
+            filter: `tournament_id=eq.${tournamentId}`
+          }, 
+          () => {
+            loadParticipants();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [tournamentId]);
 
@@ -40,6 +67,12 @@ export default function TournamentPage() {
     
     if (data) {
       setTournament(data);
+      if (data.settings?.number_of_courts) {
+        setCourts(data.settings.number_of_courts);
+      }
+      if (data.settings?.max_teams) {
+        setMaxTeams(data.settings.max_teams);
+      }
       if (data.status !== 'pending') {
         if (data.settings?.stage_1?.type === 'bracket' || data.settings?.stage_1?.type === 'double_elimination') {
           setActiveTab('bracket');
@@ -47,23 +80,75 @@ export default function TournamentPage() {
           setActiveTab('standings');
         }
       }
-      const { data: pData } = await supabase
-        .from("tournament_participants")
-        .select("name")
-        .eq("tournament_id", tournamentId)
-        .order("created_at", { ascending: true });
-      
-      if (pData && pData.length > 0) {
-        setTeamNames(pData.map(p => p.name));
-      }
+      loadParticipants();
     }
     setLoading(false);
   };
 
-  const handleDeleteTournament = async () => {
-    const confirmed = confirm("Are you sure you want to delete this tournament? This will permanently remove all matches, participants, and scoring data. This action cannot be undone.");
-    if (!confirmed) return;
+  const loadParticipants = async () => {
+    const { data: pData } = await supabase
+      .from("tournament_participants")
+      .select("name, contact_email")
+      .eq("tournament_id", tournamentId)
+      .order("created_at", { ascending: true });
+    
+    if (pData) {
+      setParticipants(pData);
+      setTeamNames(pData.map(p => p.name));
+    }
+  };
 
+  const copySignupLink = () => {
+    const url = `${window.location.origin}/tournament/${tournamentId}/signup`;
+    navigator.clipboard.writeText(url);
+    toast.success("Signup link copied to clipboard!");
+  };
+
+  const saveOverride = async (roundNum: number, sets: number, points: number, cap: number | null) => {
+    if (!tournament) return;
+    const newSettings = {
+      ...tournament.settings,
+      overrides: {
+        ...(tournament.settings?.overrides || {}),
+        [roundNum]: { max_sets: sets, points_per_set: points, point_cap: cap }
+      }
+    };
+
+    const { error } = await supabase
+      .from('tournaments')
+      .update({ settings: newSettings })
+      .eq('id', tournamentId);
+
+    if (!error) {
+      setTournament({ ...tournament, settings: newSettings });
+      toast.success(`Rules updated for Round ${roundNum}`);
+    } else {
+      toast.error(`Error updating rules: ${error.message}`);
+    }
+  };
+
+  const saveGeneralSettings = async () => {
+    if (!tournament) return;
+    const newSettings = {
+      ...tournament.settings,
+      number_of_courts: courts,
+      max_teams: maxTeams
+    };
+
+    const { error } = await supabase
+      .from('tournaments')
+      .update({ settings: newSettings })
+      .eq('id', tournamentId);
+
+    if (!error) {
+      setTournament({ ...tournament, settings: newSettings });
+      toast.success("Tournament settings updated.");
+    } else {
+      toast.error(`Error updating settings: ${error.message}`);
+    }
+  };
+
+  const handleDeleteTournament = async () => {
     setIsDeleting(true);
     try {
       const { error } = await supabase
@@ -73,10 +158,10 @@ export default function TournamentPage() {
 
       if (error) throw error;
 
-      alert("Tournament deleted successfully.");
+      toast.success("Tournament deleted successfully.");
       router.push("/");
     } catch (err: any) {
-      alert(`Error deleting tournament: ${err.message}`);
+      toast.error(`Error deleting tournament: ${err.message}`);
     } finally {
       setIsDeleting(false);
     }
@@ -121,10 +206,10 @@ export default function TournamentPage() {
       });
       if (error) throw error;
       
-      alert("Bracket generated successfully!");
+      toast.success("Bracket generated successfully!");
       await loadTournament();
     } catch (err: any) {
-      alert(`Error generating bracket: ${err.message}`);
+      toast.error(`Error generating bracket: ${err.message}`);
     } finally {
       setIsGenerating(false);
     }
@@ -190,13 +275,22 @@ export default function TournamentPage() {
               Teams
             </button>
             {tournament?.settings?.stage_1?.type === 'groups' && tournament?.status !== 'pending' && (
-              <button 
-                onClick={() => setActiveTab('standings')}
-                className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'standings' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
-              >
-                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'standings' ? "'FILL' 1" : "" }}>bar_chart</span>
-                Standings
-              </button>
+              <>
+                <button 
+                  onClick={() => setActiveTab('standings')}
+                  className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'standings' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
+                >
+                  <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'standings' ? "'FILL' 1" : "" }}>bar_chart</span>
+                  Standings
+                </button>
+                <button 
+                  onClick={() => setActiveTab('group_matches')}
+                  className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'group_matches' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
+                >
+                  <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'group_matches' ? "'FILL' 1" : "" }}>sports_tennis</span>
+                  Matches
+                </button>
+              </>
             )}
             {tournament?.status !== 'pending' && (
               <button 
@@ -228,26 +322,24 @@ export default function TournamentPage() {
                   <div className="flex justify-between items-center mb-10">
                     <div>
                       <h2 className="text-3xl font-headline font-black tracking-tight mb-2">Tournament Roster</h2>
-                      <p className="text-on-surface-variant text-sm">Manage participating teams and players.</p>
+                      <p className="text-on-surface-variant text-sm">Manage participating teams and players ({teamNames.length} / {maxTeams}).</p>
                     </div>
                     <div className="flex gap-3">
                       <button 
+                        onClick={copySignupLink}
+                        className="bg-surface-container-high text-on-surface px-6 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-indigo-500/10 hover:text-indigo-400 transition-all border border-outline-variant/10 flex items-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-sm">share</span>
+                        Share Signup Link
+                      </button>
+                      <button 
                         onClick={addTeam}
-                        className="bg-surface-container-high text-on-surface px-6 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-surface-bright transition-all border border-outline-variant/10 flex items-center gap-2"
+                        disabled={teamNames.length >= maxTeams}
+                        className="bg-surface-container-high text-on-surface px-6 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-surface-bright transition-all border border-outline-variant/10 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span className="material-symbols-outlined text-sm">add</span>
-                        Add Team
+                        {teamNames.length >= maxTeams ? 'Limit Reached' : 'Add Team'}
                       </button>
-                      {tournament?.status === 'pending' && (
-                        <button 
-                          onClick={handleGenerateBracket}
-                          disabled={isGenerating}
-                          className="bg-primary-container text-on-primary-container px-8 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 disabled:opacity-50 active:scale-95 flex items-center gap-2"
-                        >
-                          <span className="material-symbols-outlined text-sm">bolt</span>
-                          {isGenerating ? "Generating..." : "Generate Bracket"}
-                        </button>
-                      )}
                     </div>
                   </div>
 
@@ -281,20 +373,78 @@ export default function TournamentPage() {
             <div className="bg-surface-container-low/50 rounded-[3rem] p-12 border border-outline-variant/10 shadow-3xl">
                <GroupStandingsView tournamentId={tournamentId} />
             </div>
+          ) : activeTab === 'group_matches' && tournament?.settings?.stage_1?.type === 'groups' ? (
+            <div className="bg-surface-container-low/50 rounded-[3rem] p-12 border border-outline-variant/10 shadow-3xl">
+               <GroupMatchesView tournamentId={tournamentId} tournament={tournament} onSaveOverride={saveOverride} />
+            </div>
           ) : activeTab === 'bracket' ? (
-            <TournamentBracket tournamentId={tournamentId} />
+            <TournamentBracket tournamentId={tournamentId} tournamentFromParent={tournament} onSaveOverrideFromParent={saveOverride} />
           ) : (
             <div className="max-w-2xl mx-auto">
               <div className="bg-surface-container-low rounded-[3rem] p-12 border border-outline-variant/10 shadow-3xl">
                 <h2 className="text-3xl font-headline font-black tracking-tight mb-8">Tournament Settings</h2>
                 <div className="space-y-8">
+                  <div className="p-8 rounded-[2rem] bg-surface-container border border-outline-variant/10">
+                    <h3 className="text-xl font-bold text-on-surface mb-6">General Configuration</h3>
+                    <div className="space-y-6">
+                      <div>
+                        <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Number of Available Courts</label>
+                        <div className="flex items-center gap-4">
+                          <input 
+                            type="number"
+                            min="1"
+                            className="flex-1 px-4 py-3 bg-surface-container-high rounded-xl border border-outline-variant/10 font-bold outline-none focus:border-primary transition-all"
+                            value={courts}
+                            onChange={(e) => setCourts(parseInt(e.target.value) || 1)}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Maximum Number of Teams</label>
+                        <div className="flex items-center gap-4">
+                          <input 
+                            type="number"
+                            min="1"
+                            className="flex-1 px-4 py-3 bg-surface-container-high rounded-xl border border-outline-variant/10 font-bold outline-none focus:border-primary transition-all"
+                            value={maxTeams}
+                            onChange={(e) => setMaxTeams(parseInt(e.target.value) || 1)}
+                          />
+                          <button 
+                            onClick={saveGeneralSettings}
+                            className="bg-primary-container text-on-primary-container px-6 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-primary-container/20"
+                          >
+                            Save Settings
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {tournament?.status === 'pending' && (
+                    <div className="p-8 rounded-[2rem] bg-primary-container/10 border border-primary-container/20">
+                      <h3 className="text-xl font-bold text-primary mb-2">Tournament Generation</h3>
+                      <p className="text-on-surface-variant text-sm mb-8 leading-relaxed">
+                        Ready to start? Generating the bracket will finalize the current roster and create all initial matches.
+                      </p>
+                      <button 
+                        onClick={handleGenerateBracket}
+                        disabled={isGenerating}
+                        className="w-full bg-primary-container text-on-primary-container py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
+                      >
+                        <span className="material-symbols-outlined text-sm">bolt</span>
+                        {isGenerating ? "Generating..." : "Generate Tournament Bracket"}
+                      </button>
+                    </div>
+                  )}
+
                   <div className="p-8 rounded-[2rem] bg-error-container/10 border border-error-container/20">
                     <h3 className="text-xl font-bold text-error mb-2">Danger Zone</h3>
                     <p className="text-on-surface-variant text-sm mb-8 leading-relaxed">
                       Deleting a tournament is a permanent action. All matches, team rosters, and historical scores will be erased from the Kinetic Vault scoring engine.
                     </p>
                     <button 
-                      onClick={handleDeleteTournament}
+                      onClick={() => setIsDeleteModalOpen(true)}
                       disabled={isDeleting}
                       className="w-full bg-error-container text-on-error-container py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-error/10 disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
                     >
@@ -308,6 +458,16 @@ export default function TournamentPage() {
           )}
         </div>
       </main>
+
+      <ConfirmationModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteTournament}
+        title="Delete Tournament?"
+        message="Are you sure you want to delete this tournament? This will permanently remove all matches, participants, and scoring data. This action cannot be undone."
+        confirmText={isDeleting ? "Deleting..." : "Delete Permanently"}
+        isDanger={true}
+      />
 
       <footer className="mt-auto py-12 border-t border-outline-variant/10 text-center opacity-50">
         <p className="font-label text-[10px] uppercase tracking-[0.5em] text-on-surface-variant">Kinetic Vault Scoring Engine • v2.4.1</p>

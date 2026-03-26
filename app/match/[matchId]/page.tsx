@@ -30,14 +30,33 @@ export default function MatchDetailsPage() {
         const tRules = mData.tournaments.settings?.overrides?.[mData.round_number] || mData.tournaments.settings?.default || { max_sets: 3, points_per_set: 21 };
         setRules(tRules);
         
-        const isOrganizer = currUser?.id === mData.tournaments.organizer_id;
+        // Only the invited umpire can start the scoreboard
         const isUmpire = currUser?.id === mData.umpire_id;
-        setCanStart(isOrganizer || isUmpire);
+        setCanStart(isUmpire);
       }
       setLoading(false);
     };
     fetchAll();
   }, [matchId]);
+
+  const handleShare = async () => {
+    const shareData = {
+      title: `${match.participants?.[0]?.name || "TBD"} vs ${match.participants?.[1]?.name || "TBD"}`,
+      text: `Follow the live score for ${match.tournaments?.name}!`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        alert("Link copied to clipboard!");
+      }
+    } catch (err) {
+      console.error("Error sharing:", err);
+    }
+  };
 
   if (loading) return <div className="p-10 text-white bg-gray-950 min-h-screen text-center">Loading Match Details...</div>;
   if (!match) return <div className="p-10 text-white bg-gray-950 min-h-screen text-center">Match not found.</div>;
@@ -59,6 +78,16 @@ export default function MatchDetailsPage() {
         </div>
 
         <div className="bg-gray-900 border border-gray-800 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 left-0 p-4">
+            <button 
+              onClick={handleShare}
+              className="text-indigo-400 hover:text-indigo-300 transition-colors p-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center"
+              title="Share Match"
+            >
+              <span className="material-symbols-outlined text-sm">share</span>
+            </button>
+          </div>
+
           <div className="absolute top-0 right-0 p-4">
              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'}`}>
                {match.status}
@@ -84,7 +113,7 @@ export default function MatchDetailsPage() {
           </div>
 
           <div className="mt-12 pt-8 border-t border-gray-800">
-            <div className="grid grid-cols-2 gap-4 text-xs">
+            <div className="grid grid-cols-3 gap-4 text-xs">
               <div className="bg-gray-800/50 p-4 rounded-2xl border border-gray-800">
                 <p className="text-gray-500 uppercase font-bold mb-1">Format</p>
                 <p className="font-bold">Best of {rules?.max_sets} Sets</p>
@@ -92,6 +121,10 @@ export default function MatchDetailsPage() {
               <div className="bg-gray-800/50 p-4 rounded-2xl border border-gray-800">
                 <p className="text-gray-500 uppercase font-bold mb-1">Score Target</p>
                 <p className="font-bold">{rules?.points_per_set} Points</p>
+              </div>
+              <div className="bg-gray-800/50 p-4 rounded-2xl border border-gray-800">
+                <p className="text-gray-500 uppercase font-bold mb-1">Court</p>
+                <p className="font-bold text-indigo-400">{match.court_number ? `Court ${match.court_number}` : "TBD"}</p>
               </div>
             </div>
           </div>

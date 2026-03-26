@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Inter, Space_Grotesk } from "next/font/google";
 import AuthListener from "@/components/AuthListener";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -42,6 +43,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-background text-on-background">
         <AuthListener />
         {children}
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );
