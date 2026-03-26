@@ -251,7 +251,7 @@ export default function UmpireMatchPage() {
           {isNearCap && (
             <div className="animate-hardcap bg-critical/10 border border-critical p-5 rounded-2xl flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div class="w-12 h-12 rounded-full bg-critical flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-critical flex items-center justify-center">
                   <span className="material-symbols-outlined text-white text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>report</span>
                 </div>
                 <div>
