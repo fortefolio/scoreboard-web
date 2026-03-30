@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import NotificationBell from "@/components/NotificationBell";
 
-export default function MatchDetailsPage() {
+function MatchContent() {
   const { matchId } = useParams();
   const matchIdStr = Array.isArray(matchId) ? matchId[0] : matchId;
   const router = useRouter();
@@ -316,5 +316,13 @@ export default function MatchDetailsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MatchDetailsPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-white bg-gray-950 min-h-screen text-center">Loading Match...</div>}>
+      <MatchContent />
+    </Suspense>
   );
 }
