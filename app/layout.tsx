@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Inter, Space_Grotesk } from "next/font/google";
 import AuthListener from "@/components/AuthListener";
+import TopNavBar from "@/components/TopNavBar";
 import { Toaster } from "sonner";
 import "./globals.css";
 
@@ -40,11 +41,13 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-on-background">
+      <body className="min-h-full flex flex-col bg-background text-on-background pt-20">
         <AuthListener />
+        <TopNavBar />
         {children}
         <Toaster richColors position="top-right" />
       </body>
     </html>
   );
 }
+

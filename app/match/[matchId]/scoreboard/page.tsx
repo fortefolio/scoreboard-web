@@ -109,11 +109,13 @@ export default function UmpireMatchPage() {
       setIsSubmitting(false);
     } else {
       toast.success("✅ Match Verified & Advanced!");
-      router.push(`/tournament/${match.tournament_id}`);
+      router.push(`/tournament/${match.tournament_id}?tab=${backTab}`);
     }
   };
 
   if (!match || !rules) return <div className="p-10 text-white bg-gray-950 min-h-screen">Loading...</div>;
+
+  const backTab = match.group_label ? 'group_matches' : 'bracket';
 
   // IF TENNIS, RENDER SPECIALIZED SCOREBOARD
   if (match.sport_type === 'Tennis') {
@@ -185,34 +187,7 @@ export default function UmpireMatchPage() {
 
   return (
     <div className="min-h-screen bg-surface text-on-surface font-sans selection:bg-primary-container selection:text-white overflow-x-hidden pb-32">
-      {/* TopNavBar */}
-      <nav className="w-full z-50 bg-surface/80 backdrop-blur-xl flex justify-between items-center px-6 py-4 border-b border-white/5 mb-8">
-        <div className="flex items-center gap-8">
-          <div className="text-xl font-digital text-primary-container tracking-tighter flex items-center gap-2">
-            <span className="w-2 h-6 bg-primary-container skew-x-[-15deg]"></span>
-            SCORE:BOARD
-          </div>
-          <div className="hidden md:flex gap-6 items-center text-xs font-bold uppercase tracking-widest text-slate-500">
-            <button onClick={() => router.push(`/tournament/${match.tournament_id}`)} className="hover:text-primary-container transition-colors cursor-pointer">Live Bracket</button>
-            <span className="text-on-surface border-b-2 border-primary-container pb-1">Umpire Dashboard</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          {!canEdit && (
-             <div className="bg-warning/20 text-warning px-3 py-1.5 rounded-full border border-warning/30 flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-tighter">View Only</span>
-             </div>
-          )}
-          {canEdit && (
-            <div className="bg-surface-variant px-3 py-1.5 rounded-full border border-white/10 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-success animate-pulse"></span>
-              <span className="text-[10px] font-black uppercase tracking-tighter hidden sm:block">Live Transmission</span>
-            </div>
-          )}
-        </div>
-      </nav>
-
-      <main className="px-4 md:px-8 max-w-[1600px] mx-auto">
+      <main className="px-4 md:px-8 max-w-[1600px] mx-auto pt-8">
         {/* Dashboard Header */}
         <header className="mb-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>

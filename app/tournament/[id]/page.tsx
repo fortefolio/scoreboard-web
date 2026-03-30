@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -17,9 +17,10 @@ const DEFAULT_TEAMS = [
   "Lambda", "Mu", "Nu", "Xi", "Omicron", "Pi"
 ];
 
-export default function TournamentPage() {
+function TournamentContent() {
   const { id } = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'standings' | 'group_matches' | 'bracket' | 'teams' | 'settings'>('teams');
   const [tournament, setTournament] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -30,8 +31,25 @@ export default function TournamentPage() {
   const [teamNames, setTeamNames] = useState<string[]>(DEFAULT_TEAMS);
   const [courts, setCourts] = useState<number>(1);
   const [maxTeams, setMaxTeams] = useState<number>(16);
+  const [tStartDate, setTStartDate] = useState("");
+  const [tEndDate, setTEndDate] = useState("");
 
   const tournamentId = Array.isArray(id) ? id[0] : id;
+
+  const handleTabChange = (tab: typeof activeTab) => {
+    setActiveTab(tab);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('tab', tab);
+    router.replace(`/tournament/${tournamentId}?${params.toString()}`, { scroll: false });
+  };
+
+  // Sync activeTab with URL search params
+  useEffect(() => {
+    const tab = searchParams.get('tab') as any;
+    if (tab && ['standings', 'group_matches', 'bracket', 'teams', 'settings'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (tournamentId) {
@@ -74,11 +92,17 @@ export default function TournamentPage() {
       if (data.settings?.max_teams) {
         setMaxTeams(data.settings.max_teams);
       }
-      if (data.status !== 'pending') {
-        if (data.settings?.stage_1?.type === 'bracket' || data.settings?.stage_1?.type === 'double_elimination') {
-          setActiveTab('bracket');
-        } else {
-          setActiveTab('standings');
+      if (data.start_date) setTStartDate(new Date(data.start_date).toISOString().split('T')[0]);
+      if (data.end_date) setTEndDate(new Date(data.end_date).toISOString().split('T')[0]);
+      
+      // Only set default tab if no tab is present in URL
+      if (!searchParams.get('tab')) {
+        if (data.status !== 'pending') {
+          if (data.settings?.stage_1?.type === 'bracket' || data.settings?.stage_1?.type === 'double_elimination') {
+            handleTabChange('bracket');
+          } else {
+            handleTabChange('standings');
+          }
         }
       }
       loadParticipants();
@@ -138,14 +162,41 @@ export default function TournamentPage() {
 
     const { error } = await supabase
       .from('tournaments')
+      .update({ 
+        settings: newSettings,
+        start_date: tStartDate || null,
+        end_date: tEndDate || null
+      })
+      .eq('id', tournamentId);
+
+    if (!error) {
+      setTournament({ ...tournament, settings: newSettings, start_date: tStartDate, end_date: tEndDate });
+      toast.success("Tournament settings updated.");
+    } else {
+      toast.error(`Error updating settings: ${error.message}`);
+    }
+  };
+
+  const saveRoundDate = async (roundNum: number, date: string) => {
+    if (!tournament) return;
+    const newSettings = {
+      ...tournament.settings,
+      round_dates: {
+        ...(tournament.settings?.round_dates || {}),
+        [roundNum]: date
+      }
+    };
+
+    const { error } = await supabase
+      .from('tournaments')
       .update({ settings: newSettings })
       .eq('id', tournamentId);
 
     if (!error) {
       setTournament({ ...tournament, settings: newSettings });
-      toast.success("Tournament settings updated.");
+      toast.success(`Date updated for Round ${roundNum}`);
     } else {
-      toast.error(`Error updating settings: ${error.message}`);
+      toast.error(`Error updating round date: ${error.message}`);
     }
   };
 
@@ -229,21 +280,7 @@ export default function TournamentPage() {
 
   return (
     <div className="min-h-screen bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
-      {/* TopNavBar */}
-      <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 transition-all duration-300 ease-out">
-        <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto font-headline tracking-tight">
-          <Link href="/" className="text-2xl font-digital text-indigo-500 tracking-tighter">SCORE:BOARD</Link>
-          <div className="flex gap-4 items-center">
-             <NotificationBell />
-             <button onClick={() => router.push('/')} className="text-slate-400 hover:text-indigo-300 transition-colors font-semibold px-4 py-2 flex items-center gap-2">
-                <span className="material-symbols-outlined text-sm">arrow_back</span>
-                Dashboard
-             </button>
-          </div>
-        </div>
-      </nav>
-
-      <main className="pt-32 pb-20 px-8 max-w-7xl mx-auto relative">
+      <main className="pt-12 pb-20 px-8 max-w-7xl mx-auto relative">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-container/10 rounded-full blur-[120px] -z-10"></div>
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary-container/5 rounded-full blur-[120px] -z-10"></div>
 
@@ -270,7 +307,7 @@ export default function TournamentPage() {
         <div className="flex justify-center mb-12">
           <div className="bg-surface-container-low p-1.5 rounded-[1.5rem] border border-outline-variant/10 shadow-2xl flex gap-1">
             <button 
-              onClick={() => setActiveTab('teams')}
+              onClick={() => handleTabChange('teams')}
               className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'teams' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
             >
               <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'teams' ? "'FILL' 1" : "" }}>groups</span>
@@ -279,14 +316,14 @@ export default function TournamentPage() {
             {tournament?.settings?.stage_1?.type === 'groups' && tournament?.status !== 'pending' && (
               <>
                 <button 
-                  onClick={() => setActiveTab('standings')}
+                  onClick={() => handleTabChange('standings')}
                   className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'standings' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
                 >
                   <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'standings' ? "'FILL' 1" : "" }}>bar_chart</span>
                   Standings
                 </button>
                 <button 
-                  onClick={() => setActiveTab('group_matches')}
+                  onClick={() => handleTabChange('group_matches')}
                   className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'group_matches' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
                 >
                   <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'group_matches' ? "'FILL' 1" : "" }}>sports_tennis</span>
@@ -296,7 +333,7 @@ export default function TournamentPage() {
             )}
             {tournament?.status !== 'pending' && (
               <button 
-                onClick={() => setActiveTab('bracket')}
+                onClick={() => handleTabChange('bracket')}
                 className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'bracket' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
               >
                 <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'bracket' ? "'FILL' 1" : "" }}>account_tree</span>
@@ -304,7 +341,7 @@ export default function TournamentPage() {
               </button>
             )}
             <button 
-              onClick={() => setActiveTab('settings')}
+              onClick={() => handleTabChange('settings')}
               className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'settings' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
             >
               <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'settings' ? "'FILL' 1" : "" }}>settings</span>
@@ -377,10 +414,10 @@ export default function TournamentPage() {
             </div>
           ) : activeTab === 'group_matches' && tournament?.settings?.stage_1?.type === 'groups' ? (
             <div className="bg-surface-container-low/50 rounded-[3rem] p-12 border border-outline-variant/10 shadow-3xl">
-               <GroupMatchesView tournamentId={tournamentId} tournament={tournament} onSaveOverride={saveOverride} />
+               <GroupMatchesView tournamentId={tournamentId} tournament={tournament} onSaveOverride={saveOverride} onSaveRoundDate={saveRoundDate} />
             </div>
           ) : activeTab === 'bracket' ? (
-            <TournamentBracket tournamentId={tournamentId} tournamentFromParent={tournament} onSaveOverrideFromParent={saveOverride} />
+            <TournamentBracket tournamentId={tournamentId} tournamentFromParent={tournament} onSaveOverrideFromParent={saveOverride} onSaveRoundDate={saveRoundDate} />
           ) : (
             <div className="max-w-2xl mx-auto">
               <div className="bg-surface-container-low rounded-[3rem] p-12 border border-outline-variant/10 shadow-3xl">
@@ -389,6 +426,27 @@ export default function TournamentPage() {
                   <div className="p-8 rounded-[2rem] bg-surface-container border border-outline-variant/10">
                     <h3 className="text-xl font-bold text-on-surface mb-6">General Configuration</h3>
                     <div className="space-y-6">
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <div>
+                          <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Tournament Start Date</label>
+                          <input 
+                            type="date"
+                            className="w-full px-4 py-3 bg-surface-container-high rounded-xl border border-outline-variant/10 font-bold outline-none focus:border-primary transition-all"
+                            value={tStartDate}
+                            onChange={(e) => setTStartDate(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Tournament End Date</label>
+                          <input 
+                            type="date"
+                            className="w-full px-4 py-3 bg-surface-container-high rounded-xl border border-outline-variant/10 font-bold outline-none focus:border-primary transition-all"
+                            value={tEndDate}
+                            onChange={(e) => setTEndDate(e.target.value)}
+                          />
+                        </div>
+                      </div>
+
                       <div>
                         <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Number of Available Courts</label>
                         <div className="flex items-center gap-4">
@@ -475,5 +533,18 @@ export default function TournamentPage() {
         <p className="font-label text-[10px] uppercase tracking-[0.5em] text-on-surface-variant">Kinetic Vault Scoring Engine • v2.4.1</p>
       </footer>
     </div>
+  );
+}
+
+export default function TournamentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-6 text-on-surface-variant font-label tracking-widest uppercase text-xs">Loading Tournament Details...</p>
+      </div>
+    }>
+      <TournamentContent />
+    </Suspense>
   );
 }

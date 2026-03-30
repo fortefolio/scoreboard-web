@@ -20,11 +20,13 @@ interface Match {
 export default function GroupMatchesView({ 
   tournamentId, 
   tournament, 
-  onSaveOverride 
+  onSaveOverride,
+  onSaveRoundDate
 }: { 
   tournamentId: string, 
   tournament: any,
-  onSaveOverride: (roundNum: number, sets: number, points: number, cap: number | null) => void 
+  onSaveOverride: (roundNum: number, sets: number, points: number, cap: number | null) => void,
+  onSaveRoundDate: (roundNum: number, date: string) => void
 }) {
   const [groups, setGroups] = useState<Record<string, Match[]>>({});
   const [loading, setLoading] = useState(true);
@@ -76,24 +78,36 @@ export default function GroupMatchesView({
 
   return (
     <div className="space-y-12">
-      <div className="flex justify-between items-center bg-surface-container rounded-[2rem] p-6 border border-outline-variant/10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-surface-container rounded-[2rem] p-6 border border-outline-variant/10 gap-6">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-primary-container/20 rounded-2xl flex items-center justify-center text-primary">
             <span className="material-symbols-outlined">settings</span>
           </div>
           <div>
-            <h3 className="text-on-surface font-black uppercase tracking-tighter">Group Stage Rules</h3>
+            <h3 className="text-on-surface font-black uppercase tracking-tighter">Group Stage Config</h3>
             <p className="text-on-surface-variant text-[10px] font-label uppercase tracking-widest opacity-60">
               {tournament?.settings?.overrides?.[1]?.max_sets || tournament?.settings?.default?.max_sets || 3} Sets • {tournament?.settings?.overrides?.[1]?.points_per_set || tournament?.settings?.default?.points_per_set || 21} Points
             </p>
           </div>
         </div>
-        <button 
-          onClick={() => setIsRuleModalOpen(true)}
-          className="bg-primary-container text-on-primary-container px-6 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-primary-container/20"
-        >
-          Edit Rules
-        </button>
+        
+        <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
+          <div className="flex items-center gap-3 bg-surface-container-low px-4 py-2 rounded-xl border border-outline-variant/10 flex-1 md:flex-none">
+            <span className="material-symbols-outlined text-sm text-on-surface-variant">calendar_today</span>
+            <input 
+              type="date"
+              className="bg-transparent text-[10px] font-black uppercase tracking-widest text-on-surface outline-none"
+              value={tournament?.settings?.round_dates?.[1] || ""}
+              onChange={(e) => onSaveRoundDate(1, e.target.value)}
+            />
+          </div>
+          <button 
+            onClick={() => setIsRuleModalOpen(true)}
+            className="bg-primary-container text-on-primary-container px-6 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 flex-1 md:flex-none"
+          >
+            Edit Rules
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
@@ -107,11 +121,21 @@ export default function GroupMatchesView({
             </div>
 
             <div className="grid gap-4">
-              {matches.map((match) => (
-                <Link key={match.id} href={`/match/${match.id}`} className="block group">
-                  <div className="bg-surface-container-low border border-outline-variant/10 rounded-2xl p-4 shadow-xl group-hover:border-primary/40 transition-all duration-300 relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="flex items-center justify-between relative z-10">
+              {matches.map((match) => {
+                const roundDate = tournament?.settings?.round_dates?.[match.round_number];
+                return (
+                  <Link key={match.id} href={`/match/${match.id}`} className="block group">
+                    <div className="bg-surface-container-low border border-outline-variant/10 rounded-2xl p-4 shadow-xl group-hover:border-primary/40 transition-all duration-300 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      
+                      {roundDate && (
+                        <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-[0.2em] text-secondary mb-3 relative z-10">
+                          <span className="material-symbols-outlined text-[12px]">calendar_today</span>
+                          {new Date(roundDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between relative z-10">
                       <div className="flex-1 space-y-2">
                         {[0, 1].map((i) => (
                           <div key={i} className="flex justify-between items-center pr-4">
@@ -137,7 +161,8 @@ export default function GroupMatchesView({
                     </div>
                   </div>
                 </Link>
-              ))}
+              );
+            })}
             </div>
           </div>
         ))}
