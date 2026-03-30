@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import TennisScoreboard from "./TennisScoreboard";
 
-export default function UmpireMatchPage() {
+function ScoreboardContent() {
   const { matchId } = useParams();
   const router = useRouter();
   const [match, setMatch] = useState<any>(null);
@@ -334,5 +334,13 @@ export default function UmpireMatchPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function UmpireMatchPage() {
+  return (
+    <Suspense fallback={<div className="p-10 text-white bg-gray-950 min-h-screen text-center">Loading Scoreboard...</div>}>
+      <ScoreboardContent />
+    </Suspense>
   );
 }
