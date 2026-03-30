@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
-export default function PublicParticipantsPage() {
+function ParticipantsContent() {
   const { id } = useParams();
   const [tournament, setTournament] = useState<any>(null);
   const [participants, setParticipants] = useState<any[]>([]);
@@ -104,5 +104,17 @@ export default function PublicParticipantsPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function PublicParticipantsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <ParticipantsContent />
+    </Suspense>
   );
 }
