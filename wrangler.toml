@@ -1,5 +1,5 @@
 #:schema node_modules/wrangler/config-schema.json
-name = "tournament-scoreboard"
+name = "scoreboard-web"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = ".vercel/output/static"
@@ -9,3 +9,15 @@ pages_build_output_dir = ".vercel/output/static"
 # GitHub Secrets will override these during production builds.
 NEXT_PUBLIC_SUPABASE_URL = ""
 NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+[[kv_namespaces]]
+binding = "NEXT_CACHE_WORKERS_KV"
+id = "YOUR_KV_NAMESPACE_ID"
+
+[[services]]
+binding = "WORKER_SELF_REFERENCE"
+service = "scoreboard-web" # Must match your 'name' at the top
