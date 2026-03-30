@@ -29,6 +29,7 @@ export default function MatchDetailsPage() {
       const { data: { user: currUser } } = await supabase.auth.getUser();
       setUser(currUser);
 
+      // Fetch match and tournament first
       const { data: mData, error: mError } = await supabase
         .from("matches")
         .select("*, tournaments(*)")
@@ -37,14 +38,25 @@ export default function MatchDetailsPage() {
       
       if (mError) {
         console.error("Supabase Error fetching match:", mError);
+        toast.error(`Error fetching match: ${mError.message}`);
         setLoading(false);
         return;
       }
 
-      console.log("Match data found:", mData);
-
       if (mData) {
-        setMatch(mData);
+        let umpireData = null;
+        if (mData.umpire_id) {
+          const { data: uData } = await supabase
+            .from("users")
+            .select("id, name, email")
+            .eq("id", mData.umpire_id)
+            .single();
+          umpireData = uData;
+        }
+
+        const matchWithUmpire = { ...mData, umpire: umpireData };
+        setMatch(matchWithUmpire);
+        
         const tRules = mData.tournaments.settings?.overrides?.[mData.round_number] || mData.tournaments.settings?.default || { max_sets: 3, points_per_set: 21 };
         setRules(tRules);
         
@@ -134,12 +146,15 @@ export default function MatchDetailsPage() {
   const sets = currentScore.final_sets || [0, 0];
   const isCompleted = match.status === 'completed';
 
+  // Determine back tab
+  const backTab = match.group_label ? 'group_matches' : 'bracket';
+
   return (
     <div className="min-h-screen bg-gray-950 text-white p-6 flex flex-col items-center">
       <div className="w-full max-w-2xl">
         <div className="mb-8">
           <Link 
-            href={`/tournament/${match.tournament_id}`}
+            href={`/tournament/${match.tournament_id}?tab=${backTab}`}
             className="text-gray-500 hover:text-white text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-colors"
           >
             ← Back to Tournament
@@ -200,28 +215,47 @@ export default function MatchDetailsPage() {
           </div>
 
           <div className="mt-8">
-            {isOrganizer && (
+            {match.umpire && (
+              <div className="bg-indigo-500/10 p-4 rounded-2xl border border-indigo-500/20 flex items-center justify-between mb-4 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center">
+                    <span className="material-symbols-outlined text-indigo-400">person</span>
+                  </div>
+                  <div>
+                    <p className="text-indigo-400/60 text-[9px] uppercase font-black tracking-widest mb-0.5">Official Umpire</p>
+                    <p className="text-white font-bold text-sm">{match.umpire.name || "Unknown User"}</p>
+                  </div>
+                </div>
+                {isOrganizer && (
+                  <button 
+                    onClick={async () => {
+                      const { error } = await supabase.from('matches').update({ umpire_id: null }).eq('id', matchIdStr);
+                      if (!error) {
+                        setMatch({ ...match, umpire_id: null, umpire: null });
+                        toast.success("Umpire unassigned.");
+                      } else {
+                        toast.error("Error unassigning: " + error.message);
+                      }
+                    }}
+                    className="p-2 text-red-400 hover:bg-red-500/10 rounded-xl transition-all"
+                    title="Unassign Umpire"
+                  >
+                    <span className="material-symbols-outlined text-xl">person_remove</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {isOrganizer && !match.umpire_id && (
               <div className="bg-indigo-500/5 border border-indigo-500/10 rounded-2xl p-6 mb-4">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-sm font-black uppercase tracking-widest text-indigo-400">Umpire Management</h3>
-                  <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full ${match.umpire_id ? 'bg-indigo-500/20 text-indigo-300' : 'bg-amber-500/20 text-amber-300'}`}>
-                    {match.umpire_id ? "Umpire Assigned" : "No Umpire"}
+                  <h3 className="text-sm font-black uppercase tracking-widest text-indigo-400">Umpire Assignment</h3>
+                  <span className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
+                    No Umpire
                   </span>
                 </div>
                 
                 <div className="space-y-4">
-                  {match.umpire && (
-                    <div className="bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/20 flex items-center gap-3">
-                      <div className="w-10 h-10 bg-indigo-500/20 rounded-full flex items-center justify-center">
-                        <span className="material-symbols-outlined text-indigo-400">person</span>
-                      </div>
-                      <div>
-                        <p className="text-white font-bold text-sm">{match.umpire.name || "Unknown User"}</p>
-                        <p className="text-indigo-400/60 text-[10px] uppercase font-black tracking-widest">{match.umpire.email}</p>
-                      </div>
-                    </div>
-                  )}
-
                   <div className="relative">
                     <div className="relative">
                       <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400/50 text-sm">person_search</span>
@@ -254,23 +288,6 @@ export default function MatchDetailsPage() {
                       </div>
                     )}
                   </div>
-
-                  {match.umpire_id && (
-                    <button 
-                      onClick={async () => {
-                        const { error } = await supabase.from('matches').update({ umpire_id: null }).eq('id', matchIdStr);
-                        if (!error) {
-                          setMatch({ ...match, umpire_id: null, umpire: null });
-                          toast.success("Umpire unassigned.");
-                        } else {
-                          toast.error("Error unassigning: " + error.message);
-                        }
-                      }}
-                      className="w-full py-3 bg-red-500/5 hover:bg-red-500/10 border border-red-500/10 text-red-400 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all"
-                    >
-                      Unassign Umpire
-                    </button>
-                  )}
                 </div>
               </div>
             )}

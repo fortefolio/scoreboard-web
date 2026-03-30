@@ -1,0 +1,11 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "tournament-scoreboard"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".vercel/output/static"
+
+[vars]
+# Values here are used as defaults. 
+# GitHub Secrets will override these during production builds.
+NEXT_PUBLIC_SUPABASE_URL = ""
+NEXT_PUBLIC_SUPABASE_ANON_KEY = ""

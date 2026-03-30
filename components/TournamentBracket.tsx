@@ -6,15 +6,24 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import RuleModal from "./RuleModal";
 
-const MatchCard = ({ match }: { match: any }) => {
+const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
   if (!match) return null;
 
   const hasStarted = match.status === 'completed' || match.status === 'in_progress';
+  const roundDate = tournament?.settings?.round_dates?.[match.round_number];
 
   return (
     <Link href={`/match/${match.id}`} className="block group">
       <div className="bg-surface-container-low border border-outline-variant/10 rounded-xl p-3 shadow-xl group-hover:border-primary/40 transition-all duration-300 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        
+        {roundDate && (
+          <div className="flex items-center gap-1 text-[7px] font-black uppercase tracking-[0.2em] text-secondary mb-2 relative z-10">
+            <span className="material-symbols-outlined text-[10px]">calendar_today</span>
+            {new Date(roundDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+          </div>
+        )}
+
         <div className="space-y-2 relative z-10">
           {[0, 1].map((i) => {
             const participant = match.participants?.[i];
@@ -56,11 +65,13 @@ const MatchCard = ({ match }: { match: any }) => {
 const BracketTree = ({ 
   matches, 
   tournament, 
-  onSaveOverride 
+  onSaveOverride,
+  onSaveRoundDate
 }: { 
   matches: any[], 
   tournament: any, 
-  onSaveOverride: (roundNum: number, sets: number, points: number, cap: number | null) => void 
+  onSaveOverride: (roundNum: number, sets: number, points: number, cap: number | null) => void,
+  onSaveRoundDate: (roundNum: number, date: string) => void
 }) => {
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
   if (matches.length === 0) return null;
@@ -93,12 +104,23 @@ const BracketTree = ({
 
         return (
           <div key={roundNum} className="flex flex-col w-72 relative">
-            <div className="text-center group mb-8 h-24 flex flex-col items-center justify-start shrink-0">
+            <div className="text-center group mb-8 h-32 flex flex-col items-center justify-start shrink-0">
               <div className="inline-block px-4 py-1 bg-surface-container-highest/50 rounded-full border border-outline-variant/10 mb-2">
                  <h3 className="font-label text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em]">
                    {roundName}
                  </h3>
               </div>
+              
+              <div className="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-xl border border-outline-variant/10 mb-2">
+                <span className="material-symbols-outlined text-[12px] text-on-surface-variant">calendar_today</span>
+                <input 
+                  type="date"
+                  className="bg-transparent text-[9px] font-black uppercase tracking-widest text-on-surface outline-none w-24"
+                  value={tournament?.settings?.round_dates?.[roundInt] || ""}
+                  onChange={(e) => onSaveRoundDate(roundInt, e.target.value)}
+                />
+              </div>
+
               <div className="text-[10px] text-primary font-black uppercase tracking-widest opacity-70">
                 {rules.max_sets} Sets • {rules.points_per_set} Pts {rules.point_cap ? `• Cap ${rules.point_cap}` : ""}
               </div>
@@ -123,7 +145,7 @@ const BracketTree = ({
                        <div className="absolute right-full top-1/2 w-8 border-t-2 border-dotted border-outline-variant/40 -translate-y-1/2" />
                      )}
 
-                     <MatchCard match={match} />
+                     <MatchCard match={match} tournament={tournament} />
 
                      {/* Right Connector */}
                      {roundInt < maxRound && (
@@ -157,11 +179,13 @@ const BracketTree = ({
 export default function TournamentBracket({ 
   tournamentId, 
   tournamentFromParent, 
-  onSaveOverrideFromParent 
+  onSaveOverrideFromParent,
+  onSaveRoundDate
 }: { 
   tournamentId: string, 
   tournamentFromParent: any, 
-  onSaveOverrideFromParent: (roundNum: number, sets: number, points: number, cap: number | null) => void 
+  onSaveOverrideFromParent: (roundNum: number, sets: number, points: number, cap: number | null) => void,
+  onSaveRoundDate: (roundNum: number, date: string) => void
 }) {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -376,6 +400,7 @@ export default function TournamentBracket({
               matches={enrichedMatches.filter(m => m.bracket_type === 'winners')} 
               tournament={tournament}
               onSaveOverride={onSaveOverrideFromParent}
+              onSaveRoundDate={onSaveRoundDate}
             />
           </section>
 
@@ -390,6 +415,7 @@ export default function TournamentBracket({
               matches={enrichedMatches.filter(m => m.bracket_type === 'losers')} 
               tournament={tournament}
               onSaveOverride={onSaveOverrideFromParent}
+              onSaveRoundDate={onSaveRoundDate}
             />
           </section>
 
@@ -401,7 +427,7 @@ export default function TournamentBracket({
               <div className="h-1 w-24 bg-primary mx-auto mt-6 rounded-full opacity-50"></div>
             </div>
             <div className="w-80 relative z-10">
-              <MatchCard match={enrichedMatches.find(m => m.bracket_type === 'grand_final')} />
+              <MatchCard match={enrichedMatches.find(m => m.bracket_type === 'grand_final')} tournament={tournament} />
             </div>
           </section>
         </div>
@@ -410,6 +436,7 @@ export default function TournamentBracket({
           matches={enrichedMatches} 
           tournament={tournament}
           onSaveOverride={onSaveOverrideFromParent}
+          onSaveRoundDate={onSaveRoundDate}
         />
       )}
     </div>
