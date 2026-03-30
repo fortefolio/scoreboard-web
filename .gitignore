@@ -45,3 +45,5 @@ next-env.d.ts
 /supabase/functions/.env
 /supabase/functions/.env.local
 
+.open-next/
+.wrangler/

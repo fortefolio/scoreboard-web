@@ -1,8 +1,11 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "scoreboard-web"
-compatibility_date = "2024-09-23"
+compatibility_date = "2026-03-30"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = ".open-next"
+
+# This tells Cloudflare to treat this as a Worker-enabled Pages project
+main = ".open-next/worker.js" 
+pages_build_output_dir = ".open-next/assets"
 
 [vars]
 # Values here are used as defaults. 
@@ -11,7 +14,9 @@ NEXT_PUBLIC_SUPABASE_URL = ""
 NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
 
 [[kv_namespaces]]
-binding = "NEXT_CACHE_WORKERS_KV"
+# RENAME THIS from NEXT_CACHE_WORKERS_KV to NEXT_INC_CACHE_KV
+binding = "NEXT_INC_CACHE_KV"
+# Keep your existing ID here
 id = "YOUR_KV_NAMESPACE_ID"
 
 [[services]]
