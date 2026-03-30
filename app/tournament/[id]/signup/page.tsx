@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 
-export default function TournamentSignupPage() {
+function SignupContent() {
   const { id } = useParams();
   const [tournament, setTournament] = useState<any>(null);
   const [participantCount, setParticipantCount] = useState(0);
@@ -209,5 +209,17 @@ export default function TournamentSignupPage() {
         </footer>
       </main>
     </div>
+  );
+}
+
+export default function TournamentSignupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <SignupContent />
+    </Suspense>
   );
 }
