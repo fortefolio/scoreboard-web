@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 # This is the modern way to serve Next.js static assets in a Worker
 [assets]
 directory = ".open-next/assets"
-binding = "ASSETS"git
+binding = "ASSETS"
 
 [vars]
 # Values here are used as defaults. 
