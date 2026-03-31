@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 # This is the modern way to serve Next.js static assets in a Worker
 [assets]
 directory = ".open-next/assets"
-binding = "ASSETS"
+binding = "ASSETS"git
 
 [vars]
 # Values here are used as defaults. 
@@ -15,10 +15,8 @@ NEXT_PUBLIC_SUPABASE_URL = ""
 NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
 
 [[kv_namespaces]]
-# RENAME THIS from NEXT_CACHE_WORKERS_KV to NEXT_INC_CACHE_KV
 binding = "NEXT_INC_CACHE_KV"
-# Keep your existing ID here
-id = "YOUR_KV_NAMESPACE_ID"
+id = "8714a068f13740d2a2aa5135c14c0f2b"
 
 [[services]]
 binding = "WORKER_SELF_REFERENCE"
