@@ -3,9 +3,10 @@ name = "scoreboard-web"
 compatibility_date = "2026-03-30"
 compatibility_flags = ["nodejs_compat"]
 
-# This tells Cloudflare to treat this as a Worker-enabled Pages project
-#main = ".open-next/worker.js" 
-pages_build_output_dir = ".open-next/assets"
+# This is the modern way to serve Next.js static assets in a Worker
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
 
 [vars]
 # Values here are used as defaults. 
