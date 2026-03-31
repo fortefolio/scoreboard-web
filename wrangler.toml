@@ -3,10 +3,12 @@ name = "scoreboard-web"
 compatibility_date = "2026-03-30"
 compatibility_flags = ["nodejs_compat"]
 
+# ADD THIS LINE BACK - It is the "brain" of your app
+main = ".open-next/worker.js"
+
 # This is the modern way to serve Next.js static assets in a Worker
 [assets]
 directory = ".open-next/assets"
-binding = "ASSETS"
 
 [vars]
 # Values here are used as defaults. 
