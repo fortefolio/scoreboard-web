@@ -119,7 +119,7 @@ function TournamentContent() {
     
     if (pData) {
       setParticipants(pData);
-      setTeamNames(pData.map(p => p.name));
+      setTeamNames(pData.map((p: { name: string }) => p.name));
     }
   };
 

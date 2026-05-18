@@ -1,44 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function MyMatchesPage() {
-  const [user, setUser] = useState<any>(null);
+  const { user, supabase } = useAuth();
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push("/#login");
-        return;
-      }
-      setUser(session.user);
-      fetchMyMatches(session.user.id);
-    };
-
-    fetchData();
-  }, [router]);
-
-  const fetchMyMatches = async (userId: string) => {
+  const fetchMyMatches = useCallback(async (userId: string) => {
     setLoading(true);
-    // Fetch matches where user is umpire OR matches in tournaments user has joined (simplified for now to umpire only as participants aren't fully linked to user IDs yet in current schema)
     const { data } = await supabase
       .from("matches")
       .select("*, tournaments(name)")
       .eq("umpire_id", userId)
       .order("created_at", { ascending: false });
-    
+
     if (data) setMatches(data);
     setLoading(false);
-  };
+  }, [supabase]);
 
-  if (!user && !loading) return null;
+  useEffect(() => {
+    if (user) fetchMyMatches(user.id);
+  }, [user, fetchMyMatches]);
+
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-background text-on-background p-8 pt-24 max-w-7xl mx-auto">

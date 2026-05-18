@@ -1,28 +1,34 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/lib/supabase";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function NotificationBell() {
+  const { user, supabase } = useAuth();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      if (user) {
-        fetchNotifications(user.id);
-      }
-    };
-    fetchUser();
+  const fetchNotifications = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from("notifications")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(10);
 
-    // Close dropdown when clicking outside
+    if (data) {
+      setNotifications(data);
+      setUnreadCount(data.filter(n => !n.read_at).length);
+    }
+  }, [supabase]);
+
+  useEffect(() => {
+    if (user) fetchNotifications(user.id);
+
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -30,7 +36,7 @@ export default function NotificationBell() {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [user, fetchNotifications]);
 
   useEffect(() => {
     if (!user) return;
@@ -56,21 +62,7 @@ export default function NotificationBell() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
-
-  const fetchNotifications = async (userId: string) => {
-    const { data } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(10);
-    
-    if (data) {
-      setNotifications(data);
-      setUnreadCount(data.filter(n => !n.read_at).length);
-    }
-  };
+  }, [user, supabase]);
 
   const markAsRead = async (notificationId: string) => {
     const { error } = await supabase
