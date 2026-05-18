@@ -244,21 +244,24 @@ export default function MatchDetailClient() {
              </span>
           </div>
 
-          <div className="text-center mb-10">
-            <h1 className="text-gray-500 text-xs font-black uppercase tracking-[0.2em] mb-2">
-              {match.tournament_id ? `Round ${match.round_number} Match ${match.match_order}` : "Independent Match"}
-            </h1>
-            <h2 className="text-3xl font-black">{match.tournaments?.name || "Kinetic Vault"}</h2>
-          </div>
+          {match.tournament_id && (
+            <div className="text-center mb-10">
+              <h1 className="text-gray-500 text-xs font-black uppercase tracking-[0.2em] mb-2">
+                Round {match.round_number} Match {match.match_order}
+              </h1>
+              <h2 className="text-3xl font-black">{match.tournaments?.name}</h2>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-8 items-center relative">
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-700 font-black text-4xl">VS</div>
-            
+
             {[0, 1].map((idx) => (
               <div key={idx} className="flex flex-col items-center gap-4">
-                <div className="w-20 h-20 bg-gray-800 rounded-2xl flex items-center justify-center text-3xl font-bold text-indigo-400 border border-gray-700 relative">
-                  {sets[idx]}
-                  {match.status === 'ongoing' && (
+                {match.status !== 'scheduled' && (
+                  <div className="w-20 h-20 bg-gray-800 rounded-2xl flex items-center justify-center text-3xl font-bold text-indigo-400 border border-gray-700 relative">
+                    {sets[idx]}
+                    {match.status === 'ongoing' && (
                     <div className="absolute -top-2 -right-2 bg-primary text-on-primary text-[10px] font-black w-8 h-8 rounded-full flex items-center justify-center border-2 border-gray-950 animate-pulse">
                       {(() => {
                         if (match.sport_type === 'Tennis' && match.scores?.tennis) {
@@ -273,8 +276,9 @@ export default function MatchDetailClient() {
                         return match.scores?.current?.[idx === 0 ? 'home' : 'away'] ?? 0;
                       })()}
                     </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
                 <h3 className="text-xl font-bold text-center h-14 flex items-center">{match.participants?.[idx]?.name || "TBD"}</h3>
               </div>
             ))}
@@ -415,10 +419,6 @@ export default function MatchDetailClient() {
               </div>
             )}
           </div>
-        </div>
-
-        <div className="mt-8 text-center">
-           <p className="text-[10px] text-gray-600 uppercase font-black tracking-widest">Match ID: {matchIdStr}</p>
         </div>
       </div>
 
