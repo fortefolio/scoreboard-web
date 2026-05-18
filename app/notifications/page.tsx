@@ -1,39 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import NotificationBell from "@/components/NotificationBell";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function NotificationsPage() {
+  const { user, supabase } = useAuth();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      if (user) {
-        fetchNotifications(user.id);
-      } else {
-        setLoading(false);
-      }
-    };
-    fetchUser();
-  }, []);
-
-  const fetchNotifications = async (userId: string) => {
+  const fetchNotifications = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from("notifications")
       .select("*")
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
-    
+
     if (data) setNotifications(data);
     setLoading(false);
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    if (user) fetchNotifications(user.id);
+    else setLoading(false);
+  }, [user, fetchNotifications]);
 
   const markAsRead = async (notificationId: string) => {
     const { error } = await supabase

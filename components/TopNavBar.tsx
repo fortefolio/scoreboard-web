@@ -1,52 +1,35 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/AuthProvider";
 import NotificationBell from "./NotificationBell";
 
 export default function TopNavBar() {
-  const [user, setUser] = useState<any>(null);
+  const { user, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-    };
-    getUser();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    // Close menu when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-
-    return () => {
-      authListener.subscription.unsubscribe();
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
     setIsMenuOpen(false);
-    router.push("/");
+    await signOut();
   };
 
   const navLinks = user ? [
-    { name: "Matches", href: "/#matches" }, 
-    { name: "Tournaments", href: "/#tournaments" }, 
+    { name: "Matches", href: "/#matches" },
+    { name: "Tournaments", href: "/#tournaments" },
   ] : [];
 
   return (
@@ -55,10 +38,10 @@ export default function TopNavBar() {
         <Link href="/" className="text-4xl font-digital text-white tracking-tighter hover:scale-105 transition-transform">
           SCORE:BOARD
         </Link>
-        
+
         <div className="flex gap-4 md:gap-8 items-center">
           {navLinks.map((link) => (
-            <Link 
+            <Link
               key={link.name}
               href={link.href}
               className="text-slate-400 hover:text-indigo-300 transition-colors transition-all duration-300 ease-out active:scale-95 text-[10px] md:text-sm font-black uppercase tracking-widest"
@@ -70,10 +53,10 @@ export default function TopNavBar() {
 
         <div className="flex gap-6 items-center">
           {user && <NotificationBell />}
-          
+
           {user ? (
             <div className="relative" ref={menuRef}>
-              <button 
+              <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="flex items-center gap-2 group focus:outline-none"
               >
@@ -96,28 +79,28 @@ export default function TopNavBar() {
                     <p className="text-xs font-bold text-white truncate">{user.email}</p>
                   </div>
                   <div className="p-2">
-                    <button 
+                    <button
                       onClick={() => { setIsMenuOpen(false); router.push('/settings'); }}
                       className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all"
                     >
                       <span className="material-symbols-outlined text-lg">settings</span>
                       Settings
                     </button>
-                    <button 
+                    <button
                       onClick={() => { setIsMenuOpen(false); router.push('/my-matches'); }}
                       className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all mt-1"
                     >
                       <span className="material-symbols-outlined text-lg">sports_tennis</span>
                       My Matches
                     </button>
-                    <button 
+                    <button
                       onClick={() => { setIsMenuOpen(false); router.push('/my-tournaments'); }}
                       className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all mt-1"
                     >
                       <span className="material-symbols-outlined text-lg">emoji_events</span>
                       My Tournaments
                     </button>
-                    <button 
+                    <button
                       onClick={handleSignOut}
                       className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all mt-1"
                     >
@@ -130,7 +113,7 @@ export default function TopNavBar() {
             </div>
           ) : (
             <div className="flex gap-4">
-               <Link 
+               <Link
                  href="/?auth=signup"
                  className="bg-primary-container text-on-primary-container px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-500/10 hover:text-indigo-300 transition-all duration-300 ease-out active:scale-95 shadow-lg shadow-indigo-500/20"
                >
