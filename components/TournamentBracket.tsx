@@ -9,8 +9,8 @@ import RuleModal from "./RuleModal";
 const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
   if (!match) return null;
 
-  const hasStarted = match.status === 'completed' || match.status === 'in_progress';
-  const roundDate = tournament?.settings?.round_dates?.[match.round_number];
+  const hasStarted = match.status === 'completed' || match.status === 'ongoing';
+  const roundDate = tournament?.settings?.round_dates?.[`bracket_${match.round_number}`];
 
   return (
     <Link href={`/match/${match.id}`} className="block group">
@@ -31,14 +31,65 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
             
             return (
               <div key={i} className="flex justify-between items-center gap-4">
-                <span className={`text-xs font-bold tracking-tight truncate max-w-[140px] ${participant ? 'text-on-surface' : 'text-on-surface-variant opacity-50 italic'}`}>
-                  {participant?.name || (sourceMatch ? `Winner of Match ${sourceMatch.global_match_order}` : "TBD")}
-                </span>
-                {hasStarted && (
-                  <span className="text-primary font-label text-sm font-bold">
-                    {match.current_score?.final_sets?.[i] || 0}
+                <div className="flex items-center gap-1.5 truncate max-w-[140px]">
+                  <span className={`text-xs font-bold tracking-tight truncate ${participant ? 'text-on-surface' : 'text-on-surface-variant opacity-50 italic'}`}>
+                    {participant?.name || (sourceMatch ? `Winner of Match ${sourceMatch.global_match_order}` : "TBD")}
                   </span>
-                )}
+                  {match.status === 'ongoing' && match.scores?.serving_index === i && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse flex-shrink-0" title="Serving"></span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-end">
+                    <span className="text-[6px] font-black uppercase text-on-surface-variant opacity-40 leading-none mb-0.5">S</span>
+                    <span className="text-[10px] font-bold text-on-surface-variant leading-none">
+                      {(() => {
+                        const setsData = match.scores?.sets;
+                        if (Array.isArray(setsData)) {
+                          if (typeof setsData[0] === 'number') {
+                            return setsData[i] ?? 0;
+                          } else {
+                            return setsData.reduce((acc: number, set: any) => {
+                              const s1 = set.team1 ?? set.home ?? 0;
+                              const s2 = set.team2 ?? set.away ?? 0;
+                              if (i === 0 && s1 > s2) return acc + 1;
+                              if (i === 1 && s2 > s1) return acc + 1;
+                              return acc;
+                            }, 0);
+                          }
+                        }
+                        return 0;
+                      })()}
+                    </span>
+                  </div>
+                  {match.status === 'ongoing' && match.scores && (
+                    <>
+                      {match.sport_type === 'Tennis' && match.scores.tennis && (
+                        <div className="flex flex-col items-end">
+                          <span className="text-[6px] font-black uppercase text-indigo-400/60 leading-none mb-0.5">G</span>
+                          <span className="text-[10px] font-bold text-indigo-400 leading-none">{match.scores.tennis.games?.[i] ?? 0}</span>
+                        </div>
+                      )}
+                      <div className="flex flex-col items-end min-w-[15px]">
+                        <span className="text-[6px] font-black uppercase text-primary/60 leading-none mb-0.5">P</span>
+                        <span className="text-[10px] font-bold text-primary leading-none">
+                          {(() => {
+                            if (match.sport_type === 'Tennis' && match.scores.tennis) {
+                              const p = match.scores.tennis.points?.[i] ?? 0;
+                              const opp = match.scores.tennis.points?.[i === 0 ? 1 : 0] ?? 0;
+                              const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
+                              if (p >= 3 && opp >= 3) {
+                                return p > opp ? "AD" : (p === opp ? "40" : "40");
+                              }
+                              return TENNIS_POINTS[p] || "0";
+                            }
+                            return match.scores.current?.[i === 0 ? 'home' : 'away'] ?? 0;
+                          })()}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -46,10 +97,10 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
         <div className="mt-2 pt-2 border-t border-outline-variant/5 text-[8px] text-on-surface-variant flex justify-between font-label uppercase tracking-widest relative z-10">
           <div className="flex items-center gap-2">
             <span className="opacity-50 font-black">Match {match.global_match_order}</span>
-            {match.court_number && (
+            {match.court && (
               <>
                 <span className="opacity-20">•</span>
-                <span className="text-indigo-400 font-black">Court {match.court_number}</span>
+                <span className="text-indigo-400 font-black">{match.court}</span>
               </>
             )}
           </div>
@@ -66,12 +117,12 @@ const BracketTree = ({
   matches, 
   tournament, 
   onSaveOverride,
-  onSaveRoundDate
+  onSaveScheduledDate
 }: { 
   matches: any[], 
   tournament: any, 
   onSaveOverride: (roundNum: number, sets: number, points: number, cap: number | null) => void,
-  onSaveRoundDate: (roundNum: number, date: string) => void
+  onSaveScheduledDate: (key: string, date: string) => void
 }) => {
   const [selectedRound, setSelectedRound] = useState<number | null>(null);
   if (matches.length === 0) return null;
@@ -116,8 +167,8 @@ const BracketTree = ({
                 <input 
                   type="date"
                   className="bg-transparent text-[9px] font-black uppercase tracking-widest text-on-surface outline-none w-24"
-                  value={tournament?.settings?.round_dates?.[roundInt] || ""}
-                  onChange={(e) => onSaveRoundDate(roundInt, e.target.value)}
+                  value={tournament?.settings?.round_dates?.[`bracket_${roundInt}`] || ""}
+                  onChange={(e) => onSaveScheduledDate(`bracket_${roundInt}`, e.target.value)}
                 />
               </div>
 
@@ -170,6 +221,7 @@ const BracketTree = ({
           isOpen={!!selectedRound}
           onClose={() => setSelectedRound(null)}
           onSave={(sets, points, cap) => onSaveOverride(selectedRound, sets, points, cap)}
+          sportType={tournament?.sport_type}
         />
       )}
     </div>
@@ -180,12 +232,12 @@ export default function TournamentBracket({
   tournamentId, 
   tournamentFromParent, 
   onSaveOverrideFromParent,
-  onSaveRoundDate
+  onSaveScheduledDate
 }: { 
   tournamentId: string, 
   tournamentFromParent: any, 
   onSaveOverrideFromParent: (roundNum: number, sets: number, points: number, cap: number | null) => void,
-  onSaveRoundDate: (roundNum: number, date: string) => void
+  onSaveScheduledDate: (key: string, date: string) => void
 }) {
   const [matches, setMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -225,6 +277,22 @@ export default function TournamentBracket({
     };
 
     if (tournamentId) loadData();
+
+    const channel = supabase
+      .channel(`bracket-updates-${tournamentId}`)
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'matches',
+        filter: `tournament_id=eq.${tournamentId}`
+      }, () => {
+        loadData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [tournamentId]);
 
   // Enrich matches with global ordering and source info
@@ -274,7 +342,7 @@ export default function TournamentBracket({
               match_order: m,
               status: 'scheduled',
               participants,
-              current_score: { final_sets: [0, 0] },
+              scores: { sets: [0, 0] },
               global_match_order: globalOrder++,
               is_virtual: true
             });
@@ -400,7 +468,7 @@ export default function TournamentBracket({
               matches={enrichedMatches.filter(m => m.bracket_type === 'winners')} 
               tournament={tournament}
               onSaveOverride={onSaveOverrideFromParent}
-              onSaveRoundDate={onSaveRoundDate}
+              onSaveScheduledDate={onSaveScheduledDate}
             />
           </section>
 
@@ -415,7 +483,7 @@ export default function TournamentBracket({
               matches={enrichedMatches.filter(m => m.bracket_type === 'losers')} 
               tournament={tournament}
               onSaveOverride={onSaveOverrideFromParent}
-              onSaveRoundDate={onSaveRoundDate}
+              onSaveScheduledDate={onSaveScheduledDate}
             />
           </section>
 
@@ -436,7 +504,7 @@ export default function TournamentBracket({
           matches={enrichedMatches} 
           tournament={tournament}
           onSaveOverride={onSaveOverrideFromParent}
-          onSaveRoundDate={onSaveRoundDate}
+          onSaveScheduledDate={onSaveScheduledDate}
         />
       )}
     </div>

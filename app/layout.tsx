@@ -22,8 +22,27 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "SCORE:BOARD | Don't just play. Be heard.",
-  description: "The first tournament platform where every point is a post.",
+  metadataBase: new URL('https://score-board.net.com'),
+  title: {
+    default: 'ScoreBoard',
+    template: '%s | ScoreBoard',
+  },
+  description: "DON'T JUST FOLLOW. BE PART OF THE GAME.",
+  openGraph: {
+    type: 'website',
+    siteName: 'ScoreBoard',
+    images: [{
+      url: '/og-default.png',
+      width: 1200,
+      height: 630,
+      alt: 'ScoreBoard - Social live scoring platform',
+    }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ScoreBoard',
+    description: "DON'T JUST FOLLOW. BE PART OF THE GAME.",
+  },
 };
 
 export default function RootLayout({

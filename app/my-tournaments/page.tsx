@@ -17,6 +17,7 @@ export default function MyTournamentsPage() {
   const [maxTeams, setMaxTeams] = useState<number | "">("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
 
   const fetchTournaments = useCallback(async (userId: string) => {
     setLoading(true);
@@ -30,12 +31,25 @@ export default function MyTournamentsPage() {
   }, [supabase]);
 
   useEffect(() => {
-    if (user) fetchTournaments(user.id);
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    fetchTournaments(user.id);
   }, [user, fetchTournaments]);
 
   const handleCreate = async () => {
+    if (!user) {
+      toast.error("Authentication required. Please wait for the page to finish loading.");
+      return;
+    }
     if (!newName) {
       toast.error("Please enter a tournament name");
+      return;
+    }
+
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+      toast.error("Tournament Start Date cannot be after the End Date.");
       return;
     }
 
@@ -63,8 +77,6 @@ export default function MyTournamentsPage() {
       }
     };
 
-    if (!user) return;
-
     const { error } = await supabase.from("tournaments").insert({
       name: newName,
       sport_type: newSport,
@@ -72,7 +84,8 @@ export default function MyTournamentsPage() {
       status: "pending",
       settings: settings,
       start_date: startDate || null,
-      end_date: endDate || null
+      end_date: endDate || null,
+      visibility: visibility
     });
 
     if (!error) {
@@ -83,6 +96,17 @@ export default function MyTournamentsPage() {
       toast.error(`Error creating tournament: ${error.message}`);
     }
   };
+
+  if (loading && !user) {
+    return (
+      <div className="min-h-screen bg-background text-on-background p-8 pt-24 max-w-7xl mx-auto flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="font-black uppercase tracking-widest text-xs opacity-60">Initializing your account...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) return null;
 
@@ -231,6 +255,27 @@ export default function MyTournamentsPage() {
                     onChange={e => setEndDate(e.target.value)}
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Tournament Visibility</label>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setVisibility('public')}
+                    className={`flex-1 py-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${visibility === 'public' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
+                  >
+                    PUBLIC
+                  </button>
+                  <button 
+                    onClick={() => setVisibility('private')}
+                    className={`flex-1 py-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${visibility === 'private' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
+                  >
+                    PRIVATE
+                  </button>
+                </div>
+                <p className="mt-2 text-[9px] text-on-surface-variant opacity-60 uppercase font-bold tracking-tight">
+                  {visibility === 'public' ? 'Visible to everyone on the landing page' : 'Only accessible via direct link'}
+                </p>
               </div>
 
               <div className="flex gap-4 pt-6">
