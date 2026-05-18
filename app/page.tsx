@@ -3,9 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import NotificationBell from "@/components/NotificationBell";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function Home() {
   return (
@@ -16,17 +15,14 @@ export default function Home() {
 }
 
 function HomeContent() {
-  const [user, setUser] = useState<any>(null);
+  const { user, supabase } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [liveMatches, setLiveMatches] = useState<any[]>([]);
   const [featuredTournaments, setFeaturedTournaments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isMounted, setIsMounted] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // --- AUTH MODAL STATE ---
   const [authModal, setAuthModal] = useState<"login" | "signup" | null>(null);
 
   const closeAuthModal = () => {
@@ -37,68 +33,47 @@ function HomeContent() {
   };
 
   useEffect(() => {
-    setIsMounted(true);
-    
-    // Handle query-based auth triggers from TopNavBar
     const auth = searchParams.get('auth');
     if (auth === 'login') setAuthModal('login');
-    if (auth === 'signup') setAuthModal('signup');
+    else if (auth === 'signup') setAuthModal('signup');
+    else setAuthModal(null);
+  }, [searchParams]);
 
-    const fetchData = async () => {
-      setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      
-      // Fetch Global Data
-      await Promise.all([
-        fetchLiveMatches(),
-        fetchFeaturedTournaments()
-      ]);
-      
-      setLoading(false);
+  useEffect(() => {
+    const fetchLiveMatches = async () => {
+      const { data } = await supabase
+        .from("matches")
+        .select("*, tournaments(name)")
+        .eq("status", "in_progress")
+        .limit(10);
+      if (data) setLiveMatches(data);
     };
 
-    fetchData();
+    const fetchFeaturedTournaments = async () => {
+      const { data } = await supabase
+        .from("tournaments")
+        .select("*")
+        .neq("status", "completed")
+        .limit(10);
+      if (data) setFeaturedTournaments(data);
+    };
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => authListener.subscription.unsubscribe();
-  }, [searchParams, router]);
-
-  const fetchLiveMatches = async () => {
-    const { data } = await supabase
-      .from("matches")
-      .select("*, tournaments(name)")
-      .eq("status", "in_progress")
-      .limit(10);
-    if (data) setLiveMatches(data);
-  };
-
-  const fetchFeaturedTournaments = async () => {
-    const { data } = await supabase
-      .from("tournaments")
-      .select("*")
-      .neq("status", "completed")
-      .limit(10);
-    if (data) setFeaturedTournaments(data);
-  };
+    fetchLiveMatches();
+    fetchFeaturedTournaments();
+  }, [supabase]);
 
   const handleAuth = async (type: "login" | "signup") => {
-    const { error } = type === "login" 
+    const { error } = type === "login"
       ? await supabase.auth.signInWithPassword({ email, password })
       : await supabase.auth.signUp({ email, password });
     if (error) {
       toast.error(error.message);
-    } else {
-      closeAuthModal();
+      return;
     }
+    closeAuthModal();
+    const next = searchParams.get('next');
+    if (next) router.push(next);
   };
-
-  if (!isMounted) {
-    return <div className="min-h-screen bg-background" />;
-  }
 
   return (
     <div className="min-h-screen bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">

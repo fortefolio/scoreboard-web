@@ -1,18 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useAuth } from "@/components/AuthProvider";
 
 export default function MyTournamentsPage() {
-  const [user, setUser] = useState<any>(null);
+  const { user, supabase } = useAuth();
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
-  // --- CREATE MODAL STATE ---
   const [showModal, setShowModal] = useState(false);
   const [newName, setNewName] = useState("");
   const [newSport, setNewSport] = useState("Tennis");
@@ -21,21 +18,7 @@ export default function MyTournamentsPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push("/#login");
-        return;
-      }
-      setUser(session.user);
-      fetchTournaments(session.user.id);
-    };
-
-    fetchData();
-  }, [router]);
-
-  const fetchTournaments = async (userId: string) => {
+  const fetchTournaments = useCallback(async (userId: string) => {
     setLoading(true);
     const { data } = await supabase
       .from("tournaments")
@@ -44,7 +27,11 @@ export default function MyTournamentsPage() {
       .order("created_at", { ascending: false });
     if (data) setTournaments(data);
     setLoading(false);
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    if (user) fetchTournaments(user.id);
+  }, [user, fetchTournaments]);
 
   const handleCreate = async () => {
     if (!newName) {
@@ -76,6 +63,8 @@ export default function MyTournamentsPage() {
       }
     };
 
+    if (!user) return;
+
     const { error } = await supabase.from("tournaments").insert({
       name: newName,
       sport_type: newSport,
@@ -95,7 +84,7 @@ export default function MyTournamentsPage() {
     }
   };
 
-  if (!user && !loading) return null;
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-background text-on-background p-8 pt-24 max-w-7xl mx-auto">

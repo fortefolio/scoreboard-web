@@ -215,9 +215,9 @@ export default function TournamentBracket({
       
       if (mData) {
         setMatches(mData);
-        const groupMatches = mData.filter(m => m.group_label !== null);
+        const groupMatches = mData.filter((m: any) => m.group_label !== null);
         if (groupMatches.length > 0) {
-          const allDone = groupMatches.every(m => m.status === 'completed');
+          const allDone = groupMatches.every((m: any) => m.status === 'completed');
           setRound1Complete(allDone);
         }
       }
