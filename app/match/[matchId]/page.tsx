@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import { supabase } from "@/lib/supabase";
 import { Metadata } from "next";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import MatchDetailClient from "./MatchDetailClient";
 
 type Props = {
@@ -9,8 +9,8 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { matchId } = await params;
-  
-  // Fetch live match data from Supabase
+  const supabase = await getSupabaseServerClient();
+
   const { data: match } = await supabase
     .from('matches')
     .select('participants, scores, tournaments(name)')
@@ -23,7 +23,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p2 = match.participants?.[1]?.name || "TBD";
   const sets = match.scores?.sets || [0, 0];
 
-  const title = `${p1} vs ${p2} | ${match.tournaments?.name || 'ScoreBoard'}`;
+  const tournament = Array.isArray(match.tournaments) ? match.tournaments[0] : match.tournaments;
+  const title = `${p1} vs ${p2} | ${tournament?.name || 'ScoreBoard'}`;
   const description = `Live Score: ${sets[0]} - ${sets[1]}. Follow the match in real-time on ScoreBoard.`;
 
   return {
