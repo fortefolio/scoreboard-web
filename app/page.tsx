@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
+import { countSetsWon } from "@/lib/scoring/sets";
 
 export default function Home() {
   return (
@@ -172,21 +173,7 @@ function HomeContent() {
                         const side = i === 0 ? 'home' : 'away';
                         let livePoints: string | number = 0;
                         let games: number | null = null;
-                        const setsData = match.scores?.sets;
-                        let sets = 0;
-                        if (Array.isArray(setsData)) {
-                          if (typeof setsData[0] === 'number') {
-                            sets = setsData[i] ?? 0;
-                          } else {
-                            sets = setsData.reduce((acc: number, set: any) => {
-                              const s1 = set.team1 ?? set.home ?? 0;
-                              const s2 = set.team2 ?? set.away ?? 0;
-                              if (i === 0 && s1 > s2) return acc + 1;
-                              if (i === 1 && s2 > s1) return acc + 1;
-                              return acc;
-                            }, 0);
-                          }
-                        }
+                        const sets = countSetsWon(match.scores?.sets, i as 0 | 1);
 
                         if (match.status === 'ongoing' && match.scores) {
                           if (match.sport_type === 'Tennis' && match.scores.tennis) {
