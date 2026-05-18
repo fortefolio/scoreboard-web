@@ -13,6 +13,7 @@ This project uses `@supabase/ssr`. Do not regress to the patterns below.
 - Middleware: `updateSession()` from `@/lib/supabase/proxy`.
 - Don't import `createClient` from `@supabase/supabase-js` — it stores tokens in `localStorage` and bypasses the cookie-based session this migration is built on.
 - `lib/supabase/index.ts` exports a legacy `supabase` browser singleton for older non-auth pages. Fine to use from existing files; new code should use the factories above.
+- **Never import the barrel (`@/lib/supabase`) from a server component, `generateMetadata`, or a Route Handler.** The barrel has `"use client"`, so on the server Next ships a client-reference shim — `supabase.from` is undefined and you get `TypeError: ... .from is not a function` at runtime. Server contexts must call `getSupabaseServerClient()`. If you see "Module not found / .from is not a function" originating from a server file, check the import path first.
 
 ## `AuthProvider` owns all auth state on the client
 - Read user state via `useAuth()` from `@/components/AuthProvider`. Don't call `supabase.auth.getSession()` / `getUser()` / `onAuthStateChange()` in components — the provider already does it once.
