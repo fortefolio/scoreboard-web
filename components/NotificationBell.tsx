@@ -41,16 +41,15 @@ export default function NotificationBell() {
   useEffect(() => {
     if (!user) return;
 
-    // Real-time listener for new notifications
     const channel = supabase
       .channel(`user-notifications-${user.id}`)
-      .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
+      .on('postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
           table: 'notifications',
-          filter: `user_id=eq.${user.id}`
-        }, 
+          filter: `user_id=eq.${user.id}`,
+        },
         (payload) => {
           setNotifications(prev => [payload.new, ...prev]);
           setUnreadCount(prev => prev + 1);
@@ -65,16 +64,21 @@ export default function NotificationBell() {
   }, [user, supabase]);
 
   const markAsRead = async (notificationId: string) => {
+    if (!user) return;
     const { error } = await supabase
       .from("notifications")
       .update({ read_at: new Date().toISOString() })
-      .eq("id", notificationId);
+      .eq("id", notificationId)
+      .eq("user_id", user.id);
 
     if (!error) {
       setNotifications(prev => 
         prev.map(n => n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n)
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
+    } else {
+      console.error("Error marking notification as read:", error);
+      toast.error("Failed to update notification");
     }
   };
 
@@ -89,6 +93,9 @@ export default function NotificationBell() {
     if (!error) {
       setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
       setUnreadCount(0);
+    } else {
+      console.error("Error marking all notifications as read:", error);
+      toast.error("Failed to update notifications");
     }
   };
 

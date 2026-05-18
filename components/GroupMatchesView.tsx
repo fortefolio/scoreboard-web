@@ -11,22 +11,21 @@ interface Match {
   match_order: number;
   status: string;
   group_label: string;
+  sport_type?: string;
   participants: { name: string }[];
-  current_score: {
-    final_sets: number[];
-  } | null;
+  scores: any | null;
 }
 
 export default function GroupMatchesView({ 
   tournamentId, 
   tournament, 
   onSaveOverride,
-  onSaveRoundDate
+  onSaveScheduledDate
 }: { 
   tournamentId: string, 
   tournament: any,
   onSaveOverride: (roundNum: number, sets: number, points: number, cap: number | null) => void,
-  onSaveRoundDate: (roundNum: number, date: string) => void
+  onSaveScheduledDate: (key: string, date: string) => void
 }) {
   const [groups, setGroups] = useState<Record<string, Match[]>>({});
   const [loading, setLoading] = useState(true);
@@ -97,8 +96,8 @@ export default function GroupMatchesView({
             <input 
               type="date"
               className="bg-transparent text-[10px] font-black uppercase tracking-widest text-on-surface outline-none"
-              value={tournament?.settings?.round_dates?.[1] || ""}
-              onChange={(e) => onSaveRoundDate(1, e.target.value)}
+              value={tournament?.settings?.round_dates?.['group_stage'] || ""}
+              onChange={(e) => onSaveScheduledDate('group_stage', e.target.value)}
             />
           </div>
           <button 
@@ -122,7 +121,7 @@ export default function GroupMatchesView({
 
             <div className="grid gap-4">
               {matches.map((match) => {
-                const roundDate = tournament?.settings?.round_dates?.[match.round_number];
+                const roundDate = tournament?.settings?.round_dates?.['group_stage'];
                 return (
                   <Link key={match.id} href={`/match/${match.id}`} className="block group">
                     <div className="bg-surface-container-low border border-outline-variant/10 rounded-2xl p-4 shadow-xl group-hover:border-primary/40 transition-all duration-300 relative overflow-hidden">
@@ -137,16 +136,73 @@ export default function GroupMatchesView({
 
                       <div className="flex items-center justify-between relative z-10">
                       <div className="flex-1 space-y-2">
-                        {[0, 1].map((i) => (
-                          <div key={i} className="flex justify-between items-center pr-4">
-                            <span className={`text-sm font-bold tracking-tight truncate max-w-[140px] ${match.participants?.[i] ? 'text-on-surface' : 'text-on-surface-variant opacity-50 italic'}`}>
-                              {match.participants?.[i]?.name || "TBD"}
-                            </span>
-                            <span className="text-primary font-label text-base font-bold">
-                              {match.current_score?.final_sets?.[i] || 0}
-                            </span>
-                          </div>
-                        ))}
+                        {[0, 1].map((i) => {
+                          const side = i === 0 ? 'home' : 'away';
+                          let livePoints: string | number = 0;
+                          let games: number | null = null;
+                          const setsData = match.scores?.sets;
+                          let sets = 0;
+                          if (Array.isArray(setsData)) {
+                            if (typeof setsData[0] === 'number') {
+                              sets = setsData[i] ?? 0;
+                            } else {
+                              sets = setsData.reduce((acc: number, set: any) => {
+                                const s1 = set.team1 ?? set.home ?? 0;
+                                const s2 = set.team2 ?? set.away ?? 0;
+                                if (i === 0 && s1 > s2) return acc + 1;
+                                if (i === 1 && s2 > s1) return acc + 1;
+                                return acc;
+                              }, 0);
+                            }
+                          }
+
+                          if (match.status === 'ongoing' && match.scores) {
+                            if (match.sport_type === 'Tennis' && match.scores.tennis) {
+                              const p = match.scores.tennis.points?.[i] ?? 0;
+                              const opp = match.scores.tennis.points?.[i === 0 ? 1 : 0] ?? 0;
+                              games = match.scores.tennis.games?.[i] ?? 0;
+                              const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
+                              if (p >= 3 && opp >= 3) {
+                                livePoints = p > opp ? "AD" : (p === opp ? "40" : "40");
+                              } else {
+                                livePoints = TENNIS_POINTS[p] || "0";
+                              }
+                            } else {
+                              livePoints = match.scores.current?.[side] ?? 0;
+                            }
+                          }
+
+                          return (
+                            <div key={i} className="flex justify-between items-center pr-4">
+                              <div className="flex items-center gap-2 truncate max-w-[140px]">
+                                <span className={`text-sm font-bold tracking-tight truncate ${match.participants?.[i] ? 'text-on-surface' : 'text-on-surface-variant opacity-50 italic'}`}>
+                                  {match.participants?.[i]?.name || "TBD"}
+                                </span>
+                                {match.status === 'ongoing' && match.scores?.serving_index === i && (
+                                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" title="Serving"></span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <div className="flex flex-col items-end">
+                                  <span className="text-[7px] font-black uppercase text-on-surface-variant opacity-40 leading-none mb-1">Sets</span>
+                                  <span className="text-xs font-bold text-on-surface-variant">{sets}</span>
+                                </div>
+                                {games !== null && (
+                                  <div className="flex flex-col items-end">
+                                    <span className="text-[7px] font-black uppercase text-indigo-400/60 leading-none mb-1">Games</span>
+                                    <span className="text-xs font-bold text-indigo-400">{games}</span>
+                                  </div>
+                                )}
+                                {match.status === 'ongoing' && (
+                                  <div className="flex flex-col items-end min-w-[30px]">
+                                    <span className="text-[7px] font-black uppercase text-primary/60 leading-none mb-1">Pts</span>
+                                    <span className="text-sm font-digital text-primary">{livePoints}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                       <div className="pl-4 border-l border-outline-variant/10 flex flex-col items-center justify-center gap-1 min-w-[80px]">
                         <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${
@@ -174,6 +230,7 @@ export default function GroupMatchesView({
         isOpen={isRuleModalOpen}
         onClose={() => setIsRuleModalOpen(false)}
         onSave={(sets, points, cap) => onSaveOverride(1, sets, points, cap)}
+        sportType={tournament?.sport_type}
       />
     </div>
   );

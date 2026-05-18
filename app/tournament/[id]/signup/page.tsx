@@ -12,6 +12,7 @@ function SignupContent() {
   const [participantCount, setParticipantCount] = useState(0);
   const [teamName, setTeamName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
+  const [formResponses, setFormResponses] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -23,11 +24,20 @@ function SignupContent() {
       const fetchTournament = async () => {
         const { data } = await supabase
           .from("tournaments")
-          .select("name, sport_type, status, settings")
+          .select("name, sport_type, status, settings, signup_form_config")
           .eq("id", tournamentId)
           .single();
-        
-        if (data) setTournament(data);
+
+        if (data) {
+          setTournament(data);
+          // Initialize formResponses with defaults if necessary
+          const initialData: Record<string, any> = {};
+          (data.signup_form_config || []).forEach((field: any) => {
+            if (field.type === 'checkbox') initialData[field.id] = false;
+            else initialData[field.id] = "";
+          });
+          setFormResponses(initialData);
+        }
 
         const { count } = await supabase
           .from("tournament_participants")
@@ -62,7 +72,8 @@ function SignupContent() {
         .insert({
           tournament_id: tournamentId,
           name: teamName.trim(),
-          contact_email: contactEmail.trim()
+          contact_email: contactEmail.trim(),
+          form_responses: formResponses
         });
 
       if (error) throw error;
@@ -176,6 +187,47 @@ function SignupContent() {
                       onChange={(e) => setContactEmail(e.target.value)}
                     />
                   </div>
+
+                  {/* Dynamic Fields */}
+                  {(tournament.signup_form_config || []).map((field: any) => (
+                    <div key={field.id}>
+                      <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3">
+                        {field.label} {field.required && <span className="text-primary">*</span>}
+                      </label>
+                      {field.type === 'select' ? (
+                        <select 
+                          required={field.required}
+                          className="w-full px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold text-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none"
+                          value={formResponses[field.id] || ""}
+                          onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.value })}
+                        >
+                          <option value="" disabled>Select an option</option>
+                          {(field.options || []).map((opt: string) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      ) : field.type === 'checkbox' ? (
+                        <div className="flex items-center gap-3 px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10">
+                          <input 
+                            type="checkbox"
+                            className="w-6 h-6 rounded bg-surface-container-highest border-none text-primary focus:ring-0"
+                            checked={formResponses[field.id] || false}
+                            onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.checked })}
+                          />
+                          <span className="text-on-surface-variant text-sm font-medium">I agree to {field.label}</span>
+                        </div>
+                      ) : (
+                        <input 
+                          required={field.required}
+                          type={field.type}
+                          className="w-full px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold text-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-on-surface-variant/30"
+                          placeholder={`Enter ${field.label.toLowerCase()}`}
+                          value={formResponses[field.id] || ""}
+                          onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.value })}
+                        />
+                      )}
+                    </div>
+                  ))}
 
                   <div className="pt-2">
                     <button 

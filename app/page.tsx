@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 
@@ -18,19 +18,22 @@ function HomeContent() {
   const { user, supabase } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [liveMatches, setLiveMatches] = useState<any[]>([]);
   const [featuredTournaments, setFeaturedTournaments] = useState<any[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
 
   const [authModal, setAuthModal] = useState<"login" | "signup" | null>(null);
 
-  const closeAuthModal = () => {
+  const closeAuthModal = useCallback(() => {
     setAuthModal(null);
     const params = new URLSearchParams(searchParams.toString());
     params.delete('auth');
     router.replace(window.location.pathname + (params.toString() ? '?' + params.toString() : ''), { scroll: false });
-  };
+  }, [searchParams, router]);
 
   useEffect(() => {
     const auth = searchParams.get('auth');
@@ -39,40 +42,101 @@ function HomeContent() {
     else setAuthModal(null);
   }, [searchParams]);
 
-  useEffect(() => {
-    const fetchLiveMatches = async () => {
-      const { data } = await supabase
-        .from("matches")
-        .select("*, tournaments(name)")
-        .eq("status", "in_progress")
-        .limit(10);
-      if (data) setLiveMatches(data);
-    };
-
-    const fetchFeaturedTournaments = async () => {
-      const { data } = await supabase
-        .from("tournaments")
-        .select("*")
-        .neq("status", "completed")
-        .limit(10);
-      if (data) setFeaturedTournaments(data);
-    };
-
-    fetchLiveMatches();
-    fetchFeaturedTournaments();
+  const fetchLiveMatches = useCallback(async () => {
+    const { data } = await supabase
+      .from("matches")
+      .select("*, tournaments(name)")
+      .eq("status", "ongoing")
+      .limit(10);
+    if (data) setLiveMatches(data);
   }, [supabase]);
 
+  const fetchFeaturedTournaments = useCallback(async () => {
+    const { data } = await supabase
+      .from("tournaments")
+      .select("*")
+      .neq("status", "completed")
+      .limit(10);
+    if (data) setFeaturedTournaments(data);
+  }, [supabase]);
+
+  useEffect(() => {
+    fetchLiveMatches();
+    fetchFeaturedTournaments();
+
+    const channel = supabase
+      .channel('live-arena-updates')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'matches', filter: 'status=eq.ongoing' },
+        () => { fetchLiveMatches(); }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, fetchLiveMatches, fetchFeaturedTournaments]);
+
   const handleAuth = async (type: "login" | "signup") => {
-    const { error } = type === "login"
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password });
-    if (error) {
-      toast.error(error.message);
-      return;
+    if (!type) return;
+    setIsSubmitting(true);
+
+    try {
+      if (type === "signup") {
+        if (!username.trim()) {
+          toast.error("Username is required");
+          setIsSubmitting(false);
+          return;
+        }
+        if (password !== confirmPassword) {
+          toast.error("Passwords do not match");
+          setIsSubmitting(false);
+          return;
+        }
+
+        try {
+          const { data: existingUser } = await supabase
+            .from('users')
+            .select('id')
+            .eq('username', username.trim())
+            .maybeSingle();
+
+          if (existingUser) {
+            toast.error("Username already taken. Please choose another one.");
+            setIsSubmitting(false);
+            return;
+          }
+        } catch {
+          // Username check failed; proceed and let signup itself surface errors.
+        }
+      }
+
+      const { error } = type === "login"
+        ? await supabase.auth.signInWithPassword({ email, password })
+        : await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { display_name: username.trim() } },
+          });
+
+      if (error) {
+        toast.error(error.message);
+        setIsSubmitting(false);
+      } else {
+        if (type === "signup") {
+          toast.success("Signup successful! Please check your email if confirmation is required.");
+        } else {
+          toast.success("Welcome back!");
+        }
+        closeAuthModal();
+        const next = searchParams.get('next');
+        if (next) router.push(next);
+      }
+    } catch {
+      toast.error("An unexpected error occurred. Please try again.");
+      setIsSubmitting(false);
     }
-    closeAuthModal();
-    const next = searchParams.get('next');
-    if (next) router.push(next);
   };
 
   return (
@@ -104,12 +168,71 @@ function HomeContent() {
                       <span className="text-[10px] font-black uppercase tracking-widest text-primary">{match.tournaments?.name}</span>
                     </div>
                     <div className="space-y-4 pt-4">
-                      {[0, 1].map((i) => (
-                        <div key={i} className="flex justify-between items-center">
-                          <span className="text-lg font-bold text-on-surface">{match.participants?.[i]?.name || "TBD"}</span>
-                          <span className="text-3xl font-digital text-primary">{match.current_score?.final_sets?.[i] || 0}</span>
-                        </div>
-                      ))}
+                      {[0, 1].map((i) => {
+                        const side = i === 0 ? 'home' : 'away';
+                        let livePoints: string | number = 0;
+                        let games: number | null = null;
+                        const setsData = match.scores?.sets;
+                        let sets = 0;
+                        if (Array.isArray(setsData)) {
+                          if (typeof setsData[0] === 'number') {
+                            sets = setsData[i] ?? 0;
+                          } else {
+                            sets = setsData.reduce((acc: number, set: any) => {
+                              const s1 = set.team1 ?? set.home ?? 0;
+                              const s2 = set.team2 ?? set.away ?? 0;
+                              if (i === 0 && s1 > s2) return acc + 1;
+                              if (i === 1 && s2 > s1) return acc + 1;
+                              return acc;
+                            }, 0);
+                          }
+                        }
+
+                        if (match.status === 'ongoing' && match.scores) {
+                          if (match.sport_type === 'Tennis' && match.scores.tennis) {
+                            const p = match.scores.tennis.points?.[i] ?? 0;
+                            const opp = match.scores.tennis.points?.[i === 0 ? 1 : 0] ?? 0;
+                            games = match.scores.tennis.games?.[i] ?? 0;
+                            const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
+                            if (p >= 3 && opp >= 3) {
+                              livePoints = p > opp ? "AD" : (p === opp ? "40" : "40");
+                            } else {
+                              livePoints = TENNIS_POINTS[p] || "0";
+                            }
+                          } else {
+                            livePoints = match.scores.current?.[side] ?? 0;
+                          }
+                        }
+                        
+                        return (
+                          <div key={i} className="flex justify-between items-center">
+                            <div className="flex items-center gap-2 truncate max-w-[160px]">
+                              <span className="text-lg font-bold text-on-surface truncate">{match.participants?.[i]?.name || "TBD"}</span>
+                              {match.status === 'ongoing' && match.scores?.serving_index === i && (
+                                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" title="Serving"></span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <div className="flex flex-col items-end">
+                                <span className="text-[10px] font-black uppercase text-on-surface-variant opacity-40 leading-none mb-1">Sets</span>
+                                <span className="text-sm font-bold text-on-surface-variant">{sets}</span>
+                              </div>
+                              {games !== null && (
+                                <div className="flex flex-col items-end">
+                                  <span className="text-[10px] font-black uppercase text-indigo-400/60 leading-none mb-1">Games</span>
+                                  <span className="text-sm font-bold text-indigo-400">{games}</span>
+                                </div>
+                              )}
+                              {match.status === 'ongoing' && (
+                                <div className="flex flex-col items-end min-w-[40px]">
+                                  <span className="text-[10px] font-black uppercase text-primary/60 leading-none mb-1">Points</span>
+                                  <span className="text-3xl font-digital text-primary">{livePoints}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                     <div className="mt-6 pt-6 border-t border-outline-variant/10 flex justify-between items-center">
                       <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Round {match.round_number}</span>
@@ -178,8 +301,8 @@ function HomeContent() {
               <div className="grid lg:grid-cols-2 gap-12 items-center">
                 <div>
                   <h1 className="font-headline text-6xl md:text-8xl font-black tracking-tighter leading-none mb-6 italic text-white">
-                    DON'T JUST PLAY.<br/>
-                    <span className="text-primary">BE HEARD.</span>
+                    DON'T JUST FOLLOW.<br/>
+                    <span className="text-primary">BE PART OF THE GAME.</span>
                   </h1>
                   <p className="text-on-surface-variant text-xl md:text-2xl max-w-xl mb-10 leading-relaxed font-medium">
                     The first tournament platform where every point is a post. Live brackets, real-time trash talk, and community-driven sports management.
@@ -482,7 +605,7 @@ function HomeContent() {
             <header className="text-center space-y-4">
               <h1 className="font-digital text-5xl tracking-tighter text-on-surface">SCORE:BOARD</h1>
               <p className="font-body text-on-surface-variant text-lg">
-                {authModal === 'login' ? 'Welcome Athlete or Organizer' : 'Create your organizer account'}
+                {authModal === "login" ? "Welcome Athlete or Organizer" : "Create your organizer account"}
               </p>
             </header>
 
@@ -505,6 +628,21 @@ function HomeContent() {
               </div>
 
               <form className="flex flex-col gap-5">
+                {authModal === "signup" && (
+                  <label className="flex flex-col gap-2">
+                    <span className="font-body text-sm font-medium text-on-surface-variant">Username</span>
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">person</span>
+                      <input 
+                        className="w-full h-14 bg-surface-container-lowest text-on-surface font-body rounded-lg pl-12 pr-4 border-none focus:ring-1 focus:ring-primary-container focus:outline-none placeholder:text-outline transition-shadow" 
+                        placeholder="Choose a username" 
+                        type="text"
+                        value={username}
+                        onChange={e => setUsername(e.target.value)}
+                      />
+                    </div>
+                  </label>
+                )}
                 <label className="flex flex-col gap-2">
                   <span className="font-body text-sm font-medium text-on-surface-variant">Email</span>
                   <div className="relative">
@@ -532,7 +670,23 @@ function HomeContent() {
                   </div>
                 </label>
 
-                {authModal === 'login' && (
+                {authModal === "signup" && (
+                  <label className="flex flex-col gap-2">
+                    <span className="font-body text-sm font-medium text-on-surface-variant">Confirm Password</span>
+                    <div className="relative">
+                      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">lock</span>
+                      <input 
+                        className="w-full h-14 bg-surface-container-lowest text-on-surface font-body rounded-lg pl-12 pr-4 border-none focus:ring-1 focus:ring-primary-container focus:outline-none placeholder:text-outline transition-shadow" 
+                        placeholder="Confirm your password" 
+                        type="password"
+                        value={confirmPassword}
+                        onChange={e => setConfirmPassword(e.target.value)}
+                      />
+                    </div>
+                  </label>
+                )}
+
+                {authModal === "login" && (
                   <div className="flex items-center justify-between pt-1 pb-3">
                     <label className="flex items-center gap-2 cursor-pointer group">
                       <input className="form-checkbox rounded bg-surface-container-lowest border-none text-primary-container focus:ring-0 focus:ring-offset-0 w-5 h-5 transition-colors" type="checkbox" />
@@ -543,13 +697,18 @@ function HomeContent() {
                 )}
 
                 <button 
-                  onClick={() => handleAuth(authModal)}
-                  className="w-full h-14 rounded-xl bg-primary-container/80 hover:bg-primary-container backdrop-blur-md text-on-primary-container font-headline font-bold text-lg tracking-wide transition-all shadow-[0_0_15px_rgba(195,192,255,0.1)] hover:shadow-[0_0_20px_rgba(195,192,255,0.2)]" 
+                  onClick={() => handleAuth(authModal as any)}
+                  disabled={isSubmitting}
+                  className="w-full h-14 rounded-xl bg-primary-container/80 hover:bg-primary-container backdrop-blur-md text-on-primary-container font-headline font-bold text-lg tracking-wide transition-all shadow-[0_0_15px_rgba(195,192,255,0.1)] hover:shadow-[0_0_20px_rgba(195,192,255,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3" 
                   type="button"
                 >
-                  {authModal === 'login' ? 'Sign In' : 'Sign Up'}
+                  {isSubmitting ? (
+                    <div className="w-5 h-5 border-2 border-on-primary-container border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    authModal === "login" ? "Sign In" : "Sign Up"
+                  )}
                 </button>
-                
+
                 <button 
                   onClick={closeAuthModal}
                   className="w-full py-2 text-on-surface-variant font-medium hover:text-on-surface transition-colors"
@@ -560,12 +719,12 @@ function HomeContent() {
               </form>
 
               <p className="text-center font-body text-sm text-on-surface-variant mt-2">
-                {authModal === 'login' ? "Don't have an account?" : "Already have an account?"}{' '}
+                {authModal === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
                 <button 
-                  onClick={() => setAuthModal(authModal === 'login' ? 'signup' : 'login')}
+                  onClick={() => setAuthModal(authModal === "login" ? "signup" : "login")}
                   className="text-primary hover:text-primary-fixed font-semibold transition-colors"
                 >
-                  {authModal === 'login' ? 'Sign Up' : 'Sign In'}
+                  {authModal === "login" ? "Sign Up" : "Sign In"}
                 </button>
               </p>
             </section>
