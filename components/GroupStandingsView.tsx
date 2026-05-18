@@ -39,9 +39,9 @@ const calculateStandings = (matches: any[]) => {
         };
       }
 
-      if (match.status === 'completed' && match.current_score) {
+      if (match.status === 'completed' && match.scores) {
         standings[key].played++;
-        const sets = match.current_score.final_sets || [0, 0];
+        const sets = match.scores.sets || [0, 0];
         const isWinner = (idx === 0 && sets[0] > sets[1]) || (idx === 1 && sets[1] > sets[0]);
         
         if (isWinner) standings[key].wins++;

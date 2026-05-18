@@ -28,37 +28,77 @@ export default function NotificationsPage() {
   }, [user, fetchNotifications]);
 
   const markAsRead = async (notificationId: string) => {
-    const { error } = await supabase
+    if (!user) return;
+    console.log(`Attempting to mark notification ${notificationId} as read for user ${user.id}`);
+    const { data, error } = await supabase
       .from("notifications")
       .update({ read_at: new Date().toISOString() })
-      .eq("id", notificationId);
+      .eq("id", notificationId)
+      .eq("user_id", user.id)
+      .select();
 
     if (!error) {
-      setNotifications(prev => 
-        prev.map(n => n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n)
-      );
+      if (data && data.length > 0) {
+        console.log("Notification marked as read in DB:", data[0]);
+        setNotifications(prev => 
+          prev.map(n => n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n)
+        );
+      } else {
+        console.warn("Mark as read successful but 0 rows affected. Check RLS policies or ID validity.");
+        toast.error("Could not update notification - Permission denied?");
+      }
+    } else {
+      console.error("Error marking notification as read:", error);
+      toast.error("Failed to update notification");
     }
   };
 
   const markAllAsRead = async () => {
     if (!user) return;
-    const { error } = await supabase
+    console.log(`Attempting to mark all notifications as read for user ${user.id}`);
+    const { data, error } = await supabase
       .from("notifications")
       .update({ read_at: new Date().toISOString() })
       .eq("user_id", user.id)
-      .is("read_at", null);
+      .is("read_at", null)
+      .select();
 
     if (!error) {
-      setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
-      toast.success("All notifications marked as read");
+      if (data && data.length > 0) {
+        console.log(`${data.length} notifications marked as read in DB`);
+        setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
+        toast.success("All notifications marked as read");
+      } else {
+        console.warn("Mark all as read successful but 0 rows affected.");
+      }
+    } else {
+      console.error("Error marking all notifications as read:", error);
+      toast.error("Failed to update notifications");
     }
   };
 
   const deleteNotification = async (id: string) => {
-    const { error } = await supabase.from("notifications").delete().eq("id", id);
+    if (!user) return;
+    console.log(`Attempting to delete notification ${id} for user ${user.id}`);
+    const { data, error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", user.id)
+      .select();
+
     if (!error) {
-      setNotifications(prev => prev.filter(n => n.id !== id));
-      toast.success("Notification deleted");
+      if (data && data.length > 0) {
+        console.log("Notification deleted from DB:", data[0]);
+        setNotifications(prev => prev.filter(n => n.id !== id));
+        toast.success("Notification deleted");
+      } else {
+        console.warn("Delete successful but 0 rows affected. Check RLS policies or ID validity.");
+        toast.error("Could not delete notification - Permission denied?");
+      }
+    } else {
+      console.error("Error deleting notification:", error);
+      toast.error("Failed to delete notification");
     }
   };
 
