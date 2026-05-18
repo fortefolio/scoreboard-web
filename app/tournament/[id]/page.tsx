@@ -177,14 +177,14 @@ function TournamentContent() {
     }
   };
 
-  const saveRoundDate = async (roundNum: number, date: string) => {
+  const saveRoundDate = async (key: string, date: string) => {
     if (!tournament) return;
     const newSettings = {
       ...tournament.settings,
       round_dates: {
         ...(tournament.settings?.round_dates || {}),
-        [roundNum]: date
-      }
+        [key]: date,
+      },
     };
 
     const { error } = await supabase
@@ -194,7 +194,7 @@ function TournamentContent() {
 
     if (!error) {
       setTournament({ ...tournament, settings: newSettings });
-      toast.success(`Date updated for Round ${roundNum}`);
+      toast.success(`Date updated for ${key}`);
     } else {
       toast.error(`Error updating round date: ${error.message}`);
     }
@@ -414,10 +414,10 @@ function TournamentContent() {
             </div>
           ) : activeTab === 'group_matches' && tournament?.settings?.stage_1?.type === 'groups' ? (
             <div className="bg-surface-container-low/50 rounded-[3rem] p-12 border border-outline-variant/10 shadow-3xl">
-               <GroupMatchesView tournamentId={tournamentId} tournament={tournament} onSaveOverride={saveOverride} onSaveRoundDate={saveRoundDate} />
+               <GroupMatchesView tournamentId={tournamentId} tournament={tournament} onSaveOverride={saveOverride} onSaveScheduledDate={saveRoundDate} />
             </div>
           ) : activeTab === 'bracket' ? (
-            <TournamentBracket tournamentId={tournamentId} tournamentFromParent={tournament} onSaveOverrideFromParent={saveOverride} onSaveRoundDate={saveRoundDate} />
+            <TournamentBracket tournamentId={tournamentId} tournamentFromParent={tournament} onSaveOverrideFromParent={saveOverride} onSaveScheduledDate={saveRoundDate} />
           ) : (
             <div className="max-w-2xl mx-auto">
               <div className="bg-surface-container-low rounded-[3rem] p-12 border border-outline-variant/10 shadow-3xl">
