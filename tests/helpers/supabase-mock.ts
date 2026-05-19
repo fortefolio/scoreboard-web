@@ -14,7 +14,11 @@ export function createSupabaseMock(initial: { user?: User | null } = {}) {
     listeners.forEach((l) => l(event, session));
   };
 
-  const queryBuilder = () => {
+  // Per-table response queue. Each entry is the value the next chained query
+  // against that table will resolve with. FIFO; falls back to { data: [], error: null }.
+  const responses = new Map<string, { data: any; error: any }[]>();
+
+  const queryBuilder = (table: string) => {
     const builder: any = {
       select: vi.fn(() => builder),
       insert: vi.fn(() => builder),
@@ -26,14 +30,20 @@ export function createSupabaseMock(initial: { user?: User | null } = {}) {
       is: vi.fn(() => builder),
       in: vi.fn(() => builder),
       ilike: vi.fn(() => builder),
-      maybeSingle: vi.fn(() => Promise.resolve({ data: null, error: null })),
-      single: vi.fn(() => Promise.resolve({ data: null, error: null })),
       order: vi.fn(() => builder),
       limit: vi.fn(() => builder),
-      then: (resolve: (value: { data: any[]; error: null }) => void) =>
-        resolve({ data: [], error: null }),
+      maybeSingle: vi.fn(() => Promise.resolve(nextResponse(table))),
+      single: vi.fn(() => Promise.resolve(nextResponse(table))),
+      then: (resolve: (value: { data: any; error: any }) => void) =>
+        resolve(nextResponse(table)),
     };
     return builder;
+  };
+
+  const nextResponse = (table: string) => {
+    const queue = responses.get(table);
+    if (queue && queue.length > 0) return queue.shift()!;
+    return { data: [], error: null };
   };
 
   const channel = {
@@ -69,10 +79,18 @@ export function createSupabaseMock(initial: { user?: User | null } = {}) {
         };
       }),
     },
-    from: vi.fn(queryBuilder),
+    from: vi.fn((table: string) => queryBuilder(table)),
     channel: vi.fn(() => channel),
     removeChannel: vi.fn(),
     __emit: emit,
+    /** Queue the next response for a given table (FIFO). */
+    __queueResponse: (table: string, response: { data: any; error: any }) => {
+      const queue = responses.get(table) ?? [];
+      queue.push(response);
+      responses.set(table, queue);
+    },
+    /** Clear all queued responses (call in beforeEach). */
+    __resetResponses: () => responses.clear(),
   };
 }
 
