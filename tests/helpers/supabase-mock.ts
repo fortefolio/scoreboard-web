@@ -57,7 +57,16 @@ export function createSupabaseMock(initial: { user?: User | null } = {}) {
       }),
       onAuthStateChange: vi.fn((cb: Listener) => {
         listeners.push(cb);
-        return { data: { subscription: { unsubscribe: vi.fn() } } };
+        return {
+          data: {
+            subscription: {
+              unsubscribe: vi.fn(() => {
+                const idx = listeners.indexOf(cb);
+                if (idx >= 0) listeners.splice(idx, 1);
+              }),
+            },
+          },
+        };
       }),
     },
     from: vi.fn(queryBuilder),
