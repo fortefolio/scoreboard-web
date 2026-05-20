@@ -233,7 +233,7 @@ function SignupContent() {
                     <button 
                       type="submit"
                       disabled={submitting || tournament.status !== 'pending'}
-                      className="w-full bg-primary-container text-on-primary-container py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
+                      className="w-full bg-primary-container text-on-primary-container py-5 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
                     >
                       {submitting ? (
                         <div className="w-4 h-4 border-2 border-on-primary-container border-t-transparent rounded-full animate-spin"></div>

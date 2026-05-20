@@ -45,7 +45,7 @@ export default function ConfirmationModal({
               onConfirm();
               onClose();
             }} 
-            className={`flex-1 ${isDanger ? 'bg-error-container text-on-error-container shadow-error/10' : 'bg-primary-container text-on-primary-container shadow-primary-container/20'} py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl active:scale-95`}
+            className={`flex-1 ${isDanger ? 'bg-error-container text-on-error-container shadow-error/10' : 'bg-primary-container text-on-primary-container shadow-primary-container/20'} py-4 rounded-full font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl active:scale-95`}
           >
             {confirmText}
           </button>

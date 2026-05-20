@@ -87,7 +87,7 @@ export default function RuleModal({ roundNum, initialRules, isOpen, onClose, onS
                 onSave(sets, points, cap === "" ? null : cap, court.trim() === "" ? null : court);
                 onClose();
               }} 
-              className="flex-1 bg-primary-container text-on-primary-container py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-primary-container/20"
+              className="flex-1 bg-primary-container text-on-primary-container py-4 rounded-full font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-primary-container/20"
             >
               Save Rules
             </button>

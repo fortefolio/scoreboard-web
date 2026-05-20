@@ -432,7 +432,7 @@ export default function TournamentBracket({
             <button
               onClick={handleGenerateKnockout}
               disabled={isGeneratingKnockout}
-              className="bg-primary-container hover:brightness-110 text-on-primary-container px-6 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-primary/20"
+              className="bg-primary-container hover:brightness-110 text-on-primary-container px-6 py-3 rounded-full font-black uppercase tracking-[0.2em] text-[10px] transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-primary/20"
             >
               {isGeneratingKnockout ? "Initializing..." : "Generate Bracket"}
             </button>

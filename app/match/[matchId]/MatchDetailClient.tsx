@@ -517,7 +517,7 @@ export default function MatchDetailClient() {
                   router.push(`/match/${matchIdStr}/scoreboard`);
                 }
               }}
-              className="w-full py-5 rounded-3xl bg-primary-container hover:brightness-110 text-on-primary-container font-headline font-black uppercase tracking-[0.2em] text-sm transition-all active:scale-[0.99] flex items-center justify-center gap-3 shadow-[0_0_60px_-15px_rgba(79,70,229,0.6)]"
+              className="w-full py-5 rounded-full bg-primary-container hover:brightness-110 text-on-primary-container font-headline font-black uppercase tracking-[0.2em] text-sm transition-all active:scale-[0.99] flex items-center justify-center gap-3 shadow-[0_0_60px_-15px_rgba(79,70,229,0.6)]"
             >
               <span className="material-symbols-outlined text-[22px]">play_circle</span>
               Start Scoreboard
