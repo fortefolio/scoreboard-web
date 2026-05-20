@@ -5,6 +5,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import RuleModal from "./RuleModal";
+import { countSetsWon } from "@/lib/scoring/sets";
 
 const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
   if (!match) return null;
@@ -43,23 +44,7 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
                   <div className="flex flex-col items-end">
                     <span className="text-[6px] font-black uppercase text-on-surface-variant opacity-40 leading-none mb-0.5">S</span>
                     <span className="text-[10px] font-bold text-on-surface-variant leading-none">
-                      {(() => {
-                        const setsData = match.scores?.sets;
-                        if (Array.isArray(setsData)) {
-                          if (typeof setsData[0] === 'number') {
-                            return setsData[i] ?? 0;
-                          } else {
-                            return setsData.reduce((acc: number, set: any) => {
-                              const s1 = set.team1 ?? set.home ?? 0;
-                              const s2 = set.team2 ?? set.away ?? 0;
-                              if (i === 0 && s1 > s2) return acc + 1;
-                              if (i === 1 && s2 > s1) return acc + 1;
-                              return acc;
-                            }, 0);
-                          }
-                        }
-                        return 0;
-                      })()}
+                      {countSetsWon(match.scores?.sets, i as 0 | 1)}
                     </span>
                   </div>
                   {match.status === 'ongoing' && match.scores && (
@@ -447,7 +432,7 @@ export default function TournamentBracket({
             <button
               onClick={handleGenerateKnockout}
               disabled={isGeneratingKnockout}
-              className="bg-primary-container hover:brightness-110 text-on-primary-container px-6 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-primary/20"
+              className="bg-primary-container hover:brightness-110 text-on-primary-container px-6 py-3 rounded-full font-black uppercase tracking-[0.2em] text-[10px] transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-primary/20"
             >
               {isGeneratingKnockout ? "Initializing..." : "Generate Bracket"}
             </button>

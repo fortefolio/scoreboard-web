@@ -369,7 +369,7 @@ function TournamentContent() {
           <div className="bg-surface-container-low p-1.5 rounded-[1.5rem] border border-outline-variant/10 shadow-2xl flex gap-1">
             <button 
               onClick={() => handleTabChange('teams')}
-              className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'teams' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
+              className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'teams' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
             >
               <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'teams' ? "'FILL' 1" : "" }}>groups</span>
               Teams
@@ -378,14 +378,14 @@ function TournamentContent() {
               <>
                 <button 
                   onClick={() => handleTabChange('standings')}
-                  className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'standings' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
+                  className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'standings' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
                 >
                   <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'standings' ? "'FILL' 1" : "" }}>bar_chart</span>
                   Standings
                 </button>
                 <button 
                   onClick={() => handleTabChange('group_matches')}
-                  className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'group_matches' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
+                  className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'group_matches' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
                 >
                   <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'group_matches' ? "'FILL' 1" : "" }}>sports_tennis</span>
                   Matches
@@ -395,7 +395,7 @@ function TournamentContent() {
             {tournament?.status !== 'pending' && (
               <button 
                 onClick={() => handleTabChange('bracket')}
-                className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'bracket' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
+                className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'bracket' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
               >
                 <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'bracket' ? "'FILL' 1" : "" }}>account_tree</span>
                 Bracket
@@ -403,7 +403,7 @@ function TournamentContent() {
             )}
             <button 
               onClick={() => handleTabChange('settings')}
-              className={`px-8 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'settings' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
+              className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'settings' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
             >
               <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'settings' ? "'FILL' 1" : "" }}>settings</span>
               Settings
@@ -553,7 +553,7 @@ function TournamentContent() {
                           />
                           <button 
                             onClick={saveGeneralSettings}
-                            className="bg-primary-container text-on-primary-container px-6 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-primary-container/20"
+                            className="bg-primary-container text-on-primary-container px-6 py-3 rounded-full font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-primary-container/20"
                           >
                             Save Settings
                           </button>
@@ -744,7 +744,7 @@ function TournamentContent() {
                            </button>
                            <button 
                              onClick={saveGeneralSettings}
-                             className="flex-1 md:flex-none bg-primary-container text-white px-8 py-4 rounded-xl font-black uppercase tracking-widest text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 active:scale-95"
+                             className="flex-1 md:flex-none bg-primary-container text-white px-8 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 active:scale-95"
                            >
                              Save Form Config
                            </button>
@@ -762,7 +762,7 @@ function TournamentContent() {
                       <button 
                         onClick={handleGenerateBracket}
                         disabled={isGenerating}
-                        className="w-full bg-primary-container text-on-primary-container py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
+                        className="w-full bg-primary-container text-on-primary-container py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
                       >
                         <span className="material-symbols-outlined text-sm">bolt</span>
                         {isGenerating ? "Generating..." : "Generate Tournament Bracket"}
@@ -876,7 +876,7 @@ function TournamentContent() {
             <footer className="p-10 bg-surface-container-high border-t border-outline-variant/5">
               <button 
                 onClick={() => setIsPreviewModalOpen(false)}
-                className="w-full bg-primary-container text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 active:scale-95"
+                className="w-full bg-primary-container text-white py-5 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 active:scale-95"
               >
                 Back to Editor
               </button>

@@ -121,7 +121,7 @@ export default function MyTournamentsPage() {
         </div>
         <button 
           onClick={() => setShowModal(true)}
-          className="bg-primary-container text-on-primary-container px-8 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-2"
+          className="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
           New Tournament
@@ -155,7 +155,7 @@ export default function MyTournamentsPage() {
               
               <div className="mt-12">
                 <Link href={`/tournament/${t.id}`} className="w-full">
-                  <button className="w-full bg-primary-container text-on-primary-container py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20">
+                  <button className="w-full bg-primary-container text-on-primary-container py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20">
                     <span className="material-symbols-outlined text-lg">visibility</span>
                     View Dashboard
                   </button>
@@ -211,13 +211,13 @@ export default function MyTournamentsPage() {
                   <div className="flex gap-2">
                     <button 
                       onClick={() => setStage1Type('bracket')}
-                      className={`flex-1 py-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${stage1Type === 'bracket' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
+                      className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${stage1Type === 'bracket' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
                     >
                       BRACKET
                     </button>
                     <button 
                       onClick={() => setStage1Type('groups')}
-                      className={`flex-1 py-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${stage1Type === 'groups' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
+                      className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${stage1Type === 'groups' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
                     >
                       GROUPS
                     </button>
@@ -262,13 +262,13 @@ export default function MyTournamentsPage() {
                 <div className="flex gap-2">
                   <button 
                     onClick={() => setVisibility('public')}
-                    className={`flex-1 py-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${visibility === 'public' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
+                    className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${visibility === 'public' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
                   >
                     PUBLIC
                   </button>
                   <button 
                     onClick={() => setVisibility('private')}
-                    className={`flex-1 py-4 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${visibility === 'private' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
+                    className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${visibility === 'private' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
                   >
                     PRIVATE
                   </button>
@@ -287,7 +287,7 @@ export default function MyTournamentsPage() {
                 </button>
                 <button 
                   onClick={handleCreate} 
-                  className="flex-1 bg-primary-container text-on-primary-container py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20"
+                  className="flex-1 bg-primary-container text-on-primary-container py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20"
                 >
                   Create Event
                 </button>

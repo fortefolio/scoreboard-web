@@ -2,60 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-
-interface Standing {
-  group_label: string;
-  team_name: string;
-  played: number;
-  wins: number;
-  losses: number;
-  total_sets_won: number;
-  total_sets_lost: number;
-  point_diff: number;
-}
-
-// Helper to calculate standings from match history
-const calculateStandings = (matches: any[]) => {
-  const standings: Record<string, any> = {};
-
-  matches.forEach(match => {
-    const groupLabel = match.group_label;
-    if (!groupLabel) return;
-
-    match.participants.forEach((p: any, idx: number) => {
-      if (!p?.name) return;
-      
-      const key = `${groupLabel}-${p.name}`;
-      if (!standings[key]) {
-        standings[key] = { 
-          group_label: groupLabel, 
-          team_name: p.name, 
-          played: 0,
-          wins: 0, 
-          losses: 0, 
-          total_sets_won: 0, 
-          total_sets_lost: 0, 
-          point_diff: 0 
-        };
-      }
-
-      if (match.status === 'completed' && match.scores) {
-        standings[key].played++;
-        const sets = match.scores.sets || [0, 0];
-        const isWinner = (idx === 0 && sets[0] > sets[1]) || (idx === 1 && sets[1] > sets[0]);
-        
-        if (isWinner) standings[key].wins++;
-        else standings[key].losses++;
-
-        standings[key].total_sets_won += sets[idx];
-        standings[key].total_sets_lost += sets[idx === 0 ? 1 : 0];
-        standings[key].point_diff = standings[key].total_sets_won - standings[key].total_sets_lost;
-      }
-    });
-  });
-
-  return Object.values(standings);
-};
+import { calculateStandings, type Standing } from "@/lib/standings/groups";
 
 export default function GroupStandingsView({ tournamentId }: { tournamentId: string }) {
   const [groups, setGroups] = useState<Record<string, Standing[]>>({});

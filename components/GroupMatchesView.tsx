@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import RuleModal from "./RuleModal";
+import { countSetsWon } from "@/lib/scoring/sets";
 
 interface Match {
   id: string;
@@ -102,7 +103,7 @@ export default function GroupMatchesView({
           </div>
           <button 
             onClick={() => setIsRuleModalOpen(true)}
-            className="bg-primary-container text-on-primary-container px-6 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 flex-1 md:flex-none"
+            className="bg-primary-container text-on-primary-container px-6 py-3 rounded-full font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 flex-1 md:flex-none"
           >
             Edit Rules
           </button>
@@ -140,21 +141,7 @@ export default function GroupMatchesView({
                           const side = i === 0 ? 'home' : 'away';
                           let livePoints: string | number = 0;
                           let games: number | null = null;
-                          const setsData = match.scores?.sets;
-                          let sets = 0;
-                          if (Array.isArray(setsData)) {
-                            if (typeof setsData[0] === 'number') {
-                              sets = setsData[i] ?? 0;
-                            } else {
-                              sets = setsData.reduce((acc: number, set: any) => {
-                                const s1 = set.team1 ?? set.home ?? 0;
-                                const s2 = set.team2 ?? set.away ?? 0;
-                                if (i === 0 && s1 > s2) return acc + 1;
-                                if (i === 1 && s2 > s1) return acc + 1;
-                                return acc;
-                              }, 0);
-                            }
-                          }
+                          const sets = countSetsWon(match.scores?.sets, i as 0 | 1);
 
                           if (match.status === 'ongoing' && match.scores) {
                             if (match.sport_type === 'Tennis' && match.scores.tennis) {

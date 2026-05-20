@@ -118,7 +118,7 @@ export default function VolleyballScoreboard({
                 key={idx}
                 onClick={() => handleToss(idx)}
                 disabled={isTossing}
-                className="flex-1 bg-primary-container hover:bg-primary-container/80 text-on-primary-container py-2 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
+                className="flex-1 bg-primary-container hover:bg-primary-container/80 text-on-primary-container py-2 px-4 rounded-full text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
               >
                 {matchData.participants?.[idx]?.name || `Team ${idx + 1}`}
               </button>
@@ -220,7 +220,7 @@ export default function VolleyballScoreboard({
               <div className="w-full">
                 <button 
                   onClick={() => handlePoint('team1')}
-                  className="w-full bg-primary-container hover:bg-primary-container/80 text-white py-12 rounded-3xl flex flex-col items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary-container/20"
+                  className="w-full bg-primary-container hover:bg-primary-container/80 text-white py-12 rounded-full flex flex-col items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-lg shadow-primary-container/20"
                 >
                   <span className="material-symbols-outlined text-5xl font-black">add</span>
                   <span className="text-xs font-black uppercase tracking-widest">Add Point</span>
