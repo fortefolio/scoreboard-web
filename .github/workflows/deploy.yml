@@ -15,7 +15,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: npm install
+          cache: 'npm'
+      - run: npm ci
+      
+      - name: Run Tests
+        run: npm run test:run
+        
       - name: Build and Deploy
         run: npx @cloudflare/next-on-pages
         env:

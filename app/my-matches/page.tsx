@@ -4,6 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
+import { countSetsWon } from "@/lib/scoring/sets";
 
 function MyMatchesContent() {
   const { user, supabase } = useAuth();
@@ -137,7 +138,7 @@ function MyMatchesContent() {
         </div>
         <button 
           onClick={() => setShowModal(true)}
-          className="relative z-50 bg-primary-container text-on-primary-container px-8 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-2"
+          className="relative z-50 bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
           New Match
@@ -169,21 +170,7 @@ function MyMatchesContent() {
                       const side = i === 0 ? 'home' : 'away';
                       let livePoints: string | number = 0;
                       let games: number | null = null;
-                      const setsData = match.scores?.sets;
-                      let sets = 0;
-                      if (Array.isArray(setsData)) {
-                        if (typeof setsData[0] === 'number') {
-                          sets = setsData[i] ?? 0;
-                        } else {
-                          sets = setsData.reduce((acc: number, set: any) => {
-                            const s1 = set.team1 ?? set.home ?? 0;
-                            const s2 = set.team2 ?? set.away ?? 0;
-                            if (i === 0 && s1 > s2) return acc + 1;
-                            if (i === 1 && s2 > s1) return acc + 1;
-                            return acc;
-                          }, 0);
-                        }
-                      }
+                      const sets = countSetsWon(match.scores?.sets, i as 0 | 1);
 
                       if (match.status === 'ongoing' && match.scores) {
                         if (match.sport_type === 'Tennis' && match.scores.tennis) {
@@ -331,7 +318,7 @@ function MyMatchesContent() {
                 <button 
                   onClick={handleCreateMatch} 
                   disabled={isSubmitting}
-                  className="flex-1 bg-primary-container text-on-primary-container py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 bg-primary-container text-on-primary-container py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-on-primary-container border-t-transparent rounded-full animate-spin"></div>
