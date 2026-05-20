@@ -138,7 +138,7 @@ function MyMatchesContent() {
         </div>
         <button 
           onClick={() => setShowModal(true)}
-          className="relative z-50 bg-primary-container text-on-primary-container px-8 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-2"
+          className="relative z-50 bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-2"
         >
           <span className="material-symbols-outlined">add</span>
           New Match
@@ -318,7 +318,7 @@ function MyMatchesContent() {
                 <button 
                   onClick={handleCreateMatch} 
                   disabled={isSubmitting}
-                  className="flex-1 bg-primary-container text-on-primary-container py-4 rounded-xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-1 bg-primary-container text-on-primary-container py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <div className="w-4 h-4 border-2 border-on-primary-container border-t-transparent rounded-full animate-spin"></div>

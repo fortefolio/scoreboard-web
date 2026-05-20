@@ -297,7 +297,7 @@ function HomeContent() {
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button 
                       onClick={() => setAuthModal("signup")}
-                      className="bg-primary-container text-on-primary-container px-8 py-4 rounded-xl font-black uppercase tracking-widest text-sm hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95"
+                      className="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-black uppercase tracking-widest text-sm hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95"
                     >
                       Create Your Tournament
                     </button>
@@ -447,7 +447,7 @@ function HomeContent() {
                   </ul>
                   <button 
                     onClick={() => setAuthModal("signup")}
-                    className="w-full py-4 rounded-xl bg-primary-container text-on-primary-container font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
+                    className="w-full py-4 rounded-full bg-primary-container text-on-primary-container font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
                   >
                     Register Team
                   </button>
@@ -686,7 +686,7 @@ function HomeContent() {
                 <button 
                   onClick={() => handleAuth(authModal as any)}
                   disabled={isSubmitting}
-                  className="w-full h-14 rounded-xl bg-primary-container/80 hover:bg-primary-container backdrop-blur-md text-on-primary-container font-headline font-bold text-lg tracking-wide transition-all shadow-[0_0_15px_rgba(195,192,255,0.1)] hover:shadow-[0_0_20px_rgba(195,192,255,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3" 
+                  className="w-full h-14 rounded-full bg-primary-container/80 hover:bg-primary-container backdrop-blur-md text-on-primary-container font-headline font-bold text-lg tracking-wide transition-all shadow-[0_0_15px_rgba(195,192,255,0.1)] hover:shadow-[0_0_20px_rgba(195,192,255,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3" 
                   type="button"
                 >
                   {isSubmitting ? (
