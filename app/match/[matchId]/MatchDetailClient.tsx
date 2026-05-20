@@ -24,10 +24,70 @@ const getSportIcon = (sport?: string) => {
   switch (sport) {
     case "Volleyball":
       return "sports_volleyball";
+    case "Football":
+      return "sports_soccer";
     case "Tennis":
     default:
       return "sports_tennis";
   }
+};
+
+const CountdownTimer = ({ scheduledAt }: { scheduledAt?: string }) => {
+  const [timeLeft, setTimeLeft] = useState<string>("00:00:00");
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (!scheduledAt) {
+      setTimeLeft("STARTING");
+      setIsReady(true);
+      return;
+    }
+    
+    const target = new Date(scheduledAt).getTime();
+    if (isNaN(target)) {
+      setTimeLeft("STARTING");
+      setIsReady(true);
+      return;
+    }
+
+    const update = () => {
+      const now = new Date().getTime();
+      const diff = target - now;
+
+      if (diff <= 0) {
+        setTimeLeft("00:00:00");
+        setIsReady(true);
+        return;
+      }
+
+      const h = Math.floor(diff / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+      setTimeLeft(
+        `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+      );
+      setIsReady(true);
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [scheduledAt]);
+
+  return (
+    <div className="flex flex-col items-center">
+      <div className="font-label text-[12px] sm:text-[14px] font-black uppercase tracking-[0.4em] text-on-surface-variant/20 mb-3">vs</div>
+      <div className="bg-[#1a2035]/60 backdrop-blur-xl w-32 sm:w-56 py-3 sm:py-4 rounded-[1.25rem] border border-white/5 flex flex-col items-center shadow-[0_0_40px_-12px_rgba(0,0,0,0.5)]">
+        <div className="font-label text-[8px] font-black uppercase tracking-[0.3em] text-on-surface-variant/30 mb-1">
+          {timeLeft === "STARTING" ? "SOON" : "Starts In"}
+        </div>
+        <div className={`font-headline font-black tracking-tight text-on-surface ${timeLeft === "STARTING" ? "text-lg sm:text-xl pb-1" : "text-2xl sm:text-4xl"}`}>
+          {timeLeft}
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const renderLivePoint = (match: any, idx: number) => {
@@ -271,119 +331,127 @@ export default function MatchDetailClient() {
         </div>
 
         {/* HERO */}
-        <div className="relative bg-surface-container-low rounded-3xl p-6 sm:p-10 overflow-hidden">
+        <div className="relative bg-[#0c1324] rounded-[2.5rem] p-6 sm:p-12 overflow-hidden border border-white/5">
           <div
             aria-hidden
             className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(79,70,229,0.18), transparent 65%)" }}
+            style={{ 
+              background: `
+                radial-gradient(circle at 20% -10%, rgba(79,70,229,0.15), transparent 40%),
+                radial-gradient(circle at 80% -10%, rgba(16,185,129,0.1), transparent 40%),
+                radial-gradient(circle at 50% 110%, rgba(79,70,229,0.05), transparent 50%)
+              `
+            }}
           />
-          <div
-            aria-hidden
-            className="absolute inset-x-0 top-0 h-1/2 pointer-events-none opacity-40"
-            style={{ background: "linear-gradient(180deg, rgba(46,52,71,0.45), transparent)" }}
-          />
+          
+          {/* Stadium Light Glows */}
+          <div className="absolute top-0 left-1/4 w-32 h-1 bg-white/20 blur-2xl rounded-full" />
+          <div className="absolute top-0 right-1/4 w-32 h-1 bg-white/20 blur-2xl rounded-full" />
 
           <button
             onClick={handleShare}
             title="Share Match"
-            className="absolute top-5 left-5 z-10 w-9 h-9 rounded-xl bg-surface-container-high/70 backdrop-blur-md text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-all flex items-center justify-center"
+            className="absolute top-6 left-6 z-10 w-10 h-10 rounded-2xl bg-white/5 backdrop-blur-md text-on-surface-variant hover:text-on-surface hover:bg-white/10 border border-white/10 transition-all flex items-center justify-center"
           >
-            <span className="material-symbols-outlined text-[18px]">share</span>
+            <span className="material-symbols-outlined text-[20px]">share</span>
           </button>
 
-          <div className="absolute top-5 right-5 z-10">
+          <div className="absolute top-6 right-6 z-10">
             <span
-              className={`px-3 py-1.5 rounded-full font-label text-[10px] font-black uppercase tracking-widest backdrop-blur-md ${
+              className={`px-4 py-2 rounded-full font-label text-[10px] font-black uppercase tracking-widest backdrop-blur-md border border-white/10 ${
                 isCompleted
-                  ? "bg-secondary-container text-on-secondary-container"
+                  ? "bg-secondary-container/20 text-secondary"
                   : match.status === "ongoing"
-                  ? "bg-primary-container/80 text-on-primary-container"
-                  : "bg-surface-container-high text-on-surface-variant"
+                  ? "bg-primary-container/20 text-primary"
+                  : "bg-white/5 text-on-surface-variant"
               }`}
             >
               {match.status}
             </span>
           </div>
 
-          <div className="relative flex justify-center pt-2 mb-8 sm:mb-10">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-high/70 backdrop-blur-md">
-              <span className="material-symbols-outlined text-secondary text-[16px]">
+          <div className="relative flex justify-center pt-2 mb-12">
+            <div className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/5 backdrop-blur-md border border-white/10">
+              <span className="material-symbols-outlined text-secondary text-[18px]">
                 {getSportIcon(match.sport_type)}
               </span>
-              <span className="font-label text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant">
+              <span className="font-label text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/80">
                 {match.sport_type || "Tennis"}
                 {match.tournament_id && match.tournaments?.name ? ` • ${match.tournaments.name}` : ""}
               </span>
             </div>
           </div>
 
-          <div className="relative grid grid-cols-[1fr_auto_1fr] gap-3 sm:gap-6 items-center">
-            {/* Left mark */}
-            <div className="flex sm:justify-end justify-center">
-              <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-surface-container ring-1 ring-outline-variant/15 flex items-center justify-center">
-                {match.status === "scheduled" ? (
-                  <span className="font-headline font-black text-4xl sm:text-5xl text-on-surface-variant/50">
-                    {getInitials(match.participants?.[0]?.name)}
-                  </span>
+          <div className="relative flex flex-col items-center">
+            <div className="w-full grid grid-cols-[1fr_auto_1fr] gap-4 sm:gap-12 items-center mb-4">
+              {/* Left Team Box */}
+              <div className="flex flex-col items-center gap-6">
+                <div className="w-24 h-24 sm:w-44 sm:h-44 rounded-full bg-[#1a2035]/80 border-[4px] border-[#c3c0ff]/20 flex items-center justify-center shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] transition-transform hover:scale-[1.02]">
+                  {match.status === "scheduled" ? (
+                    <span className="font-headline font-black text-4xl sm:text-7xl text-on-surface-variant/70 tracking-tight">
+                      {getInitials(match.participants?.[0]?.name)}
+                    </span>
+                  ) : (
+                    <span className="font-label font-black text-5xl sm:text-8xl text-primary score-shadow-indigo">
+                      {sets[0]}
+                    </span>
+                  )}
+                  {match.status === "ongoing" && (
+                    <div className="absolute -top-3 -right-3 bg-primary-container text-on-primary-container font-label text-[12px] font-black w-11 h-11 rounded-full flex items-center justify-center ring-4 ring-[#0c1324] animate-pulse shadow-lg">
+                      {renderLivePoint(match, 0)}
+                    </div>
+                  )}
+                </div>
+                <h2 className="font-headline font-black uppercase text-xl sm:text-4xl text-center text-on-surface max-w-[140px] sm:max-w-[240px] leading-[1.1] tracking-tight">
+                  {match.participants?.[0]?.name || "TBD"}
+                </h2>
+              </div>
+
+              {/* Center - Countdown or VS */}
+              <div className="flex flex-col items-center justify-center min-w-[120px] sm:min-w-[280px]">
+                {match.status !== "ongoing" && match.status !== "completed" ? (
+                  <CountdownTimer scheduledAt={match.scheduled_at} />
                 ) : (
-                  <span className="font-label font-black text-5xl sm:text-6xl text-primary score-shadow-indigo">
-                    {sets[0]}
-                  </span>
-                )}
-                {match.status === "ongoing" && (
-                  <div className="absolute -top-2 -right-2 bg-primary-container text-on-primary-container font-label text-[11px] font-black w-9 h-9 rounded-full flex items-center justify-center ring-4 ring-surface-container-low animate-pulse">
-                    {renderLivePoint(match, 0)}
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="font-label text-[11px] font-bold lowercase tracking-[0.3em] text-on-surface-variant/30">vs</div>
+                    {match.status === "ongoing" && (
+                      <div className="px-4 py-2 rounded-full bg-primary-container/20 border border-primary/20 backdrop-blur-md flex items-center gap-2.5">
+                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        <span className="font-label text-[10px] font-black uppercase tracking-[0.25em] text-primary">LIVE</span>
+                      </div>
+                    )}
+                    {isCompleted && (
+                      <div className="px-4 py-2 rounded-full bg-secondary-container/20 border border-secondary/20 backdrop-blur-md">
+                        <span className="font-label text-[10px] font-black uppercase tracking-[0.25em] text-secondary">FINAL</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Center */}
-            <div className="flex flex-col items-center gap-2 min-w-[72px] sm:min-w-[100px]">
-              <div className="font-headline font-black text-2xl sm:text-3xl text-on-surface-variant/40">VS</div>
-              {match.status === "ongoing" && (
-                <div className="px-2.5 py-1 rounded-full bg-primary-container/30 backdrop-blur-md flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                  <span className="font-label text-[9px] font-black uppercase tracking-widest text-primary">LIVE</span>
+              {/* Right Team Box */}
+              <div className="flex flex-col items-center gap-6">
+                <div className="w-24 h-24 sm:w-44 sm:h-44 rounded-full bg-[#1a2035]/80 border-[4px] border-[#4edea3]/20 flex items-center justify-center shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] transition-transform hover:scale-[1.02]">
+                  {match.status === "scheduled" ? (
+                    <span className="font-headline font-black text-4xl sm:text-7xl text-secondary tracking-tight">
+                      {getInitials(match.participants?.[1]?.name)}
+                    </span>
+                  ) : (
+                    <span className="font-label font-black text-5xl sm:text-8xl text-primary score-shadow-indigo">
+                      {sets[1]}
+                    </span>
+                  )}
+                  {match.status === "ongoing" && (
+                    <div className="absolute -top-3 -right-3 bg-primary-container text-on-primary-container font-label text-[12px] font-black w-11 h-11 rounded-full flex items-center justify-center ring-4 ring-[#0c1324] animate-pulse shadow-lg">
+                      {renderLivePoint(match, 1)}
+                    </div>
+                  )}
                 </div>
-              )}
-              {isCompleted && (
-                <div className="px-2.5 py-1 rounded-full bg-secondary-container/40 backdrop-blur-md">
-                  <span className="font-label text-[9px] font-black uppercase tracking-widest text-secondary">FINAL</span>
-                </div>
-              )}
-            </div>
-
-            {/* Right mark */}
-            <div className="flex sm:justify-start justify-center">
-              <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-surface-container ring-1 ring-outline-variant/15 flex items-center justify-center">
-                {match.status === "scheduled" ? (
-                  <span className="font-headline font-black text-4xl sm:text-5xl text-secondary/60">
-                    {getInitials(match.participants?.[1]?.name)}
-                  </span>
-                ) : (
-                  <span className="font-label font-black text-5xl sm:text-6xl text-primary score-shadow-indigo">
-                    {sets[1]}
-                  </span>
-                )}
-                {match.status === "ongoing" && (
-                  <div className="absolute -top-2 -right-2 bg-primary-container text-on-primary-container font-label text-[11px] font-black w-9 h-9 rounded-full flex items-center justify-center ring-4 ring-surface-container-low animate-pulse">
-                    {renderLivePoint(match, 1)}
-                  </div>
-                )}
+                <h2 className="font-headline font-black uppercase text-xl sm:text-4xl text-center text-on-surface max-w-[140px] sm:max-w-[240px] leading-[1.1] tracking-tight">
+                  {match.participants?.[1]?.name || "TBD"}
+                </h2>
               </div>
             </div>
-          </div>
-
-          <div className="relative grid grid-cols-2 gap-3 sm:gap-6 mt-6 sm:mt-8">
-            {[0, 1].map((idx) => (
-              <h2
-                key={idx}
-                className="font-headline font-black uppercase text-2xl sm:text-4xl leading-[0.95] text-center text-on-surface"
-              >
-                {match.participants?.[idx]?.name || "TBD"}
-              </h2>
-            ))}
           </div>
         </div>
 

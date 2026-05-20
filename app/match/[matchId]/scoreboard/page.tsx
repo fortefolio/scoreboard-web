@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import TennisScoreboard from "./TennisScoreboard";
 import VolleyballScoreboard from "./VolleyballScoreboard";
+import FootballScoreboard from "./FootballScoreboard";
 
 function ScoreboardContent() {
   const { matchId } = useParams();
@@ -110,6 +111,15 @@ function ScoreboardContent() {
            </p>
         </div>
       </div>
+    );
+  }
+
+  if (match.sport_type === 'Football') {
+    return (
+      <FootballScoreboard 
+        matchData={match} 
+        canEdit={canEdit} 
+      />
     );
   }
 
