@@ -67,7 +67,7 @@ export default function RootLayout({
             <TopNavBar />
           </Suspense>
           {children}
-          <Toaster richColors position="top-right" />
+          <Toaster richColors position="bottom-right" closeButton />
         </AuthProvider>
       </body>
     </html>

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import RuleModal from "@/components/RuleModal";
+import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 
 const getInitials = (name?: string) => {
   if (!name) return "?";
@@ -244,23 +245,12 @@ export default function MatchDetailClient() {
     if (error) {
       toast.error("Failed to appoint umpire: " + error.message);
     } else {
-      // Create notification for the umpire
-      await supabase
-        .from("notifications")
-        .insert({
-          user_id: selectedUser.id,
-          title: "Umpire Invitation",
-          body: `You have been invited to score the match between ${match?.participants?.[0]?.name || "TBD"} and ${match?.participants?.[1]?.name || "TBD"} in ${match?.tournaments?.name || "Independent Match"}.`,
-          data: { matchId: matchIdStr, type: 'umpire_assignment' }
-        });
-
       setMatch({ ...match, umpire_id: selectedUser.id, umpire: selectedUser });
       setUserSearch("");
       setSearchResults([]);
       toast.success(`${selectedUser.username} appointed as umpire!`);
     }
   };
-
   const handleSaveRules = async (sets: number, points: number, cap: number | null, court?: string | null) => {
     const newRules = { max_sets: sets, points_per_set: points, point_cap: cap };
     const { error } = await supabase
@@ -311,7 +301,11 @@ export default function MatchDetailClient() {
     </div>
   );
 
-  const sets = match.scores?.sets || [0, 0];
+  const setsData = extractSetsData(match.scores);
+  const sets = [
+    countSetsWon(setsData, 0),
+    countSetsWon(setsData, 1)
+  ];
   const isCompleted = match.status === 'completed';
 
   // Determine back tab

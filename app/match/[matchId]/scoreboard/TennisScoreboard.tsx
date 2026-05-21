@@ -3,14 +3,24 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { extractSetsData } from "@/lib/scoring/sets";
 
 const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
 
 export default function TennisScoreboard({ matchData }: { matchData: any }) {
+  const getInitialSets = (data: any) => {
+    const raw = extractSetsData(data.scores);
+
+    return Array.isArray(raw) ? raw.map((s: any) => ({
+      t1: s.team1 ?? s.home ?? 0,
+      t2: s.team2 ?? s.away ?? 0
+    })) : [];
+  };
+
   // Local state for snappy UI updates before Supabase sync
   const [points, setPoints] = useState(matchData.scores?.tennis?.points || [0, 0]);
   const [games, setGames] = useState(matchData.scores?.tennis?.games || [0, 0]); // Current set games
-  const [sets, setSets] = useState(matchData.scores?.set_scores || []);
+  const [sets, setSets] = useState(getInitialSets(matchData));
   const [serverIdx, setServerIdx] = useState<number | null>(matchData.scores?.serving_index ?? null);
   const [isTossing, setIsTossing] = useState(false);
 
@@ -19,7 +29,7 @@ export default function TennisScoreboard({ matchData }: { matchData: any }) {
     if (matchData.scores) {
       setPoints(matchData.scores.tennis?.points || [0, 0]);
       setGames(matchData.scores.tennis?.games || [0, 0]);
-      setSets(matchData.scores.set_scores || []);
+      setSets(getInitialSets(matchData));
       setServerIdx(matchData.scores.serving_index ?? null);
     }
   }, [matchData.scores]);
@@ -31,10 +41,19 @@ export default function TennisScoreboard({ matchData }: { matchData: any }) {
     
     const { error } = await supabase
       .from('match_events')
-      .insert([{
-        match_id: matchData.id,
-        event_data: { type: 'start_scoreboard', initial_server_index: selectedIdx }
-      }]);
+      .insert([
+        {
+          match_id: matchData.id,
+          event_data: { type: 'start_scoreboard' }
+        },
+        {
+          match_id: matchData.id,
+          event_data: { 
+            type: 'toss_coin', 
+            winner_index: selectedIdx 
+          }
+        }
+      ]);
     
     if (error) {
       console.error("Error starting scoreboard:", error);
