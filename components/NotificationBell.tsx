@@ -1,34 +1,38 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
+import { useNotifications } from "@/lib/hooks/useNotifications";
+
+const getRelativeTime = (dateString: string) => {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+  if (diffInMinutes < 1) return "Just now";
+  if (diffInMinutes < 60) return `${diffInMinutes} mins`;
+  
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} hours`;
+  
+  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+};
 
 export default function NotificationBell() {
   const { user, supabase } = useAuth();
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { 
+    notifications, 
+    unreadCount, 
+    markAsRead, 
+    markAllAsRead,
+    handleInvitation
+  } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const fetchNotifications = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from("notifications")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(10);
-
-    if (data) {
-      setNotifications(data);
-      setUnreadCount(data.filter(n => !n.read_at).length);
-    }
-  }, [supabase]);
-
   useEffect(() => {
-    if (user) fetchNotifications(user.id);
-
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -36,68 +40,7 @@ export default function NotificationBell() {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [user, fetchNotifications]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const channel = supabase
-      .channel(`user-notifications-${user.id}`)
-      .on('postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'notifications',
-          filter: `user_id=eq.${user.id}`,
-        },
-        (payload) => {
-          setNotifications(prev => [payload.new, ...prev]);
-          setUnreadCount(prev => prev + 1);
-          toast.info(`New Notification: ${payload.new.title}`);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, supabase]);
-
-  const markAsRead = async (notificationId: string) => {
-    if (!user) return;
-    const { error } = await supabase
-      .from("notifications")
-      .update({ read_at: new Date().toISOString() })
-      .eq("id", notificationId)
-      .eq("user_id", user.id);
-
-    if (!error) {
-      setNotifications(prev => 
-        prev.map(n => n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n)
-      );
-      setUnreadCount(prev => Math.max(0, prev - 1));
-    } else {
-      console.error("Error marking notification as read:", error);
-      toast.error("Failed to update notification");
-    }
-  };
-
-  const markAllAsRead = async () => {
-    if (!user) return;
-    const { error } = await supabase
-      .from("notifications")
-      .update({ read_at: new Date().toISOString() })
-      .eq("user_id", user.id)
-      .is("read_at", null);
-
-    if (!error) {
-      setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
-      setUnreadCount(0);
-    } else {
-      console.error("Error marking all notifications as read:", error);
-      toast.error("Failed to update notifications");
-    }
-  };
+  }, []);
 
   if (!user) return null;
 
@@ -116,71 +59,121 @@ export default function NotificationBell() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-            <h3 className="text-xs font-black uppercase tracking-widest text-white">Notifications</h3>
+        <div className="absolute right-0 mt-4 w-[360px] bg-[#0c1324] border border-white/5 rounded-3xl shadow-2xl z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="p-6 flex justify-between items-center bg-[#0c1324]/50 backdrop-blur-md">
+            <h3 className="text-xl font-headline font-black text-white italic uppercase tracking-tight">Notifications</h3>
             {unreadCount > 0 && (
               <button 
                 onClick={markAllAsRead}
-                className="text-[10px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors uppercase tracking-tighter"
+                className="text-[10px] font-black text-primary hover:text-primary/80 transition-colors uppercase tracking-[0.15em]"
               >
                 Mark all as read
               </button>
             )}
           </div>
 
-          <div className="max-h-96 overflow-y-auto">
+          <div className="max-h-[480px] overflow-y-auto px-4 pb-4 space-y-3">
             {notifications.length > 0 ? (
-              notifications.map((n) => (
-                <div 
-                  key={n.id} 
-                  className={`p-4 border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors relative group ${!n.read_at ? 'bg-indigo-500/5' : ''}`}
-                >
-                  <div className="flex justify-between items-start mb-1">
-                    <h4 className={`text-sm font-bold ${!n.read_at ? 'text-white' : 'text-slate-300'}`}>{n.title}</h4>
-                    {!n.read_at && (
-                      <div className="w-2 h-2 bg-indigo-500 rounded-full mt-1"></div>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-400 mb-3 leading-relaxed">{n.body}</p>
-                  
-                  {n.data?.matchId && (
-                    <Link 
-                      href={`/match/${n.data.matchId}`}
-                      onClick={() => {
-                        markAsRead(n.id);
-                        setIsOpen(false);
-                      }}
-                      className="mb-3 inline-flex items-center gap-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all"
-                    >
-                      <span className="material-symbols-outlined text-xs">sports_tennis</span>
-                      Enter Match Center
-                    </Link>
-                  )}
+              notifications.map((n) => {
+                const data = n.data || {};
+                const matchId = data.match_id || data.matchId;
+                const type = data.type || '';
+                const isInvitation = type.includes('umpire') && (type.includes('invitation') || type.includes('assignment'));
+                const matchDetails = data.match_details || {};
+                
+                return (
+                  <div 
+                    key={n.id} 
+                    className={`p-4 rounded-2xl border border-white/5 bg-[#151b2d]/40 transition-all relative group ${!n.read_at ? 'ring-1 ring-primary/20 bg-[#151b2d]/80 shadow-lg shadow-primary/5' : 'opacity-60'}`}
+                  >
+                    {/* Top Row: Badge & Action Icons */}
+                    <div className="flex justify-between items-center mb-3">
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${isInvitation ? 'bg-primary/20 text-primary border border-primary/20' : 'bg-slate-700/30 text-slate-400 border border-white/5'}`}>
+                        {isInvitation ? 'Umpire Invitation' : 'Match Update'}
+                      </span>
+                      
+                      <div className="flex items-center gap-2">
+                        {isInvitation && !n.read_at && (
+                          <>
+                            <button 
+                              onClick={() => handleInvitation(n.id, matchId, 'accept')}
+                              title="Accept"
+                              className="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center transition-all hover:bg-emerald-500 hover:text-white border border-emerald-500/20"
+                            >
+                              <span className="material-symbols-outlined text-[14px]">check</span>
+                            </button>
+                            <button 
+                              onClick={() => handleInvitation(n.id, matchId, 'refuse')}
+                              title="Decline"
+                              className="w-6 h-6 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center transition-all hover:bg-rose-500 hover:text-white border border-rose-500/20"
+                            >
+                              <span className="material-symbols-outlined text-[14px]">close</span>
+                            </button>
+                          </>
+                        )}
+                        {!isInvitation && !n.read_at && (
+                          <button 
+                            onClick={() => markAsRead(n.id)}
+                            className="w-6 h-6 rounded-full bg-white/5 text-slate-500 flex items-center justify-center hover:text-white hover:bg-white/10 transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">info</span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
 
-                  <div className="flex justify-end items-center">
-                    <span className="text-[9px] text-slate-600 font-bold uppercase">
-                      {new Date(n.created_at).toLocaleDateString()}
-                    </span>
+                    {/* Middle Row: Content */}
+                    <h4 className="text-[15px] font-black text-white leading-tight mb-2 tracking-tight">
+                      {isInvitation ? (matchDetails.teams || n.title) : n.title}
+                    </h4>
+
+                    {/* Bottom Row: Info & CTA */}
+                    <div className="flex justify-between items-end">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-slate-500 tracking-wider">
+                          <span className="material-symbols-outlined text-[12px]">{isInvitation ? 'calendar_today' : 'schedule'}</span>
+                          {isInvitation 
+                            ? (matchDetails.scheduled_at 
+                                ? new Date(matchDetails.scheduled_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+                                : new Date(n.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                              )
+                            : getRelativeTime(n.created_at)
+                          }
+                        </div>
+                      </div>
+                      
+                      {matchId && (
+                        <Link 
+                          href={`/match/${matchId}`}
+                          onClick={() => {
+                            if (!n.read_at) markAsRead(n.id);
+                            setIsOpen(false);
+                          }}
+                          className="text-[9px] font-black uppercase tracking-[0.2em] text-primary hover:text-primary/80 transition-colors bg-primary/5 px-3 py-1 rounded-md border border-primary/10"
+                        >
+                          {isInvitation ? 'Details' : 'Live Feed'}
+                        </Link>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
-              <div className="p-12 text-center">
-                <span className="material-symbols-outlined text-4xl text-slate-700 mb-2">notifications_off</span>
-                <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">No notifications yet</p>
+              <div className="py-20 text-center">
+                <span className="material-symbols-outlined text-5xl text-white/5 mb-3">notifications_off</span>
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em]">No activity detected</p>
               </div>
             )}
           </div>
 
           {notifications.length > 0 && (
-            <div className="p-3 bg-slate-900/80 text-center border-t border-slate-800">
+            <div className="p-6 bg-[#0c1324]/80 backdrop-blur-md border-t border-white/5 text-center">
                <Link 
                  href="/notifications" 
                  onClick={() => setIsOpen(false)}
-                 className="text-[10px] text-indigo-400 hover:text-indigo-300 font-black uppercase tracking-[0.2em] transition-colors"
+                 className="text-[11px] text-slate-400 hover:text-white font-black uppercase tracking-[0.3em] transition-colors"
                >
-                 See all notifications
+                 View all notifications
                </Link>
             </div>
           )}
