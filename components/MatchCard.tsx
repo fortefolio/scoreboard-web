@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { countSetsWon } from "@/lib/scoring/sets";
+import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import Link from "next/link";
 
 const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
@@ -55,7 +55,12 @@ export default function MatchCard({ match }: { match: any }) {
     return () => clearInterval(interval);
   }, [isOngoing, match.scheduled_at]);
 
-  const setScores = match.scores?.set_scores || [];
+  const rawSetData = extractSetsData(match.scores);
+  const setScores = Array.isArray(rawSetData) ? rawSetData.map((s: any) => ({
+    t1: s.team1 ?? s.home ?? 0,
+    t2: s.team2 ?? s.away ?? 0
+  })) : [];
+
   const currentGames = match.scores?.tennis?.games || [0, 0];
   const currentSetNum = setScores.length + (isOngoing ? 1 : 0);
 

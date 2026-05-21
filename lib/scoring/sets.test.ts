@@ -1,6 +1,66 @@
 import { describe, expect, it } from "vitest";
 import fc from "fast-check";
-import { countSetsWon } from "./sets";
+import { countSetsWon, extractSetsData } from "./sets";
+
+describe("extractSetsData — priority logic", () => {
+  it("prioritizes non-empty tennis.sets over non-empty set_scores", () => {
+    const scores = {
+      tennis: { sets: [{ home: 6, away: 2 }] },
+      set_scores: [{ team1: 0, team2: 0 }]
+    };
+    const result = extractSetsData(scores);
+    expect(result).toEqual([{ home: 6, away: 2 }]);
+  });
+
+  it("prioritizes non-empty tennis.sets over non-empty sets", () => {
+    const scores = {
+      tennis: { sets: [{ home: 6, away: 2 }] },
+      sets: [0, 0]
+    };
+    const result = extractSetsData(scores);
+    expect(result).toEqual([{ home: 6, away: 2 }]);
+  });
+
+  it("skips empty tennis.sets and falls back to set_scores", () => {
+    const scores = {
+      tennis: { sets: [] },
+      set_scores: [{ team1: 6, team2: 4 }]
+    };
+    const result = extractSetsData(scores);
+    expect(result).toEqual([{ team1: 6, team2: 4 }]);
+  });
+
+  it("skips empty tennis.sets and set_scores and falls back to sets", () => {
+    const scores = {
+      tennis: { sets: [] },
+      set_scores: [],
+      sets: [2, 1]
+    };
+    const result = extractSetsData(scores);
+    expect(result).toEqual([2, 1]);
+  });
+
+  it("returns an empty array if all relevant fields are empty or missing", () => {
+    expect(extractSetsData({})).toEqual([]);
+    expect(extractSetsData({ tennis: { sets: [] }, sets: [] })).toEqual([]);
+    expect(extractSetsData(null)).toEqual([]);
+  });
+
+  it("handles the reported bug scenario (empty sets + populated tennis.sets)", () => {
+    const scores = {
+      sets: [],
+      tennis: {
+        sets: [{ away: 6, home: 2 }],
+        games: [0, 0],
+        points: [0, 0]
+      }
+    };
+    const result = extractSetsData(scores);
+    expect(result).toEqual([{ away: 6, home: 2 }]);
+    expect(countSetsWon(result, 0)).toBe(0); // home: 2, away: 6 -> home (side 0) loses
+    expect(countSetsWon(result, 1)).toBe(1); // home: 2, away: 6 -> away (side 1) wins
+  });
+});
 
 describe("countSetsWon — boundaries", () => {
   it("returns 0 for null / undefined / non-array input", () => {
