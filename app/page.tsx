@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -27,6 +27,46 @@ function HomeContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const tournamentCarouselRef = useRef<HTMLDivElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+  const [showTLeftArrow, setShowTLeftArrow] = useState(false);
+  const [showTRightArrow, setShowTRightArrow] = useState(false);
+
+  const updateScrollButtons = useCallback(() => {
+    if (!carouselRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+    setShowLeftArrow(scrollLeft > 0);
+    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 5);
+  }, []);
+
+  const updateTScrollButtons = useCallback(() => {
+    if (!tournamentCarouselRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = tournamentCarouselRef.current;
+    setShowTLeftArrow(scrollLeft > 0);
+    setShowTRightArrow(scrollLeft < scrollWidth - clientWidth - 5);
+  }, []);
+
+  useEffect(() => {
+    updateScrollButtons();
+    updateTScrollButtons();
+    window.addEventListener('resize', updateScrollButtons);
+    window.addEventListener('resize', updateTScrollButtons);
+    return () => {
+      window.removeEventListener('resize', updateScrollButtons);
+      window.removeEventListener('resize', updateTScrollButtons);
+    };
+  }, [liveMatches, featuredTournaments, updateScrollButtons, updateTScrollButtons]);
+
+  const scroll = (direction: 'left' | 'right', ref: React.RefObject<HTMLDivElement | null>) => {
+    if (!ref.current) return;
+    const amount = 288 + 24; // Card width + gap
+    ref.current.scrollBy({ 
+      left: direction === 'left' ? -amount : amount, 
+      behavior: 'smooth' 
+    });
+  };
 
   const [authModal, setAuthModal] = useState<"login" | "signup" | null>(null);
 
@@ -162,11 +202,35 @@ function HomeContent() {
               </div>
             </div>
             
-            <div className="flex gap-6 overflow-x-auto px-8 pb-8 no-scrollbar scroll-smooth">
-              {liveMatches.length > 0 ? liveMatches.map((match) => (
-                <MatchCard key={match.id} match={match} />
-              )) : (
-                <div className="w-full text-center py-10 opacity-30 font-black uppercase tracking-widest text-xs">No live matches at the moment</div>
+            <div className="max-w-7xl mx-auto relative group/carousel">
+              <div 
+                ref={carouselRef}
+                onScroll={updateScrollButtons}
+                className="flex gap-6 overflow-x-auto px-8 pb-8 no-scrollbar scroll-smooth"
+              >
+                {liveMatches.length > 0 ? liveMatches.map((match) => (
+                  <MatchCard key={match.id} match={match} />
+                )) : (
+                  <div className="w-full text-center py-10 opacity-30 font-black uppercase tracking-widest text-xs">No live matches at the moment</div>
+                )}
+              </div>
+
+              {/* Navigation Arrows */}
+              {liveMatches.length > 0 && (
+                <>
+                  <button 
+                    onClick={() => scroll('left', carouselRef)}
+                    className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-[#151b2d]/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-all hover:bg-primary/20 hover:border-primary/30 ${showLeftArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                  >
+                    <span className="material-symbols-outlined">chevron_left</span>
+                  </button>
+                  <button 
+                    onClick={() => scroll('right', carouselRef)}
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-[#151b2d]/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-all hover:bg-primary/20 hover:border-primary/30 ${showRightArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                  >
+                    <span className="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </>
               )}
             </div>
           </section>
@@ -180,29 +244,55 @@ function HomeContent() {
               </div>
             </div>
             
-            <div className="flex gap-8 overflow-x-auto px-8 pb-8 no-scrollbar scroll-smooth">
-              {featuredTournaments.length > 0 ? featuredTournaments.map((t) => (
-                <Link key={t.id} href={`/tournament/${t.id}`} className="min-w-[400px] group">
-                  <div className="bg-surface-container-low p-8 rounded-[2.5rem] border border-outline-variant/10 group-hover:border-primary/40 transition-all duration-500 shadow-2xl relative overflow-hidden h-[240px] flex flex-col justify-between">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-                    <div>
-                      <div className="flex justify-between items-start mb-4">
-                        <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[9px] font-black uppercase tracking-widest">{t.sport_type}</span>
-                        <span className="text-on-surface-variant text-[9px] font-black uppercase tracking-widest opacity-50">{t.status}</span>
+            <div className="max-w-7xl mx-auto relative group/carousel">
+              <div 
+                ref={tournamentCarouselRef}
+                onScroll={updateTScrollButtons}
+                className="flex gap-6 overflow-x-auto px-8 pb-8 no-scrollbar scroll-smooth"
+              >
+                {featuredTournaments.length > 0 ? featuredTournaments.map((t) => (
+                  <Link key={t.id} href={`/tournament/${t.id}`} className="w-full max-w-[288px] group shrink-0">
+                    <div className="bg-[#151b2d]/80 backdrop-blur-xl p-6 rounded-2xl border border-white/5 group-hover:border-primary/40 transition-all duration-500 shadow-2xl relative overflow-hidden h-[240px] flex flex-col justify-between group-hover:scale-[1.01]">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+                      <div>
+                        <div className="flex justify-between items-start mb-4">
+                          <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[8px] font-black uppercase tracking-widest border border-primary/10">
+                            {t.sport_type}
+                          </span>
+                          <span className="text-on-surface-variant text-[8px] font-black uppercase tracking-widest opacity-40 italic">{t.status}</span>
+                        </div>
+                        <h3 className="text-xl font-black text-on-surface group-hover:text-primary transition-colors line-clamp-2 uppercase tracking-tighter italic leading-[1.1]">{t.name}</h3>
                       </div>
-                      <h3 className="text-2xl font-black text-on-surface group-hover:text-primary transition-colors line-clamp-2 uppercase tracking-tighter italic">{t.name}</h3>
-                    </div>
-                    <div className="flex items-center justify-between text-on-surface-variant">
-                      <div className="flex items-center gap-2">
-                        <span className="material-symbols-outlined text-sm">groups</span>
-                        <span className="text-[10px] font-black uppercase tracking-widest">{t.settings?.max_teams || 16} Teams Max</span>
+                      <div className="flex items-center justify-between text-on-surface-variant">
+                        <div className="flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[14px] text-primary/60">groups</span>
+                          <span className="text-[9px] font-black uppercase tracking-widest opacity-60">{t.settings?.max_teams || 16} Teams Max</span>
+                        </div>
+                        <span className="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform text-[18px]">arrow_forward</span>
                       </div>
-                      <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
                     </div>
-                  </div>
-                </Link>
-              )) : (
-                <div className="w-full text-center py-10 opacity-30 font-black uppercase tracking-widest text-xs italic">Synchronizing tournament data...</div>
+                  </Link>
+                )) : (
+                  <div className="w-full text-center py-10 opacity-30 font-black uppercase tracking-widest text-xs italic">Synchronizing tournament data...</div>
+                )}
+              </div>
+
+              {/* Navigation Arrows */}
+              {featuredTournaments.length > 0 && (
+                <>
+                  <button 
+                    onClick={() => scroll('left', tournamentCarouselRef)}
+                    className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-[#151b2d]/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-all hover:bg-primary/20 hover:border-primary/30 ${showTLeftArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                  >
+                    <span className="material-symbols-outlined">chevron_left</span>
+                  </button>
+                  <button 
+                    onClick={() => scroll('right', tournamentCarouselRef)}
+                    className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-[#151b2d]/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-all hover:bg-primary/20 hover:border-primary/30 ${showTRightArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                  >
+                    <span className="material-symbols-outlined">chevron_right</span>
+                  </button>
+                </>
               )}
             </div>
           </section>

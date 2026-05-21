@@ -140,3 +140,11 @@ body {
 .score-shadow-emerald {
   text-shadow: 0 0 40px rgba(16, 185, 129, 0.4);
 }
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
