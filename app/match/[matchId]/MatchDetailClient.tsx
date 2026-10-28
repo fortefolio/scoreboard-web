@@ -174,7 +174,7 @@ export default function MatchDetailClient() {
         if (mData.umpire_id) {
           const { data: uData } = await supabase
             .from("users")
-            .select("id, username, email")
+            .select("id, username")
             .eq("id", mData.umpire_id)
             .single();
           umpireData = uData;
@@ -185,7 +185,7 @@ export default function MatchDetailClient() {
         if (ownerId) {
           const { data: oData } = await supabase
             .from("users")
-            .select("id, username, email")
+            .select("id, username")
             .eq("id", ownerId)
             .single();
           organizerData = oData;
@@ -318,11 +318,9 @@ export default function MatchDetailClient() {
       }
 
       setIsSearching(true);
-      const { data, error } = await supabase
-        .from("users")
-        .select("id, username, email")
-        .or(`username.ilike.%${userSearch}%,email.ilike.%${userSearch}%`)
-        .limit(5);
+      const { data, error } = await supabase.rpc("search_umpires", {
+        p_query: userSearch.trim()
+      });
 
       if (!error && data) {
         setSearchResults(data);
