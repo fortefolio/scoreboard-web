@@ -290,7 +290,7 @@ function HomeContent() {
         return true;
       })
       .sort((a, b) => {
-        const dateA = new Date(t.start_date || t.created_at).getTime();
+        const dateA = new Date(a.start_date || a.created_at).getTime();
         const dateB = new Date(b.start_date || b.created_at).getTime();
         return dateSort === "desc" ? dateB - dateA : dateA - dateB;
       });

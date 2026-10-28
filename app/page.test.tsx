@@ -285,6 +285,60 @@ describe("Home — auth errors", () => {
   });
 });
 
+describe("Home — tabs & tournaments sorting", () => {
+  beforeEach(resetState);
+
+  it("renders tournaments tab and sorts without runtime reference errors", async () => {
+    supabaseMock.__queueResponse("matches", {
+      data: [
+        {
+          id: "m1",
+          sport_type: "Tennis",
+          status: "ongoing",
+          participants: [{ name: "Alpha" }, { name: "Beta" }],
+          created_at: new Date().toISOString(),
+        },
+      ],
+      error: null,
+    });
+    supabaseMock.__queueResponse("tournaments", {
+      data: [
+        {
+          id: "t1",
+          name: "Championship Alpha",
+          sport_type: "Tennis",
+          status: "scheduled",
+          start_date: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+        },
+        {
+          id: "t2",
+          name: "Championship Beta",
+          sport_type: "Basketball",
+          status: "ongoing",
+          start_date: new Date(Date.now() - 10000).toISOString(),
+          created_at: new Date(Date.now() - 10000).toISOString(),
+        },
+      ],
+      error: null,
+    });
+
+    const user = userEvent.setup();
+    await renderHome();
+
+    // Switch to tournaments tab
+    const tournamentsBtn = screen.getByRole("button", { name: /Torneios/i });
+    expect(tournamentsBtn).toBeInTheDocument();
+    await user.click(tournamentsBtn);
+
+    // Tournaments should render in the list
+    await waitFor(() => {
+      expect(screen.getByText("Championship Alpha")).toBeInTheDocument();
+      expect(screen.getByText("Championship Beta")).toBeInTheDocument();
+    });
+  });
+});
+
 describe("Home — modal toggling", () => {
   beforeEach(resetState);
 
@@ -300,3 +354,4 @@ describe("Home — modal toggling", () => {
     expect(screen.getByPlaceholderText(/choose a username/i)).toBeInTheDocument();
   });
 });
+
