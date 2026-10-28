@@ -213,7 +213,7 @@ export default function UserProfilePage({
   const displayName = targetUser?.username || (targetUser?.email ? targetUser.email.split("@")[0] : rawParam);
 
   return (
-    <div className="min-h-screen bg-background text-on-surface py-8 px-4 sm:px-8 max-w-7xl mx-auto">
+    <div className="w-full min-h-screen bg-background text-on-surface py-8 px-4 sm:px-8 max-w-7xl mx-auto">
       {/* Top back navigation */}
       <button
         onClick={() => router.back()}

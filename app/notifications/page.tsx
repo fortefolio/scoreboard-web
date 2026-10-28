@@ -46,7 +46,7 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen bg-background text-on-background font-body">
-      <main className="pt-12 pb-20 px-6 max-w-7xl mx-auto">
+      <main className="w-full pt-12 pb-20 px-6 max-w-7xl mx-auto">
         <header className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-12">
           <div>
             <h1 className="text-4xl sm:text-6xl font-black tracking-tighter mb-2 italic uppercase">Notifications</h1>
