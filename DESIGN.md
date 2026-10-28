@@ -1,7 +1,7 @@
-# Design System Documentation: The Kinetic Vault
+# Design System Documentation: ScoreBoard
 
-## 1. Overview & Creative North Star: "The Kinetic Vault"
-This design system is engineered for high-velocity sports analytics. The Creative North Star is **"The Kinetic Vault"**—a space that feels like an elite, high-performance command center. We are moving away from the "generic dashboard" look. Instead of a flat grid of widgets, we treat the UI as a deep, atmospheric environment where data isn't just displayed; it is showcased.
+## 1. Overview & Creative North Star: "ScoreBoard"
+This design system is engineered for high-velocity sports analytics. The Creative North Star is **"ScoreBoard"**—a space that feels like an elite, high-performance command center. We are moving away from the "generic dashboard" look. Instead of a flat grid of widgets, we treat the UI as a deep, atmospheric environment where data isn't just displayed; it is showcased.
 
 To break the "template" feel, we utilize **Intentional Asymmetry**. Large-scale typography (Display-LG) should overlap container edges, and data visualizations should bleed into the background gradients. We avoid rigid boxes in favor of layered surfaces that suggest a physical depth of information.
 

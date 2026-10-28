@@ -50,7 +50,7 @@ export default function NotificationsPage() {
         <header className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-12">
           <div>
             <h1 className="text-4xl sm:text-6xl font-black tracking-tighter mb-2 italic uppercase">Notifications</h1>
-            <p className="text-on-surface-variant font-label text-xs uppercase tracking-[0.3em] opacity-60">Your Kinetic Vault activity stream</p>
+            <p className="text-on-surface-variant font-label text-xs uppercase tracking-[0.3em] opacity-60">Your activity stream</p>
           </div>
           {notifications.length > 0 && (
             <div className="flex items-center gap-3">
@@ -196,7 +196,7 @@ export default function NotificationsPage() {
               <div className="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="material-symbols-outlined text-4xl text-slate-700">notifications_off</span>
               </div>
-              <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest">Quiet in the vault</h2>
+              <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest">No notifications</h2>
               <p className="text-slate-600 text-xs font-bold uppercase tracking-tighter mt-2">No activity detected at the moment.</p>
             </div>
           ) : (

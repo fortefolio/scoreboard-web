@@ -110,7 +110,7 @@ function ScoreboardContent() {
               <span className="font-label text-[10px] font-black uppercase tracking-widest">Secure Umpire Link</span>
            </div>
            <p className="text-on-surface-variant text-[11px] leading-relaxed">
-             This scoreboard is linked directly to the Kinetic Vault pulse feed. Every point update will be broadcasted to all followers in real-time.
+             This scoreboard is linked directly to the live feed. Every point update will be broadcasted to all followers in real-time.
            </p>
         </div>
       </div>

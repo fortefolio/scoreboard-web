@@ -842,7 +842,7 @@ function TournamentContent() {
                   <div className="p-8 rounded-[2rem] bg-error-container/10 border border-error-container/20">
                     <h3 className="text-xl font-bold text-error mb-2">Danger Zone</h3>
                     <p className="text-on-surface-variant text-sm mb-8 leading-relaxed">
-                      Deleting a tournament is a permanent action. All matches, team rosters, and historical scores will be erased from the Kinetic Vault scoring engine.
+                      Deleting a tournament is a permanent action. All matches, team rosters, and historical scores will be erased permanently.
                     </p>
                     <button 
                       onClick={() => setIsDeleteModalOpen(true)}
@@ -929,7 +929,7 @@ function TournamentContent() {
                 <div>
                   <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3">Team or Player Name <span className="text-primary">*</span></label>
                   <div className="w-full px-6 py-5 bg-surface-container-low rounded-2xl border border-outline-variant/10 text-on-surface font-bold text-lg opacity-60">
-                    Kinetic Vault Elite
+                    Lisbon Masters
                   </div>
                 </div>
 
@@ -989,7 +989,7 @@ function TournamentContent() {
       )}
 
       <footer className="mt-auto py-12 border-t border-outline-variant/10 text-center opacity-50">
-        <p className="font-label text-[10px] uppercase tracking-[0.5em] text-on-surface-variant">Kinetic Vault Scoring Engine • v2.4.1</p>
+        <p className="font-label text-[10px] uppercase tracking-[0.5em] text-on-surface-variant">ScoreBoard Scoring Engine • v2.4.1</p>
       </footer>
     </div>
   );
