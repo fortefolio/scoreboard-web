@@ -30,8 +30,13 @@ vi.mock("@/lib/supabase", () => ({
 
 const toastInfo = vi.fn();
 const toastError = vi.fn();
+const toastSuccess = vi.fn();
 vi.mock("sonner", () => ({
-  toast: { info: (...args: unknown[]) => toastInfo(...args), error: (...args: unknown[]) => toastError(...args) },
+  toast: {
+    info: (...args: unknown[]) => toastInfo(...args),
+    error: (...args: unknown[]) => toastError(...args),
+    success: (...args: unknown[]) => toastSuccess(...args),
+  },
 }));
 
 import { AuthProvider } from "./AuthProvider";
@@ -61,6 +66,7 @@ describe("NotificationBell — guest", () => {
     supabaseMock.__resetResponses();
     toastInfo.mockClear();
     toastError.mockClear();
+    toastSuccess.mockClear();
   });
 
   it("renders nothing when no user is signed in", () => {
@@ -79,6 +85,7 @@ describe("NotificationBell — authenticated", () => {
     ch?.subscribe?.mockClear?.();
     toastInfo.mockClear();
     toastError.mockClear();
+    toastSuccess.mockClear();
   });
 
   it("shows the bell with no badge when there are no notifications", async () => {
@@ -187,5 +194,32 @@ describe("NotificationBell — authenticated", () => {
 
     expect(await screen.findByText("1")).toBeInTheDocument();
     expect(toastInfo).toHaveBeenCalledWith("New Notification: Live!");
+  });
+
+  it("deleting a notification removes it from the list and decreases badge count", async () => {
+    const user = userEvent.setup();
+    supabaseMock.__queueResponse("notifications", {
+      data: [note({ id: "n1", title: "Note to delete", read_at: null })],
+      error: null,
+    });
+    // Queue response for delete query
+    supabaseMock.__queueResponse("notifications", { data: null, error: null });
+
+    renderBell(testUser);
+    expect(await screen.findByText("1")).toBeInTheDocument();
+
+    // Open bell dropdown
+    await user.click(screen.getByRole("button"));
+    expect(await screen.findByText("Note to delete")).toBeInTheDocument();
+
+    const deleteBtn = screen.getByRole("button", { name: /delete notification/i });
+    await act(async () => {
+      await user.click(deleteBtn);
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText("Note to delete")).not.toBeInTheDocument();
+      expect(screen.queryByText("1")).not.toBeInTheDocument();
+    });
   });
 });

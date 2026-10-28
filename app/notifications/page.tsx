@@ -27,6 +27,7 @@ export default function NotificationsPage() {
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    deleteAllNotifications,
     handleInvitation
   } = useNotifications();
 
@@ -46,18 +47,30 @@ export default function NotificationsPage() {
   return (
     <div className="min-h-screen bg-background text-on-background font-body">
       <main className="pt-12 pb-20 px-6 max-w-7xl mx-auto">
-        <header className="flex justify-between items-end mb-12">
+        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-12">
           <div>
-            <h1 className="text-6xl font-black tracking-tighter mb-2 italic uppercase">Notifications</h1>
+            <h1 className="text-4xl sm:text-6xl font-black tracking-tighter mb-2 italic uppercase">Notifications</h1>
             <p className="text-on-surface-variant font-label text-xs uppercase tracking-[0.3em] opacity-60">Your Kinetic Vault activity stream</p>
           </div>
-          {notifications.some(n => !n.read_at) && (
-            <button 
-              onClick={markAllAsRead}
-              className="bg-primary/10 hover:bg-primary text-primary hover:text-white px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border border-primary/20 transition-all shadow-lg shadow-primary/5"
-            >
-              Mark All as Read
-            </button>
+          {notifications.length > 0 && (
+            <div className="flex items-center gap-3">
+              {notifications.some(n => !n.read_at) && (
+                <button 
+                  onClick={markAllAsRead}
+                  className="bg-primary/10 hover:bg-primary text-primary hover:text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-primary/20 transition-all shadow-lg shadow-primary/5 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span className="material-symbols-outlined text-[16px]">done_all</span>
+                  Mark All as Read
+                </button>
+              )}
+              <button 
+                onClick={deleteAllNotifications}
+                className="bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-rose-500/20 transition-all shadow-lg shadow-rose-500/5 flex items-center gap-1.5 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[16px]">delete_sweep</span>
+                Clear All
+              </button>
+            </div>
           )}
         </header>
 
@@ -85,21 +98,28 @@ export default function NotificationsPage() {
                         {isInvitation ? 'Umpire Invitation' : 'Match Update'}
                       </span>
                     </div>
-                    <div className="flex gap-1.5">
-
+                    <div className="flex items-center gap-1.5">
                       {!n.read_at && (
                         <button 
-                          onClick={() => markAsRead(n.id)}
-                          className="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-all border border-white/5 hover:border-primary/20"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAsRead(n.id);
+                          }}
+                          className="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-all border border-white/5 hover:border-primary/20 cursor-pointer"
                           title="Mark as read"
+                          aria-label="Mark as read"
                         >
                           <span className="material-symbols-outlined text-lg">done_all</span>
                         </button>
                       )}
                       <button 
-                        onClick={() => deleteNotification(n.id)}
-                        className="w-8 h-8 flex items-center justify-center text-slate-600 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all border border-white/5 hover:border-red-500/20 opacity-0 group-hover:opacity-100"
-                        title="Delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteNotification(n.id);
+                        }}
+                        className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-full transition-all border border-white/10 hover:border-rose-500/30 cursor-pointer"
+                        title="Delete notification"
+                        aria-label="Delete notification"
                       >
                         <span className="material-symbols-outlined text-lg">delete</span>
                       </button>
