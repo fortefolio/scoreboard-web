@@ -82,6 +82,11 @@ export function useNotifications() {
 
   const markAsRead = async (notificationId: string) => {
     if (!user) return;
+    setNotifications(prev =>
+      prev.map(n => (n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n))
+    );
+    setUnreadCount(c => Math.max(0, c - 1));
+
     const { error } = await supabase
       .from("notifications")
       .update({ read_at: new Date().toISOString() })
@@ -96,6 +101,9 @@ export function useNotifications() {
 
   const markAllAsRead = async () => {
     if (!user) return;
+    setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
+    setUnreadCount(0);
+
     const { error } = await supabase
       .from("notifications")
       .update({ read_at: new Date().toISOString() })
@@ -105,14 +113,20 @@ export function useNotifications() {
     if (error) {
       console.error("Error marking all notifications as read:", error);
       toast.error("Failed to update notifications");
-    } else {
-      setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
-      setUnreadCount(0);
     }
   };
 
   const deleteNotification = async (id: string) => {
     if (!user) return;
+    const prevNotifications = [...notifications];
+    const deleted = prevNotifications.find(n => n.id === id);
+    const prevUnread = unreadCount;
+
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    if (deleted && !deleted.read_at) {
+      setUnreadCount(c => Math.max(0, c - 1));
+    }
+
     const { error } = await supabase
       .from("notifications")
       .delete()
@@ -122,6 +136,33 @@ export function useNotifications() {
     if (error) {
       console.error("Error deleting notification:", error);
       toast.error("Failed to delete notification");
+      setNotifications(prevNotifications);
+      setUnreadCount(prevUnread);
+    } else {
+      toast.success("Notification removed");
+    }
+  };
+
+  const deleteAllNotifications = async () => {
+    if (!user || notifications.length === 0) return;
+    const prevNotifications = [...notifications];
+    const prevUnread = unreadCount;
+
+    setNotifications([]);
+    setUnreadCount(0);
+
+    const { error } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("user_id", user.id);
+
+    if (error) {
+      console.error("Error clearing notifications:", error);
+      toast.error("Failed to clear notifications");
+      setNotifications(prevNotifications);
+      setUnreadCount(prevUnread);
+    } else {
+      toast.success("All notifications cleared");
     }
   };
 
@@ -150,6 +191,7 @@ export function useNotifications() {
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    deleteAllNotifications,
     handleInvitation,
   };
 }

@@ -1,6 +1,9 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import path from "node:path";
+import { loadEnvConfig } from "@next/env";
+
+const { combinedEnv } = loadEnvConfig(process.cwd());
 
 export default defineConfig({
   plugins: [react()],
@@ -10,6 +13,7 @@ export default defineConfig({
     },
   },
   test: {
+    env: combinedEnv,
     environment: "happy-dom",
     globals: true,
     setupFiles: ["./tests/setup.ts"],

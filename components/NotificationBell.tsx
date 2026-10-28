@@ -28,6 +28,7 @@ export default function NotificationBell() {
     unreadCount, 
     markAsRead, 
     markAllAsRead,
+    deleteNotification,
     handleInvitation
   } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
@@ -116,10 +117,22 @@ export default function NotificationBell() {
                           <button 
                             onClick={() => markAsRead(n.id)}
                             className="w-6 h-6 rounded-full bg-white/5 text-slate-500 flex items-center justify-center hover:text-white hover:bg-white/10 transition-colors"
+                            title="Mark as read"
                           >
-                            <span className="material-symbols-outlined text-[14px]">info</span>
+                            <span className="material-symbols-outlined text-[14px]">done</span>
                           </button>
                         )}
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteNotification(n.id);
+                          }}
+                          className="w-6 h-6 rounded-full bg-white/5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center transition-colors border border-transparent hover:border-rose-500/20"
+                          title="Delete"
+                          aria-label="Delete notification"
+                        >
+                          <span className="material-symbols-outlined text-[14px]">delete</span>
+                        </button>
                       </div>
                     </div>
 
