@@ -388,7 +388,7 @@ function TournamentContent() {
               }`}>
                 {tournament?.status}
              </span>
-             <FollowButton entityId={tournamentId} entityType="tournament" variant="pill" />
+             <FollowButton entityId={tournamentId} entityType="tournament" variant="icon" className="w-7 h-7" />
           </div>
         </header>
 
