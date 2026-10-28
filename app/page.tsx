@@ -609,14 +609,12 @@ function HomeContent() {
                     <table className="w-full text-left border-collapse">
                       <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         <tr>
-                          <th className="py-3.5 px-4 w-12 text-center">Seguir</th>
-                          <th className="py-3.5 px-5">Equipas / Jogadores</th>
-                          <th className="py-3.5 px-5">Evento</th>
+                          <th className="py-3.5 px-6">Equipas / Jogadores</th>
+                          <th className="py-3.5 px-6">Evento</th>
                           <th className="py-3.5 px-4">Desporto</th>
                           <th className="py-3.5 px-4 text-center">Resultado</th>
                           <th className="py-3.5 px-4 text-center">Estado</th>
-                          <th className="py-3.5 px-5 text-right">Data</th>
-                          <th className="py-3.5 px-5 text-right">Ação</th>
+                          <th className="py-3.5 px-6 text-right">Data</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5 text-sm font-body">
@@ -643,20 +641,19 @@ function HomeContent() {
                           return (
                             <tr
                               key={m.id}
-                              className="hover:bg-white/[0.02] transition-colors group"
+                              onClick={() => router.push(`/match/${m.id}`)}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  router.push(`/match/${m.id}`);
+                                }
+                              }}
+                              className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
                             >
-                              {/* Follow Toggle */}
-                              <td className="py-4 px-4 text-center">
-                                <FollowButton
-                                  entityId={m.id}
-                                  entityType="match"
-                                  variant="icon"
-                                  followHook={followHook}
-                                />
-                              </td>
-
                               {/* Equipas / Jogadores */}
-                              <td className="py-4 px-5">
+                              <td className="py-4 px-6">
                                 <div className="space-y-1">
                                   <div className="font-bold text-xs text-on-surface flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />
@@ -670,7 +667,7 @@ function HomeContent() {
                               </td>
 
                               {/* Evento */}
-                              <td className="py-4 px-5">
+                              <td className="py-4 px-6">
                                 <div className="font-headline font-bold text-on-surface text-xs leading-snug">
                                   {m.tournaments?.name || "Jogo Isolado"}
                                 </div>
@@ -739,7 +736,7 @@ function HomeContent() {
                               </td>
 
                               {/* Data */}
-                              <td className="py-4 px-5 text-right font-mono text-xs text-on-surface-variant/70">
+                              <td className="py-4 px-6 text-right font-mono text-xs text-on-surface-variant/70">
                                 {m.scheduled_at
                                   ? new Date(m.scheduled_at).toLocaleDateString(undefined, {
                                       day: "numeric",
@@ -753,19 +750,6 @@ function HomeContent() {
                                       month: "short",
                                     })
                                   : "-"}
-                              </td>
-
-                              {/* Ação */}
-                              <td className="py-4 px-5 text-right">
-                                <Link
-                                  href={`/match/${m.id}`}
-                                  title="Ver Jogo"
-                                  className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-container/20 hover:bg-primary-container text-primary hover:text-on-primary-container transition-all cursor-pointer border border-primary/20"
-                                >
-                                  <span className="material-symbols-outlined text-[16px]">
-                                    arrow_forward
-                                  </span>
-                                </Link>
                               </td>
                             </tr>
                           );
@@ -888,33 +872,30 @@ function HomeContent() {
                     <table className="w-full text-left border-collapse">
                       <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         <tr>
-                          <th className="py-3.5 px-4 w-12 text-center">Seguir</th>
-                          <th className="py-3.5 px-5">Torneio</th>
+                          <th className="py-3.5 px-6">Torneio</th>
                           <th className="py-3.5 px-4">Desporto</th>
                           <th className="py-3.5 px-4">Formato</th>
                           <th className="py-3.5 px-4 text-center">Estado</th>
-                          <th className="py-3.5 px-5 text-right">Data</th>
-                          <th className="py-3.5 px-5 text-right">Ação</th>
+                          <th className="py-3.5 px-6 text-right">Data</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5 text-sm font-body">
                         {paginatedTournaments.map((t) => (
                           <tr
                             key={t.id}
-                            className="hover:bg-white/[0.02] transition-colors group"
+                            onClick={() => router.push(`/tournament/${t.id}`)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                router.push(`/tournament/${t.id}`);
+                              }
+                            }}
+                            className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
                           >
-                            {/* Follow Toggle */}
-                            <td className="py-4 px-4 text-center">
-                              <FollowButton
-                                entityId={t.id}
-                                entityType="tournament"
-                                variant="icon"
-                                followHook={followHook}
-                              />
-                            </td>
-
                             {/* Torneio */}
-                            <td className="py-4 px-5">
+                            <td className="py-4 px-6">
                               <div className="font-headline font-bold text-sm text-on-surface">
                                 {t.name}
                               </div>
@@ -962,7 +943,7 @@ function HomeContent() {
                             </td>
 
                             {/* Data */}
-                            <td className="py-4 px-5 text-right font-mono text-xs text-on-surface-variant/70">
+                            <td className="py-4 px-6 text-right font-mono text-xs text-on-surface-variant/70">
                               {t.start_date
                                 ? new Date(t.start_date).toLocaleDateString(undefined, {
                                     day: "numeric",
@@ -970,19 +951,6 @@ function HomeContent() {
                                     year: "numeric",
                                   })
                                 : "-"}
-                            </td>
-
-                            {/* Ação */}
-                            <td className="py-4 px-5 text-right">
-                              <Link
-                                href={`/tournament/${t.id}`}
-                                title="Ver Torneio"
-                                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-container/20 hover:bg-primary-container text-primary hover:text-on-primary-container transition-all cursor-pointer border border-primary/20"
-                              >
-                                <span className="material-symbols-outlined text-[16px]">
-                                  arrow_forward
-                                </span>
-                              </Link>
                             </td>
                           </tr>
                         ))}

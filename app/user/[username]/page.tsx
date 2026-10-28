@@ -522,19 +522,27 @@ export default function UserProfilePage({
                     <table className="w-full text-left border-collapse">
                       <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         <tr>
-                          <th className="py-3.5 px-5">Torneio</th>
+                          <th className="py-3.5 px-6">Torneio</th>
                           <th className="py-3.5 px-4">Desporto</th>
                           <th className="py-3.5 px-4">Formato</th>
                           <th className="py-3.5 px-4 text-center">Estado</th>
-                          <th className="py-3.5 px-5 text-right">Data de Início</th>
-                          <th className="py-3.5 px-5 text-right">Ação</th>
+                          <th className="py-3.5 px-6 text-right">Data de Início</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5 text-sm font-body">
                         {paginatedTournaments.map((t) => (
                           <tr
                             key={t.id}
-                            className="hover:bg-white/[0.02] transition-colors group"
+                            onClick={() => router.push(`/tournament/${t.id}`)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                router.push(`/tournament/${t.id}`);
+                              }
+                            }}
+                            className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
                           >
                             {/* Torneio */}
                             <td className="py-4 px-5">
@@ -591,17 +599,6 @@ export default function UserProfilePage({
                                   })
                                 : "-"}
                             </td>
-
-                            {/* Ação */}
-                            <td className="py-4 px-5 text-right">
-                              <Link
-                                href={`/tournament/${t.id}`}
-                                title="Ver Torneio"
-                                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-container/20 hover:bg-primary-container text-primary hover:text-on-primary-container transition-all cursor-pointer border border-primary/20"
-                              >
-                                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                              </Link>
-                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -649,13 +646,12 @@ export default function UserProfilePage({
                     <table className="w-full text-left border-collapse">
                       <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         <tr>
-                          <th className="py-3.5 px-5">Equipas / Jogadores</th>
-                          <th className="py-3.5 px-5">Evento</th>
+                          <th className="py-3.5 px-6">Equipas / Jogadores</th>
+                          <th className="py-3.5 px-6">Evento</th>
                           <th className="py-3.5 px-4">Desporto</th>
                           <th className="py-3.5 px-4 text-center">Resultado</th>
                           <th className="py-3.5 px-4 text-center">Estado</th>
-                          <th className="py-3.5 px-5 text-right">Data</th>
-                          <th className="py-3.5 px-5 text-right">Ação</th>
+                          <th className="py-3.5 px-6 text-right">Data</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5 text-sm font-body">
@@ -677,7 +673,16 @@ export default function UserProfilePage({
                           return (
                             <tr
                               key={m.id}
-                              className="hover:bg-white/[0.02] transition-colors group"
+                              onClick={() => router.push(`/match/${m.id}`)}
+                              role="button"
+                              tabIndex={0}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  router.push(`/match/${m.id}`);
+                                }
+                              }}
+                              className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
                             >
                               {/* Equipas / Jogadores */}
                               <td className="py-4 px-5">
@@ -760,23 +765,12 @@ export default function UserProfilePage({
                               </td>
 
                               {/* Date */}
-                              <td className="py-4 px-5 text-right font-mono text-xs text-on-surface-variant/70">
+                              <td className="py-4 px-6 text-right font-mono text-xs text-on-surface-variant/70">
                                 {new Date(m.scheduled_at || m.created_at).toLocaleDateString(undefined, {
                                   day: "numeric",
                                   month: "short",
                                   year: "numeric",
                                 })}
-                              </td>
-
-                              {/* Action */}
-                              <td className="py-4 px-5 text-right">
-                                <Link
-                                  href={`/match/${m.id}`}
-                                  title="Ver Jogo"
-                                  className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-container/20 hover:bg-primary-container text-primary hover:text-on-primary-container transition-all cursor-pointer border border-primary/20"
-                                >
-                                  <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                                </Link>
                               </td>
                             </tr>
                           );
