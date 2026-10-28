@@ -340,7 +340,7 @@ function HomeContent() {
   }, [filteredTournaments, safePage]);
 
   return (
-    <div className="min-h-screen bg-background text-on-surface py-8 px-4 sm:px-8 max-w-7xl mx-auto">
+    <div className="w-full min-h-screen bg-background text-on-surface py-8 px-4 sm:px-8 max-w-7xl mx-auto">
       {/* Hero Header */}
       <div className="bg-surface-container-low rounded-[2.5rem] p-6 sm:p-10 border border-white/5 relative overflow-hidden mb-8 shadow-2xl">
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 blur-3xl pointer-events-none rounded-full" />
@@ -574,7 +574,7 @@ function HomeContent() {
         <>
           {/* TAB 1: MATCHES */}
           {activeTab === "matches" && (
-            <div>
+            <div className="w-full">
               {filteredMatches.length === 0 ? (
                 <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5">
                   <span className="material-symbols-outlined text-4xl text-on-surface-variant/40 mb-3">
@@ -604,8 +604,8 @@ function HomeContent() {
                 </div>
               ) : (
                 /* List / Table View */
-                <div className="bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
-                  <div className="overflow-x-auto">
+                <div className="w-full bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
+                  <div className="w-full overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         <tr>
@@ -764,7 +764,7 @@ function HomeContent() {
 
           {/* TAB 2: TOURNAMENTS */}
           {activeTab === "tournaments" && (
-            <div>
+            <div className="w-full">
               {filteredTournaments.length === 0 ? (
                 <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5">
                   <span className="material-symbols-outlined text-4xl text-on-surface-variant/40 mb-3">
@@ -867,8 +867,8 @@ function HomeContent() {
                 </div>
               ) : (
                 /* List / Table View */
-                <div className="bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
-                  <div className="overflow-x-auto">
+                <div className="w-full bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
+                  <div className="w-full overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                       <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         <tr>
@@ -964,7 +964,7 @@ function HomeContent() {
 
           {/* TAB 3: FOLLOWING / FAVORITOS */}
           {activeTab === "following" && (
-            <div>
+            <div className="w-full">
               {!user ? (
                 /* Unauthenticated Call to Action */
                 <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5 max-w-xl mx-auto shadow-2xl">
