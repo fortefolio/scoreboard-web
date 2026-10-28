@@ -200,8 +200,15 @@ function HomeContent() {
         closeAuthModal();
         const next = searchParams.get('next');
         const hasActiveSession = type === "login" || Boolean(data?.session);
-        if (hasActiveSession && next && next.startsWith('/') && !next.startsWith('//')) {
-          router.push(next);
+        if (hasActiveSession && next) {
+          try {
+            const targetUrl = new URL(next, window.location.origin);
+            if (targetUrl.origin === window.location.origin && !next.startsWith('/\\') && !next.startsWith('//')) {
+              router.push(targetUrl.pathname + targetUrl.search + targetUrl.hash);
+            }
+          } catch {
+            // Ignore invalid redirect targets
+          }
         }
       }
     } catch {

@@ -48,7 +48,7 @@ export default function UserProfilePage({
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawParam);
         let userQuery = supabase
           .from("users")
-          .select("id, username, email, subscription_tier, created_at");
+          .select("id, username, subscription_tier, created_at");
 
         if (isUuid) {
           userQuery = userQuery.or(`id.eq.${rawParam},username.ilike.${rawParam}`);
@@ -61,8 +61,8 @@ export default function UserProfilePage({
         if (userErr || !userData) {
           const { data: fallbackUsers } = await supabase
             .from("users")
-            .select("id, username, email, subscription_tier, created_at")
-            .ilike("email", `${rawParam}@%`)
+            .select("id, username, subscription_tier, created_at")
+            .ilike("username", `${rawParam}%`)
             .limit(1);
 
           if (fallbackUsers && fallbackUsers.length > 0) {
