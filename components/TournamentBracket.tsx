@@ -5,7 +5,8 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import RuleModal from "./RuleModal";
-import { countSetsWon } from "@/lib/scoring/sets";
+import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
+import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 
 const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
   if (!match) return null;
@@ -34,44 +35,57 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
               <div key={i} className="flex justify-between items-center gap-4">
                 <div className="flex items-center gap-1.5 truncate max-w-[140px]">
                   <span className={`text-xs font-bold tracking-tight truncate ${participant ? 'text-on-surface' : 'text-on-surface-variant opacity-50 italic'}`}>
-                    {participant?.name || (sourceMatch ? `Winner of Match ${sourceMatch.global_match_order}` : "TBD")}
+                    {participant?.name ? formatTeamOrPlayerName(participant.name) : (sourceMatch ? `Winner of Match ${sourceMatch.global_match_order}` : "TBD")}
                   </span>
                   {match.status === 'ongoing' && match.scores?.serving_index === i && (
                     <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse flex-shrink-0" title="Serving"></span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex flex-col items-end">
-                    <span className="text-[6px] font-black uppercase text-on-surface-variant opacity-40 leading-none mb-0.5">S</span>
-                    <span className="text-[10px] font-bold text-on-surface-variant leading-none">
-                      {countSetsWon(match.scores?.sets, i as 0 | 1)}
+                  {extractSetsData(match.scores).map((s: any, sIdx: number) => {
+                    const pScore = i === 0 ? (s.home ?? s.team1 ?? 0) : (s.away ?? s.team2 ?? 0);
+                    const oScore = i === 0 ? (s.away ?? s.team2 ?? 0) : (s.home ?? s.team1 ?? 0);
+                    const tbVal = s.tiebreak ? (i === 0 ? s.tiebreak.home : s.tiebreak.away) : null;
+                    return (
+                      <span
+                        key={sIdx}
+                        className={`text-[11px] font-mono leading-none min-w-[14px] text-right ${
+                          pScore > oScore ? "font-black text-on-surface" : "text-on-surface-variant/60"
+                        }`}
+                      >
+                        {pScore}
+                        {tbVal !== null && tbVal !== undefined && (
+                          <sup className="text-[7px] text-primary ml-0.5">{tbVal}</sup>
+                        )}
+                      </span>
+                    );
+                  })}
+                  <div className="flex items-center justify-end pl-1.5 border-l border-outline-variant/10 min-w-[16px]">
+                    <span className="text-[11px] font-black text-secondary leading-none">
+                      {countSetsWon(extractSetsData(match.scores), i as 0 | 1)}
                     </span>
                   </div>
                   {match.status === 'ongoing' && match.scores && (
                     <>
                       {match.sport_type === 'Tennis' && match.scores.tennis && (
-                        <div className="flex flex-col items-end">
-                          <span className="text-[6px] font-black uppercase text-indigo-400/60 leading-none mb-0.5">G</span>
-                          <span className="text-[10px] font-bold text-indigo-400 leading-none">{match.scores.tennis.games?.[i] ?? 0}</span>
-                        </div>
-                      )}
-                      <div className="flex flex-col items-end min-w-[15px]">
-                        <span className="text-[6px] font-black uppercase text-primary/60 leading-none mb-0.5">P</span>
-                        <span className="text-[10px] font-bold text-primary leading-none">
-                          {(() => {
-                            if (match.sport_type === 'Tennis' && match.scores.tennis) {
-                              const p = match.scores.tennis.points?.[i] ?? 0;
-                              const opp = match.scores.tennis.points?.[i === 0 ? 1 : 0] ?? 0;
-                              const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
-                              if (p >= 3 && opp >= 3) {
-                                return p > opp ? "AD" : (p === opp ? "40" : "40");
-                              }
-                              return TENNIS_POINTS[p] || "0";
-                            }
-                            return match.scores.current?.[i === 0 ? 'home' : 'away'] ?? 0;
-                          })()}
+                        <span className="text-[11px] font-bold text-indigo-400 leading-none min-w-[12px] text-right">
+                          {match.scores.tennis.games?.[i] ?? 0}
                         </span>
-                      </div>
+                      )}
+                      <span className="text-[11px] font-bold text-primary leading-none min-w-[16px] text-right">
+                        {(() => {
+                          if (match.sport_type === 'Tennis' && match.scores.tennis) {
+                            const p = match.scores.tennis.points?.[i] ?? 0;
+                            const opp = match.scores.tennis.points?.[i === 0 ? 1 : 0] ?? 0;
+                            const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
+                            if (p >= 3 && opp >= 3) {
+                              return p > opp ? "AD" : (p === opp ? "40" : "40");
+                            }
+                            return TENNIS_POINTS[p] || "0";
+                          }
+                          return match.scores.current?.[i === 0 ? 'home' : 'away'] ?? 0;
+                        })()}
+                      </span>
                     </>
                   )}
                 </div>
@@ -158,7 +172,9 @@ const BracketTree = ({
               </div>
 
               <div className="text-[10px] text-primary font-black uppercase tracking-widest opacity-70">
-                {rules.max_sets} Sets • {rules.points_per_set} Pts {rules.point_cap ? `• Cap ${rules.point_cap}` : ""}
+                {tournament?.sport_type === "Tennis"
+                  ? `Best of ${rules.max_sets} Sets`
+                  : `${rules.max_sets} Sets • ${rules.points_per_set} Pts ${rules.point_cap ? `• Cap ${rules.point_cap}` : ""}`}
               </div>
               
               <div className="h-8 flex items-center justify-center">
@@ -413,7 +429,7 @@ export default function TournamentBracket({
     );
   }
 
-  const isDoubleElimination = enrichedMatches.some(m => m.bracket_type === 'winners' || m.bracket_type === 'losers');
+  const isDoubleElimination = enrichedMatches.some(m => m.bracket_type === 'winners' || m.bracket_type === 'losers' || m.bracket_type === 'grand_final');
 
   return (
     <div className="max-w-full overflow-x-auto pb-8 space-y-12">
@@ -450,7 +466,7 @@ export default function TournamentBracket({
               <h2 className="text-3xl font-black uppercase tracking-tighter text-on-surface">Winners Bracket</h2>
             </div>
             <BracketTree 
-              matches={enrichedMatches.filter(m => m.bracket_type === 'winners')} 
+              matches={enrichedMatches.filter(m => m.bracket_type === 'winners' || m.bracket_type === 'main')} 
               tournament={tournament}
               onSaveOverride={onSaveOverrideFromParent}
               onSaveScheduledDate={onSaveScheduledDate}

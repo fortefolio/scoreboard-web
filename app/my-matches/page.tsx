@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { countSetsWon } from "@/lib/scoring/sets";
 import MatchCard from "@/components/MatchCard";
+import ConfirmationModal from "@/components/ConfirmationModal";
 
 function MyMatchesContent() {
   const { user, supabase } = useAuth();
@@ -20,6 +21,7 @@ function MyMatchesContent() {
   const [sportType, setSportType] = useState("Tennis");
   const [selectedTournamentId, setSelectedTournamentId] = useState("");
   const [matchDate, setMatchDate] = useState("");
+  const [matchToDelete, setMatchToDelete] = useState<any | null>(null);
 
   const fetchUserTournaments = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -154,7 +156,9 @@ function MyMatchesContent() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {matches.map((match) => (
-            <MatchCard key={match.id} match={match} />
+            <div key={match.id} className="relative group/card flex justify-center">
+              <MatchCard match={match} />
+            </div>
           ))}
           
           {matches.length === 0 && (
@@ -203,7 +207,10 @@ function MyMatchesContent() {
                     onChange={e => setSportType(e.target.value)}
                   >
                     <option value="Tennis">Tennis</option>
+                    <option value="Padel">Padel</option>
+                    <option value="Basketball">Basketball</option>
                     <option value="Volleyball">Volleyball</option>
+                    <option value="Beach Volleyball">Beach Volleyball</option>
                     <option value="Football">Football</option>
                   </select>
                 </div>
@@ -255,6 +262,26 @@ function MyMatchesContent() {
           </div>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={!!matchToDelete}
+        onClose={() => setMatchToDelete(null)}
+        onConfirm={async () => {
+          if (!matchToDelete) return;
+          const { error } = await supabase.from("matches").delete().eq("id", matchToDelete.id);
+          if (error) {
+            toast.error("Failed to delete match: " + error.message);
+          } else {
+            toast.success("Match deleted successfully!");
+            setMatches((prev) => prev.filter((m) => m.id !== matchToDelete.id));
+          }
+          setMatchToDelete(null);
+        }}
+        title="Delete Match"
+        message="Are you sure you want to permanently delete this match? All recorded events and scores will be removed."
+        confirmText="Delete Match"
+        isDanger={true}
+      />
     </div>
   );
 }

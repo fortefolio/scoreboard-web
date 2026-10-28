@@ -22,3 +22,25 @@ export function countSetsWon(setsData: SetsData, sideIdx: 0 | 1): number {
     return acc;
   }, 0);
 }
+
+export function extractSetsData(scores: any): any[] {
+  if (!scores) return [];
+
+  // Priority 1: Tennis-specific sets (if non-empty)
+  if (scores.tennis?.sets && Array.isArray(scores.tennis.sets) && scores.tennis.sets.length > 0) {
+    return scores.tennis.sets;
+  }
+
+  // Priority 2: Generic set_scores (if non-empty)
+  if (scores.set_scores && Array.isArray(scores.set_scores) && scores.set_scores.length > 0) {
+    return scores.set_scores;
+  }
+
+  // Priority 3: Generic sets (if non-empty)
+  if (scores.sets && Array.isArray(scores.sets) && scores.sets.length > 0) {
+    return scores.sets;
+  }
+
+  // Fallback: Empty array
+  return [];
+}

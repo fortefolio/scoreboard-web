@@ -203,6 +203,19 @@ describe("Home — happy paths", () => {
     await waitFor(() => expect(supabaseMock.auth.signInWithPassword).toHaveBeenCalled());
     expect(routerPush).not.toHaveBeenCalled();
   });
+
+  it("ignores external or protocol-relative ?next= URLs to prevent open redirects", async () => {
+    searchParams = new URLSearchParams({ auth: "login", next: "https://evil.example.com" });
+    const user = userEvent.setup();
+    await renderHome();
+
+    await user.type(screen.getByPlaceholderText(/enter your email/i), "alice@example.com");
+    await user.type(screen.getByPlaceholderText(/enter your password/i), "password123");
+    await user.click(screen.getByRole("button", { name: /^sign in$/i }));
+
+    await waitFor(() => expect(supabaseMock.auth.signInWithPassword).toHaveBeenCalled());
+    expect(routerPush).not.toHaveBeenCalled();
+  });
 });
 
 describe("Home — auth errors", () => {
@@ -223,6 +236,52 @@ describe("Home — auth errors", () => {
     await waitFor(() => expect(toastError).toHaveBeenCalledWith("Invalid login credentials"));
     // Modal still mounted
     expect(screen.getByPlaceholderText(/enter your email/i)).toBeInTheDocument();
+  });
+
+  it("shows duplicate email error when signUp returns a user with empty identities array", async () => {
+    searchParams = new URLSearchParams({ auth: "signup" });
+    supabaseMock.__queueResponse("users", { data: null, error: null });
+    supabaseMock.auth.signUp.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: { user: { id: "u1", identities: [] } as any, session: null },
+        error: null,
+      })
+    );
+    const user = userEvent.setup();
+    await renderHome();
+
+    await user.type(screen.getByPlaceholderText(/choose a username/i), "alice");
+    await user.type(screen.getByPlaceholderText(/enter your email/i), "alice@example.com");
+    await user.type(screen.getByPlaceholderText(/enter your password/i), "password123");
+    await user.type(screen.getByPlaceholderText(/confirm your password/i), "password123");
+    await user.click(screen.getByRole("button", { name: /^sign up$/i }));
+
+    await waitFor(() =>
+      expect(toastError).toHaveBeenCalledWith("An account with this email already exists.")
+    );
+    expect(routerPush).not.toHaveBeenCalled();
+  });
+
+  it("does not redirect to ?next= after signup when session is null (pending email confirmation)", async () => {
+    searchParams = new URLSearchParams({ auth: "signup", next: "/my-matches" });
+    supabaseMock.__queueResponse("users", { data: null, error: null });
+    supabaseMock.auth.signUp.mockImplementationOnce(() =>
+      Promise.resolve({
+        data: { user: { id: "u1", identities: [{ id: "id1" }] } as any, session: null },
+        error: null,
+      })
+    );
+    const user = userEvent.setup();
+    await renderHome();
+
+    await user.type(screen.getByPlaceholderText(/choose a username/i), "alice");
+    await user.type(screen.getByPlaceholderText(/enter your email/i), "alice@example.com");
+    await user.type(screen.getByPlaceholderText(/enter your password/i), "password123");
+    await user.type(screen.getByPlaceholderText(/confirm your password/i), "password123");
+    await user.click(screen.getByRole("button", { name: /^sign up$/i }));
+
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
+    expect(routerPush).not.toHaveBeenCalled();
   });
 });
 

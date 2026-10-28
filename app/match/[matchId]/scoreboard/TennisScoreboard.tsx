@@ -3,14 +3,25 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { extractSetsData } from "@/lib/scoring/sets";
+import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 
 const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
 
 export default function TennisScoreboard({ matchData }: { matchData: any }) {
+  const getInitialSets = (data: any) => {
+    const raw = extractSetsData(data.scores);
+
+    return Array.isArray(raw) ? raw.map((s: any) => ({
+      t1: s.team1 ?? s.home ?? 0,
+      t2: s.team2 ?? s.away ?? 0
+    })) : [];
+  };
+
   // Local state for snappy UI updates before Supabase sync
   const [points, setPoints] = useState(matchData.scores?.tennis?.points || [0, 0]);
   const [games, setGames] = useState(matchData.scores?.tennis?.games || [0, 0]); // Current set games
-  const [sets, setSets] = useState(matchData.scores?.set_scores || []);
+  const [sets, setSets] = useState(getInitialSets(matchData));
   const [serverIdx, setServerIdx] = useState<number | null>(matchData.scores?.serving_index ?? null);
   const [isTossing, setIsTossing] = useState(false);
 
@@ -19,7 +30,7 @@ export default function TennisScoreboard({ matchData }: { matchData: any }) {
     if (matchData.scores) {
       setPoints(matchData.scores.tennis?.points || [0, 0]);
       setGames(matchData.scores.tennis?.games || [0, 0]);
-      setSets(matchData.scores.set_scores || []);
+      setSets(getInitialSets(matchData));
       setServerIdx(matchData.scores.serving_index ?? null);
     }
   }, [matchData.scores]);
@@ -31,10 +42,19 @@ export default function TennisScoreboard({ matchData }: { matchData: any }) {
     
     const { error } = await supabase
       .from('match_events')
-      .insert([{
-        match_id: matchData.id,
-        event_data: { type: 'start_scoreboard', initial_server_index: selectedIdx }
-      }]);
+      .insert([
+        {
+          match_id: matchData.id,
+          event_data: { type: 'start_scoreboard' }
+        },
+        {
+          match_id: matchData.id,
+          event_data: { 
+            type: 'toss_coin', 
+            winner_index: selectedIdx 
+          }
+        }
+      ]);
     
     if (error) {
       console.error("Error starting scoreboard:", error);
@@ -102,7 +122,7 @@ export default function TennisScoreboard({ matchData }: { matchData: any }) {
                 disabled={isTossing}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
               >
-                {matchData.participants[idx].name}
+                {formatTeamOrPlayerName(matchData.participants[idx].name)}
               </button>
             ))}
           </div>
@@ -124,7 +144,7 @@ export default function TennisScoreboard({ matchData }: { matchData: any }) {
           <div key={idx} className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-2xl font-black text-white uppercase tracking-tight">
-                {matchData.participants[idx].name}
+                {formatTeamOrPlayerName(matchData.participants[idx].name)}
               </span>
               <div className="flex items-center gap-2 mt-1">
                 {serverIdx === idx ? (

@@ -9,10 +9,12 @@ import NotificationBell from "./NotificationBell";
 export default function TopNavBar() {
   const { user, signOut } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   useEffect(() => {
+    setHasMounted(true);
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsMenuOpen(false);
@@ -40,7 +42,7 @@ export default function TopNavBar() {
         </Link>
 
         <div className="flex gap-4 md:gap-8 items-center">
-          {navLinks.map((link) => (
+          {hasMounted && navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.href}
@@ -52,9 +54,9 @@ export default function TopNavBar() {
         </div>
 
         <div className="flex gap-6 items-center">
-          {user && <NotificationBell />}
+          {hasMounted && user && <NotificationBell />}
 
-          {user ? (
+          {hasMounted && user ? (
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -112,7 +114,13 @@ export default function TopNavBar() {
               )}
             </div>
           ) : (
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-center">
+               <Link
+                 href="/?auth=login"
+                 className="text-slate-400 hover:text-white px-4 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all duration-300 ease-out active:scale-95"
+               >
+                 Sign In
+               </Link>
                <Link
                  href="/?auth=signup"
                  className="bg-primary-container text-on-primary-container px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-500/10 hover:text-indigo-300 transition-all duration-300 ease-out active:scale-95 shadow-lg shadow-indigo-500/20"

@@ -17,7 +17,7 @@ export default function MyTournamentsPage() {
   const [maxTeams, setMaxTeams] = useState<number | "">("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
+  const [visibility, setVisibility] = useState<'public' | 'unlisted' | 'private'>('public');
 
   const fetchTournaments = useCallback(async (userId: string) => {
     setLoading(true);
@@ -54,11 +54,21 @@ export default function MyTournamentsPage() {
     }
 
     const defaultSettings: any = {};
-    if (newSport === 'Tennis' || newSport === 'Volleyball') {
+    if (newSport === 'Tennis' || newSport === 'Volleyball' || newSport === 'Beach Volleyball' || newSport === 'Padel') {
       defaultSettings.max_sets = 3;
+    }
+    if (newSport === 'Padel') {
+      defaultSettings.points_per_set = 6;
+      defaultSettings.set_type = 'tiebreak';
+      defaultSettings.no_ad = true;
     }
     if (newSport === 'Volleyball') {
       defaultSettings.points_per_set = 25;
+      defaultSettings.deciding_set_points = 15;
+    }
+    if (newSport === 'Beach Volleyball') {
+      defaultSettings.points_per_set = 21;
+      defaultSettings.deciding_set_points = 15;
     }
     if (newSport === 'Football') {
       defaultSettings.duration = 90;
@@ -202,7 +212,10 @@ export default function MyTournamentsPage() {
                     onChange={e => setNewSport(e.target.value)}
                   >
                     <option value="Tennis">Tennis</option>
+                    <option value="Padel">Padel</option>
+                    <option value="Basketball">Basketball</option>
                     <option value="Volleyball">Volleyball</option>
+                    <option value="Beach Volleyball">Beach Volleyball</option>
                     <option value="Football">Football</option>
                   </select>
                 </div>
@@ -214,6 +227,12 @@ export default function MyTournamentsPage() {
                       className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${stage1Type === 'bracket' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
                     >
                       BRACKET
+                    </button>
+                    <button 
+                      onClick={() => setStage1Type('double_elimination')}
+                      className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${stage1Type === 'double_elimination' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
+                    >
+                      DOUBLE ELIM
                     </button>
                     <button 
                       onClick={() => setStage1Type('groups')}
@@ -267,6 +286,12 @@ export default function MyTournamentsPage() {
                     PUBLIC
                   </button>
                   <button 
+                    onClick={() => setVisibility('unlisted')}
+                    className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${visibility === 'unlisted' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
+                  >
+                    UNLISTED
+                  </button>
+                  <button 
                     onClick={() => setVisibility('private')}
                     className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${visibility === 'private' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
                   >
@@ -274,7 +299,11 @@ export default function MyTournamentsPage() {
                   </button>
                 </div>
                 <p className="mt-2 text-[9px] text-on-surface-variant opacity-60 uppercase font-bold tracking-tight">
-                  {visibility === 'public' ? 'Visible to everyone on the landing page' : 'Only accessible via direct link'}
+                  {visibility === 'public'
+                    ? 'Visible to everyone on the landing page'
+                    : visibility === 'unlisted'
+                    ? 'Hidden from landing page; accessible via direct link'
+                    : 'Only visible to you (organizer)'}
                 </p>
               </div>
 

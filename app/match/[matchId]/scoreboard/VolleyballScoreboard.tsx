@@ -26,7 +26,13 @@ export default function VolleyballScoreboard({
         team1: matchData.scores.current?.home || 0,
         team2: matchData.scores.current?.away || 0
       });
-      setSetHistory(matchData.scores.set_scores || []);
+      const rawSets = matchData.scores.set_scores || matchData.scores.sets || [];
+      setSetHistory(
+        rawSets.map((s: any) => ({
+          team1: s.team1 ?? s.home ?? 0,
+          team2: s.team2 ?? s.away ?? 0,
+        }))
+      );
       setServerIdx(matchData.scores.serving_index ?? null);
     }
   }, [matchData?.scores]);

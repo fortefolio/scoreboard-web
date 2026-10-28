@@ -1,8 +1,10 @@
+import { countSetsWon, extractSetsData, type SetsData } from "@/lib/scoring/sets";
+
 export interface GroupMatch {
   group_label: string | null;
   status: string;
   participants: ({ name: string } | null | undefined)[];
-  scores: { sets?: number[] } | null;
+  scores: { sets?: SetsData; [key: string]: any } | null;
 }
 
 export interface Standing {
@@ -43,9 +45,11 @@ export function calculateStandings(matches: GroupMatch[]): Standing[] {
 
       if (match.status !== "completed" || !match.scores) return;
 
-      const sets = match.scores.sets ?? [0, 0];
-      const own = sets[idx] ?? 0;
-      const opp = sets[idx === 0 ? 1 : 0] ?? 0;
+      const rawSets = Array.isArray(match.scores.sets) && typeof match.scores.sets[0] === "number"
+        ? match.scores.sets
+        : extractSetsData(match.scores);
+      const own = countSetsWon(rawSets, idx as 0 | 1);
+      const opp = countSetsWon(rawSets, (idx === 0 ? 1 : 0) as 0 | 1);
 
       standings[key].played++;
       if (own > opp) standings[key].wins++;
