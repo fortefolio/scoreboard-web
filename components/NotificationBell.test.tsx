@@ -23,6 +23,11 @@ vi.mock("@/lib/supabase/client", () => ({
   getSupabaseBrowserClient: () => supabaseMock,
 }));
 
+// Mock the barrel too because useAuth uses it
+vi.mock("@/lib/supabase", () => ({
+  supabase: supabaseMock,
+}));
+
 const toastInfo = vi.fn();
 const toastError = vi.fn();
 vi.mock("sonner", () => ({
@@ -114,10 +119,11 @@ describe("NotificationBell — authenticated", () => {
 
     await user.click(screen.getByRole("button"));
     expect(screen.getByText("First")).toBeInTheDocument();
-    expect(screen.getByText("Match starting")).toBeInTheDocument();
+    // Body is no longer rendered in the notification bell drawer redesign
+    expect(screen.queryByText("Match starting")).not.toBeInTheDocument();
   });
 
-  it('shows "No notifications yet" empty state when the list is empty', async () => {
+  it('shows "No activity detected" empty state when the list is empty', async () => {
     const user = userEvent.setup();
     supabaseMock.__queueResponse("notifications", { data: [], error: null });
     renderBell(testUser);
@@ -125,7 +131,7 @@ describe("NotificationBell — authenticated", () => {
     await waitFor(() => expect(screen.getByRole("button")).toBeInTheDocument());
     await user.click(screen.getByRole("button"));
 
-    expect(screen.getByText(/no notifications yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/no activity detected/i)).toBeInTheDocument();
   });
 
   it('"Mark all as read" only appears when there are unread, and zeroes the badge on click', async () => {
@@ -135,38 +141,48 @@ describe("NotificationBell — authenticated", () => {
       error: null,
     });
     // The markAllAsRead update call resolves with { error: null }
+    // We queue a fallback response just in case
     supabaseMock.__queueResponse("notifications", { data: null, error: null });
 
     renderBell(testUser);
     expect(await screen.findByText("2")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button"));
-    await user.click(screen.getByRole("button", { name: /mark all as read/i }));
+    const markAllBtn = await screen.findByRole("button", { name: /mark all as read/i });
+    
+    // Wrap in act to ensure all async state changes are processed
+    await act(async () => {
+      await user.click(markAllBtn);
+    });
 
     await waitFor(() => {
+      // Numerical badge should be gone
       expect(screen.queryByText("2")).not.toBeInTheDocument();
+      // Button itself should be gone since there are no more unread
       expect(screen.queryByRole("button", { name: /mark all as read/i })).not.toBeInTheDocument();
-    });
+    }, { timeout: 2000 });
   });
 
   it("real-time INSERT prepends the notification, bumps the badge, and toasts", async () => {
     supabaseMock.__queueResponse("notifications", { data: [], error: null });
     renderBell(testUser);
 
-    // Wait until the bell has subscribed via the channel
+    // Wait until the hook has subscribed via the channel
     await waitFor(() => expect(supabaseMock.channel).toHaveBeenCalled());
 
-    // Find the most-recently-registered INSERT handler. The channel mock
-    // is a singleton so we want the latest entry.
+    // Find the most-recently-registered '*' handler. 
     const channelInstance = supabaseMock.channel.mock.results.at(-1)!.value;
-    const insertCalls = channelInstance.on.mock.calls.filter(
-      (c: any[]) => c[1]?.event === "INSERT"
+    const starCalls = channelInstance.on.mock.calls.filter(
+      (c: any[]) => c[1]?.event === "*"
     );
-    expect(insertCalls.length).toBeGreaterThan(0);
-    const handler = insertCalls.at(-1)![2];
+    expect(starCalls.length).toBeGreaterThan(0);
+    const handler = starCalls.at(-1)![2];
 
-    act(() => {
-      handler({ new: { id: "live-1", title: "Live!", body: "Score update", read_at: null, created_at: "2026-01-03T00:00:00Z" } });
+    await act(async () => {
+      handler({ 
+        eventType: 'INSERT',
+        new: { id: "live-1", title: "Live!", body: "Score update", read_at: null, created_at: "2026-01-03T00:00:00Z" } 
+      });
     });
 
     expect(await screen.findByText("1")).toBeInTheDocument();

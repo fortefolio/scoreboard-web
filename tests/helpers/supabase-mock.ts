@@ -32,10 +32,10 @@ export function createSupabaseMock(initial: { user?: User | null } = {}) {
       ilike: vi.fn(() => builder),
       order: vi.fn(() => builder),
       limit: vi.fn(() => builder),
-      maybeSingle: vi.fn(() => Promise.resolve(nextResponse(table))),
-      single: vi.fn(() => Promise.resolve(nextResponse(table))),
+      maybeSingle: vi.fn(() => Promise.resolve().then(() => nextResponse(table))),
+      single: vi.fn(() => Promise.resolve().then(() => nextResponse(table))),
       then: (resolve: (value: { data: any; error: any }) => void) =>
-        resolve(nextResponse(table)),
+        Promise.resolve().then(() => resolve(nextResponse(table))),
     };
     return builder;
   };

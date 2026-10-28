@@ -105,6 +105,9 @@ export function useNotifications() {
     if (error) {
       console.error("Error marking all notifications as read:", error);
       toast.error("Failed to update notifications");
+    } else {
+      setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
+      setUnreadCount(0);
     }
   };
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { extractSetsData } from "@/lib/scoring/sets";
+import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 
 const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
 
@@ -121,7 +122,7 @@ export default function TennisScoreboard({ matchData }: { matchData: any }) {
                 disabled={isTossing}
                 className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2 px-4 rounded-xl text-xs font-bold transition-all active:scale-95 disabled:opacity-50"
               >
-                {matchData.participants[idx].name}
+                {formatTeamOrPlayerName(matchData.participants[idx].name)}
               </button>
             ))}
           </div>
@@ -143,7 +144,7 @@ export default function TennisScoreboard({ matchData }: { matchData: any }) {
           <div key={idx} className="flex items-center justify-between">
             <div className="flex flex-col">
               <span className="text-2xl font-black text-white uppercase tracking-tight">
-                {matchData.participants[idx].name}
+                {formatTeamOrPlayerName(matchData.participants[idx].name)}
               </span>
               <div className="flex items-center gap-2 mt-1">
                 {serverIdx === idx ? (

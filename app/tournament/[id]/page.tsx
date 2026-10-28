@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/AuthProvider";
 import { toast } from "sonner";
 import GroupStandingsView from "@/components/GroupStandingsView";
 import GroupMatchesView from "@/components/GroupMatchesView";
@@ -19,6 +20,7 @@ const DEFAULT_TEAMS = [
 
 function TournamentContent() {
   const { id } = useParams();
+  const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'standings' | 'group_matches' | 'bracket' | 'teams' | 'settings'>('teams');
@@ -34,7 +36,7 @@ function TournamentContent() {
   const [maxTeams, setMaxTeams] = useState<number>(16);
   const [tStartDate, setTStartDate] = useState("");
   const [tEndDate, setTEndDate] = useState("");
-  const [tVisibility, setTVisibility] = useState<'public' | 'private'>('public');
+  const [tVisibility, setTVisibility] = useState<'public' | 'unlisted' | 'private'>('public');
   const [signupFormConfig, setSignupFormConfig] = useState<any[]>([]);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
@@ -99,7 +101,7 @@ function TournamentContent() {
       if (data.start_date) setTStartDate(new Date(data.start_date).toISOString().split('T')[0]);
       if (data.end_date) setTEndDate(new Date(data.end_date).toISOString().split('T')[0]);
       if (data.visibility) setTVisibility(data.visibility);
-      if (data.signup_form_config) setSignupFormConfig(data.signup_form_config);
+      if (data.signup_schema) setSignupFormConfig(data.signup_schema);
       
       // Only set default tab if no tab is present in URL
       if (!searchParams.get('tab')) {
@@ -111,18 +113,34 @@ function TournamentContent() {
           }
         }
       }
-      loadParticipants();
+      loadParticipants(data.organizer_id);
     }
     setLoading(false);
   };
 
-  const loadParticipants = async () => {
-    const { data: pData } = await supabase
-      .from("tournament_participants")
-      .select("id, name, contact_email, form_responses")
-      .eq("tournament_id", tournamentId)
-      .order("created_at", { ascending: true });
-    
+  const loadParticipants = async (organizerId?: string) => {
+    const targetOrganizerId = organizerId ?? tournament?.organizer_id;
+    let pData: any[] | null = null;
+
+    if (user && targetOrganizerId && user.id === targetOrganizerId) {
+      const { data: adminData, error: rpcError } = await supabase.rpc(
+        "get_tournament_participants_admin",
+        { p_tournament_id: tournamentId }
+      );
+      if (!rpcError && adminData) {
+        pData = adminData;
+      }
+    }
+
+    if (!pData) {
+      const { data: publicData } = await supabase
+        .from("tournament_participants")
+        .select("id, name, seed, created_at")
+        .eq("tournament_id", tournamentId)
+        .order("created_at", { ascending: true });
+      pData = publicData;
+    }
+
     if (pData) {
       setParticipants(pData);
       setTeamNames(pData.map((p: { name: string }) => p.name));
@@ -173,12 +191,12 @@ function TournamentContent() {
         start_date: tStartDate || null,
         end_date: tEndDate || null,
         visibility: tVisibility,
-        signup_form_config: signupFormConfig,
+        signup_schema: signupFormConfig,
       })
       .eq('id', tournamentId);
 
     if (!error) {
-      setTournament({ ...tournament, settings: newSettings, start_date: tStartDate, end_date: tEndDate, visibility: tVisibility, signup_form_config: signupFormConfig });
+      setTournament({ ...tournament, settings: newSettings, start_date: tStartDate, end_date: tEndDate, visibility: tVisibility, signup_schema: signupFormConfig });
       toast.success("Tournament settings updated.");
     } else {
       toast.error(`Error updating settings: ${error.message}`);
@@ -299,13 +317,21 @@ function TournamentContent() {
     if (!tournament) return;
     setIsGenerating(true);
     try {
-      await supabase.from("tournament_participants").delete().eq("tournament_id", tournamentId);
-      const participantsToInsert = teamNames
-        .filter(name => name.trim() !== "")
-        .map(name => ({ tournament_id: tournamentId, name }));
-      
-      if (participantsToInsert.length > 0) {
-        await supabase.from("tournament_participants").insert(participantsToInsert);
+      // Only insert newly added manual teams; preserve existing registered participants and their PII/form responses
+      const manualNewNames = teamNames
+        .slice(participants.length)
+        .map(name => name.trim())
+        .filter(name => name !== "");
+
+      if (manualNewNames.length > 0) {
+        const participantsToInsert = manualNewNames.map(name => ({
+          tournament_id: tournamentId,
+          name
+        }));
+        const { error: insertError } = await supabase
+          .from("tournament_participants")
+          .insert(participantsToInsert);
+        if (insertError) throw insertError;
       }
 
       const { error } = await supabase.functions.invoke("generate-tournament-bracket", {
@@ -542,6 +568,33 @@ function TournamentContent() {
                       </div>
 
                       <div>
+                        <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Tournament Visibility</label>
+                        <div className="flex gap-2">
+                          {(['public', 'unlisted', 'private'] as const).map((mode) => (
+                            <button
+                              key={mode}
+                              type="button"
+                              onClick={() => setTVisibility(mode)}
+                              className={`flex-1 py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                                tVisibility === mode
+                                  ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20'
+                                  : 'bg-surface-container-high text-on-surface-variant border-outline-variant/10'
+                              }`}
+                            >
+                              {mode}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="mt-2 text-[10px] text-on-surface-variant opacity-60 uppercase font-bold tracking-tight">
+                          {tVisibility === 'public'
+                            ? 'Visible to everyone on the landing page'
+                            : tVisibility === 'unlisted'
+                            ? 'Hidden from landing page; accessible via direct link'
+                            : 'Only visible to you (organizer)'}
+                        </p>
+                      </div>
+
+                      <div>
                         <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Maximum Number of Teams</label>
                         <div className="flex items-center gap-4">
                           <input 
@@ -630,14 +683,28 @@ function TournamentContent() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
-                              <div className="lg:col-span-6">
+                              <div className="lg:col-span-4">
                                 <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3 block">Field Label</label>
                                 <input 
                                   className="w-full px-5 py-4 bg-surface-container-low rounded-xl text-on-surface font-bold outline-none focus:ring-1 focus:ring-primary-container transition-all border border-outline-variant/10"
-                                  placeholder="e.g. Team Name"
+                                  placeholder="e.g. T-Shirt Size"
                                   value={field.label}
                                   onChange={(e) => updateSignupField(field.id, { label: e.target.value })}
                                 />
+                              </div>
+
+                              <div className="lg:col-span-2">
+                                <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3 block">Field Type</label>
+                                <select
+                                  className="w-full px-4 py-4 bg-surface-container-low rounded-xl text-on-surface font-bold outline-none focus:ring-1 focus:ring-primary-container transition-all border border-outline-variant/10 appearance-none"
+                                  value={field.type}
+                                  onChange={(e) => updateSignupField(field.id, { type: e.target.value })}
+                                >
+                                  <option value="text">Text</option>
+                                  <option value="number">Number</option>
+                                  <option value="select">Select</option>
+                                  <option value="checkbox">Checkbox</option>
+                                </select>
                               </div>
 
                               {field.type === 'text' && (
@@ -800,6 +867,40 @@ function TournamentContent() {
         confirmText={isDeleting ? "Deleting..." : "Delete Permanently"}
         isDanger={true}
       />
+
+      {/* PARTICIPANT DETAILS MODAL */}
+      {selectedParticipant && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-center justify-center p-6 z-[100] animate-in fade-in duration-300">
+          <div className="w-full max-w-lg bg-surface-container rounded-[2.5rem] shadow-4xl border border-outline-variant/10 relative z-10 overflow-hidden flex flex-col max-h-[80vh]">
+            <header className="px-8 pt-8 pb-5 flex justify-between items-center bg-surface-container-high border-b border-outline-variant/5">
+              <div>
+                <h3 className="text-2xl font-headline font-black text-on-surface leading-none mb-1">{selectedParticipant.name}</h3>
+                <p className="text-on-surface-variant text-xs">{selectedParticipant.contact_email || "No contact email visible"}</p>
+              </div>
+              <button
+                onClick={() => setSelectedParticipant(null)}
+                className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface hover:bg-error/10 hover:text-error transition-all"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </header>
+            <div className="p-8 overflow-y-auto space-y-4">
+              {signupFormConfig.length > 0 ? (
+                signupFormConfig.map((field: any) => (
+                  <div key={field.id} className="p-4 bg-surface-container-low rounded-2xl border border-outline-variant/10">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1">{field.label || field.id}</p>
+                    <p className="font-bold text-on-surface text-sm">
+                      {String(selectedParticipant.form_responses?.[field.id] ?? "—")}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-on-surface-variant text-xs italic text-center py-6 opacity-60">No custom signup fields configured for this tournament.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* FORM PREVIEW MODAL */}
       {isPreviewModalOpen && (
