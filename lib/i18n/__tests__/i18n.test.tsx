@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LanguageProvider, useTranslation } from "../LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
@@ -53,7 +53,7 @@ describe("i18n System", () => {
     expect(document.documentElement.lang).toBe("pt");
   });
 
-  it("LanguageSelector toggles language via accessible buttons", async () => {
+  it("LanguageSelector opens dropdown and switches language", async () => {
     const user = userEvent.setup();
 
     render(
@@ -63,29 +63,60 @@ describe("i18n System", () => {
       </LanguageProvider>
     );
 
-    // Initial state EN
-    const ptButton = screen.getByRole("button", { name: "Português" });
-    const enButton = screen.getByRole("button", { name: "English" });
+    // Dropdown is initially closed
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
 
-    expect(enButton).toHaveAttribute("aria-pressed", "true");
-    expect(ptButton).toHaveAttribute("aria-pressed", "false");
+    // Trigger button is present with current language EN
+    const trigger = screen.getByRole("button", { name: /select language/i });
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+    expect(trigger).toHaveTextContent("EN");
 
-    // Click PT
-    await user.click(ptButton);
+    // Click trigger to open dropdown
+    await user.click(trigger);
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
 
+    // Portuguese option is visible
+    const ptOption = screen.getByRole("option", { name: /português/i });
+    expect(ptOption).toBeInTheDocument();
+    expect(ptOption).toHaveAttribute("aria-selected", "false");
+
+    // Click Portuguese option
+    await user.click(ptOption);
+
+    // Language switched and dropdown closed
     expect(screen.getByTestId("current-locale").textContent).toBe("pt");
-    expect(ptButton).toHaveAttribute("aria-pressed", "true");
-    expect(enButton).toHaveAttribute("aria-pressed", "false");
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    expect(trigger).toHaveTextContent("PT");
 
-    // Click EN
-    await user.click(enButton);
+    // Open dropdown again and click English option
+    await user.click(trigger);
+    const enOption = screen.getByRole("option", { name: /english/i });
+    await user.click(enOption);
 
     expect(screen.getByTestId("current-locale").textContent).toBe("en");
-    expect(enButton).toHaveAttribute("aria-pressed", "true");
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
+    expect(trigger).toHaveTextContent("EN");
+  });
+
+  it("LanguageSelector closes dropdown on Escape key", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <LanguageProvider>
+        <LanguageSelector />
+      </LanguageProvider>
+    );
+
+    const trigger = screen.getByRole("button", { name: /select language/i });
+    await user.click(trigger);
+    expect(screen.getByRole("listbox")).toBeInTheDocument();
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(screen.queryByRole("listbox")).not.toBeInTheDocument();
   });
 
   it("falls back gracefully when rendered without provider", () => {
-    // Tests that useLanguage() fallback doesn't throw when used in isolated components
     render(<TestComponent />);
     expect(screen.getByTestId("current-locale").textContent).toBe("en");
     expect(screen.getByTestId("hero-title").textContent).toBe("Scores and Tournaments");
