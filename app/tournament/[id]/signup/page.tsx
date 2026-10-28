@@ -180,7 +180,7 @@ function SignupContent() {
                       autoFocus
                       required
                       className="w-full px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold text-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-on-surface-variant/30"
-                      placeholder="e.g. Kinetic Vault Elite"
+                      placeholder="e.g. Lisbon Masters"
                       value={teamName}
                       onChange={(e) => setTeamName(e.target.value)}
                     />
@@ -270,7 +270,7 @@ function SignupContent() {
         )}
 
         <footer className="mt-12 text-center opacity-30">
-          <p className="font-label text-[10px] uppercase tracking-[0.5em] text-on-surface-variant">Powered by Kinetic Vault Scoring Engine</p>
+          <p className="font-label text-[10px] uppercase tracking-[0.5em] text-on-surface-variant">Powered by ScoreBoard Scoring Engine</p>
         </footer>
       </main>
     </div>

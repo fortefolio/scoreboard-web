@@ -350,7 +350,7 @@ function HomeContent() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-label text-[10px] font-black uppercase tracking-widest mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              Kinetic Vault & Live Scoreboard
+              Live Scoreboard
             </div>
             <h1 className="font-headline font-black text-3xl sm:text-5xl text-on-surface tracking-tight mb-2">
               Resultados e Torneios
@@ -1220,7 +1220,7 @@ function HomeContent() {
               </h2>
               <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant/60 mt-1">
                 {authModal === "signup"
-                  ? "Join Kinetic Vault ScoreBoard"
+                  ? "Join ScoreBoard"
                   : "Sign in to manage your events"}
               </p>
             </div>
