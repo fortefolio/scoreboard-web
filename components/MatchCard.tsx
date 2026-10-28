@@ -5,6 +5,7 @@ import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import Link from "next/link";
 import SportIcon from "@/components/SportIcon";
+import { FollowButton } from "@/components/FollowButton";
 
 const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
 
@@ -104,20 +105,23 @@ export default function MatchCard({ match }: { match: any }) {
             </span>
           </div>
 
-          {isOngoingDisplay ? (
-            <span className="text-[10px] font-black uppercase tracking-wider text-primary flex items-center gap-1.5 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-              {match.sport_type === 'Basketball'
-                ? (match.scores?.basketball?.period || "Live")
-                : match.sport_type !== 'Football'
-                ? `Set ${currentSetNum}`
-                : "Live"}
-            </span>
-          ) : (
-            <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/40 shrink-0">
-              {match.status === 'completed' || isMatchFinished ? 'Final' : match.status}
-            </span>
-          )}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {isOngoingDisplay ? (
+              <span className="text-[10px] font-black uppercase tracking-wider text-primary flex items-center gap-1.5 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                {match.sport_type === 'Basketball'
+                  ? (match.scores?.basketball?.period || "Live")
+                  : match.sport_type !== 'Football'
+                  ? `Set ${currentSetNum}`
+                  : "Live"}
+              </span>
+            ) : (
+              <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/40 shrink-0">
+                {match.status === 'completed' || isMatchFinished ? 'Final' : match.status}
+              </span>
+            )}
+            <FollowButton entityId={match.id} entityType="match" variant="icon" className="w-7 h-7" />
+          </div>
         </div>
 
         {/* Participants */}

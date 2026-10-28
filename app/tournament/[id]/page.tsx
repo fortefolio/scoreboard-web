@@ -11,6 +11,7 @@ import GroupMatchesView from "@/components/GroupMatchesView";
 import TournamentBracket from "@/components/TournamentBracket";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import NotificationBell from "@/components/NotificationBell";
+import { FollowButton } from "@/components/FollowButton";
 
 const DEFAULT_TEAMS = [
   "Alpha", "Beta", "Gamma", "Delta", "Epsilon", 
@@ -387,6 +388,7 @@ function TournamentContent() {
               }`}>
                 {tournament?.status}
              </span>
+             <FollowButton entityId={tournamentId} entityType="tournament" variant="pill" />
           </div>
         </header>
 
