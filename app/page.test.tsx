@@ -336,6 +336,36 @@ describe("Home — tabs & tournaments sorting", () => {
       expect(screen.getByText("Championship Alpha")).toBeInTheDocument();
       expect(screen.getByText("Championship Beta")).toBeInTheDocument();
     });
+
+    // Clicking on a tournament row should navigate to /tournament/t1
+    await user.click(screen.getByText("Championship Alpha"));
+    expect(routerPush).toHaveBeenCalledWith("/tournament/t1");
+  });
+
+  it("navigates to match page when clicking on a match table row", async () => {
+    supabaseMock.__queueResponse("matches", {
+      data: [
+        {
+          id: "match-123",
+          sport_type: "Basketball",
+          status: "ongoing",
+          participants: [{ name: "SL Benfica" }, { name: "FC Porto" }],
+          created_at: new Date().toISOString(),
+        },
+      ],
+      error: null,
+    });
+    supabaseMock.__queueResponse("tournaments", { data: [], error: null });
+
+    const user = userEvent.setup();
+    await renderHome();
+
+    await waitFor(() => {
+      expect(screen.getByText("SL Benfica")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("SL Benfica"));
+    expect(routerPush).toHaveBeenCalledWith("/match/match-123");
   });
 });
 
