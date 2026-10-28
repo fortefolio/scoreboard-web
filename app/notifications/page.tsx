@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
 import { useNotifications } from "@/lib/hooks/useNotifications";
+import { formatVersusTitle } from "@/lib/utils/formatName";
 
 const getRelativeTime = (dateString: string) => {
   const now = new Date();
@@ -106,7 +107,7 @@ export default function NotificationsPage() {
                   </div>
 
                   <h3 className={`text-lg font-black mb-1.5 tracking-tight uppercase italic ${!n.read_at ? 'text-white' : 'text-slate-400'}`}>
-                    {isInvitation ? (matchDetails.teams || n.title) : n.title}
+                    {formatVersusTitle(isInvitation ? (matchDetails.teams || n.title) : n.title)}
                   </h3>
 
                   <p className="text-on-surface-variant leading-relaxed mb-4 max-w-2xl text-xs">

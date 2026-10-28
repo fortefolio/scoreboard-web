@@ -114,7 +114,13 @@ export default function TopNavBar() {
               )}
             </div>
           ) : (
-            <div className="flex gap-4">
+            <div className="flex gap-4 items-center">
+               <Link
+                 href="/?auth=login"
+                 className="text-slate-400 hover:text-white px-4 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all duration-300 ease-out active:scale-95"
+               >
+                 Sign In
+               </Link>
                <Link
                  href="/?auth=signup"
                  className="bg-primary-container text-on-primary-container px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-500/10 hover:text-indigo-300 transition-all duration-300 ease-out active:scale-95 shadow-lg shadow-indigo-500/20"

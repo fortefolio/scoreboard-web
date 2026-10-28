@@ -110,8 +110,26 @@ function HomeContent() {
       .channel('live-arena-updates')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'matches', filter: 'status=eq.ongoing' },
-        () => { fetchLiveMatches(); }
+        { event: '*', schema: 'public', table: 'matches' },
+        (payload: any) => {
+          if (payload.eventType === 'UPDATE') {
+            if (payload.new.status === 'ongoing') {
+              setLiveMatches((prev) => {
+                const idx = prev.findIndex((m) => m.id === payload.new.id);
+                if (idx >= 0) {
+                  const updated = [...prev];
+                  updated[idx] = { ...updated[idx], ...payload.new };
+                  return updated;
+                }
+                return [payload.new, ...prev];
+              });
+            } else {
+              setLiveMatches((prev) => prev.filter((m) => m.id !== payload.new.id));
+            }
+          } else {
+            fetchLiveMatches();
+          }
+        }
       )
       .subscribe();
 
@@ -141,7 +159,7 @@ function HomeContent() {
           const { data: existingUser } = await supabase
             .from('users')
             .select('id')
-            .eq('username', username.trim())
+            .ilike('username', username.trim())
             .maybeSingle();
 
           if (existingUser) {
@@ -154,7 +172,7 @@ function HomeContent() {
         }
       }
 
-      const { error } = type === "login"
+      const { data, error } = type === "login"
         ? await supabase.auth.signInWithPassword({ email, password })
         : await supabase.auth.signUp({
             email,
@@ -165,6 +183,14 @@ function HomeContent() {
       if (error) {
         toast.error(error.message);
         setIsSubmitting(false);
+      } else if (
+        type === "signup" &&
+        data?.user &&
+        Array.isArray(data.user.identities) &&
+        data.user.identities.length === 0
+      ) {
+        toast.error("An account with this email already exists.");
+        setIsSubmitting(false);
       } else {
         if (type === "signup") {
           toast.success("Signup successful! Please check your email if confirmation is required.");
@@ -173,7 +199,10 @@ function HomeContent() {
         }
         closeAuthModal();
         const next = searchParams.get('next');
-        if (next) router.push(next);
+        const hasActiveSession = type === "login" || Boolean(data?.session);
+        if (hasActiveSession && next && next.startsWith('/') && !next.startsWith('//')) {
+          router.push(next);
+        }
       }
     } catch {
       toast.error("An unexpected error occurred. Please try again.");
@@ -639,7 +668,13 @@ function HomeContent() {
                 <div className="h-px bg-outline-variant opacity-20 flex-1"></div>
               </div>
 
-              <form className="flex flex-col gap-5">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAuth(authModal as any);
+                }}
+                className="flex flex-col gap-5"
+              >
                 {authModal === "signup" && (
                   <label className="flex flex-col gap-2">
                     <span className="font-body text-sm font-medium text-on-surface-variant">Username</span>
@@ -709,10 +744,9 @@ function HomeContent() {
                 )}
 
                 <button 
-                  onClick={() => handleAuth(authModal as any)}
                   disabled={isSubmitting}
                   className="w-full h-14 rounded-full bg-primary-container/80 hover:bg-primary-container backdrop-blur-md text-on-primary-container font-headline font-bold text-lg tracking-wide transition-all shadow-[0_0_15px_rgba(195,192,255,0.1)] hover:shadow-[0_0_20px_rgba(195,192,255,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3" 
-                  type="button"
+                  type="submit"
                 >
                   {isSubmitting ? (
                     <div className="w-5 h-5 border-2 border-on-primary-container border-t-transparent rounded-full animate-spin"></div>

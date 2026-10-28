@@ -55,8 +55,9 @@ describe("TopNavBar — guest", () => {
     routerRefresh.mockClear();
   });
 
-  it('shows the "Get Started" link', () => {
+  it('shows the "Sign In" and "Get Started" links', () => {
     renderNav(null);
+    expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute("href", "/?auth=login");
     expect(screen.getByRole("link", { name: /get started/i })).toHaveAttribute("href", "/?auth=signup");
   });
 

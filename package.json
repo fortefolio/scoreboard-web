@@ -9,7 +9,10 @@
     "lint": "eslint",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "replay:match136": "tsx scripts/interactive-match-136.ts",
+    "replay:basketball": "tsx scripts/interactive-basketball-game.ts",
+    "replay:padel": "tsx scripts/interactive-padel-game.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
@@ -38,6 +41,7 @@
     "fast-check": "^4.8.0",
     "happy-dom": "^20.9.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^3.2.4",
     "wrangler": "^4.93.0"

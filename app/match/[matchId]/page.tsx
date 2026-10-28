@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import MatchDetailClient from "./MatchDetailClient";
 
 type Props = {
@@ -19,8 +20,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!match) return { title: 'Match Not Found' };
 
-  const p1 = match.participants?.[0]?.name || "TBD";
-  const p2 = match.participants?.[1]?.name || "TBD";
+  const p1 = formatTeamOrPlayerName(match.participants?.[0]?.name) || "TBD";
+  const p2 = formatTeamOrPlayerName(match.participants?.[1]?.name) || "TBD";
   const sets = match.scores?.sets || [0, 0];
 
   const tournament = Array.isArray(match.tournaments) ? match.tournaments[0] : match.tournaments;

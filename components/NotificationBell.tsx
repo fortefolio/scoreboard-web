@@ -5,6 +5,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { useNotifications } from "@/lib/hooks/useNotifications";
+import { formatVersusTitle } from "@/lib/utils/formatName";
 
 const getRelativeTime = (dateString: string) => {
   const now = new Date();
@@ -124,7 +125,7 @@ export default function NotificationBell() {
 
                     {/* Middle Row: Content */}
                     <h4 className="text-[15px] font-black text-white leading-tight mb-2 tracking-tight">
-                      {isInvitation ? (matchDetails.teams || n.title) : n.title}
+                      {formatVersusTitle(isInvitation ? (matchDetails.teams || n.title) : n.title)}
                     </h4>
 
                     {/* Bottom Row: Info & CTA */}
