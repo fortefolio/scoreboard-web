@@ -5,8 +5,10 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 function SignupContent() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const [tournament, setTournament] = useState<any>(null);
   const [participantCount, setParticipantCount] = useState(0);
@@ -122,7 +124,7 @@ function SignupContent() {
       <main className="w-full max-w-md relative z-10">
         <header className="text-center mb-12">
           <div className="text-2xl font-digital text-indigo-500 tracking-tighter mb-8">SCORE:BOARD</div>
-          <p className="text-secondary font-label text-[10px] uppercase tracking-[0.3em] mb-2">{tournament.sport_type} Registration</p>
+          <p className="text-secondary font-label text-[10px] uppercase tracking-[0.3em] mb-2">{getSportTranslation(tournament.sport_type, t)} Registration</p>
           <h1 className="text-4xl font-headline font-black tracking-tight">{tournament.name}</h1>
         </header>
 

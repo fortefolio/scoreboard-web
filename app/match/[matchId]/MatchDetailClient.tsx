@@ -11,6 +11,23 @@ import SportIcon from "@/components/SportIcon";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import { FollowButton } from "@/components/FollowButton";
+import { useTranslation, getSportTranslation } from "@/lib/i18n";
+
+const getStatusTranslation = (status: string, t: (key: string, p?: any) => string) => {
+  switch (status) {
+    case "completed":
+      return t("status.completed");
+    case "ongoing":
+      return t("status.live");
+    case "scheduled":
+    case "pending":
+      return t("status.scheduled");
+    case "cancelled":
+      return t("status.cancelled");
+    default:
+      return status;
+  }
+};
 
 const getInitials = (name?: string) => {
   if (!name) return "?";
@@ -28,6 +45,7 @@ const getInitials = (name?: string) => {
 
 
 const CountdownTimer = ({ scheduledAt }: { scheduledAt?: string }) => {
+  const { t } = useTranslation();
   const [timeLeft, setTimeLeft] = useState<string>("00:00:00");
   const [isReady, setIsReady] = useState(false);
 
@@ -75,7 +93,7 @@ const CountdownTimer = ({ scheduledAt }: { scheduledAt?: string }) => {
       <div className="font-label text-[12px] sm:text-[14px] font-black uppercase tracking-[0.4em] text-on-surface-variant/20 mb-3">vs</div>
       <div className="bg-[#1a2035]/60 backdrop-blur-xl w-32 sm:w-56 py-3 sm:py-4 rounded-[1.25rem] border border-white/5 flex flex-col items-center shadow-[0_0_40px_-12px_rgba(0,0,0,0.5)]">
         <div className="font-label text-[8px] font-black uppercase tracking-[0.3em] text-on-surface-variant/30 mb-1">
-          {timeLeft === "STARTING" ? "SOON" : "Starts In"}
+          {timeLeft === "STARTING" ? t("match.soon") : t("match.startsIn")}
         </div>
         <div className={`font-headline font-black tracking-tight text-on-surface ${timeLeft === "STARTING" ? "text-lg sm:text-xl pb-1" : "text-2xl sm:text-4xl"}`}>
           {timeLeft}
@@ -97,6 +115,7 @@ const renderLivePoint = (match: any, idx: number) => {
 };
 
 export default function MatchDetailClient() {
+  const { t, locale } = useTranslation();
   const { matchId } = useParams();
   const matchIdStr = (Array.isArray(matchId) ? matchId[0] : matchId) || "";
   const router = useRouter();
@@ -486,7 +505,7 @@ export default function MatchDetailClient() {
               <div className="h-7 px-3 rounded-full bg-white/5 backdrop-blur-md border border-white/10 shadow-sm inline-flex items-center gap-1.5">
                 <SportIcon sport={match.sport_type} className="text-secondary text-[13px] leading-none" />
                 <span className="font-label text-[10px] font-black uppercase tracking-widest text-on-surface-variant/90 leading-none">
-                  {match.sport_type || "Tennis"}
+                  {getSportTranslation(match.sport_type || "Tennis", t)}
                 </span>
               </div>
 
@@ -495,7 +514,7 @@ export default function MatchDetailClient() {
                 <Link
                   href={`/user/${encodeURIComponent(match.organizer.username || match.organizer.email.split("@")[0])}`}
                   className="h-7 px-3 rounded-full bg-white/[0.03] hover:bg-white/[0.08] backdrop-blur-sm border border-white/5 hover:border-white/15 text-on-surface-variant/70 hover:text-on-surface transition-all duration-300 inline-flex items-center gap-1.5 cursor-pointer shadow-sm group"
-                  title={`Ver perfil de @${match.organizer.username || match.organizer.email.split("@")[0]}`}
+                  title={`@${match.organizer.username || match.organizer.email.split("@")[0]}`}
                 >
                   <span className="material-symbols-outlined text-[13px] leading-none text-on-surface-variant/50 group-hover:text-primary transition-colors">person</span>
                   <span className="font-label text-[10px] font-black uppercase tracking-widest leading-none group-hover:text-on-surface transition-colors">
@@ -517,7 +536,7 @@ export default function MatchDetailClient() {
                 {match.status === "ongoing" && (
                   <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
                 )}
-                {match.status}
+                {getStatusTranslation(match.status, t)}
               </span>
             </div>
 
@@ -527,7 +546,7 @@ export default function MatchDetailClient() {
               <div className="relative shrink-0" ref={menuRef}>
                 <button
                   onClick={() => setIsMenuOpen((prev) => !prev)}
-                  title="Opções do Jogo"
+                  title={t("match.options")}
                   className="w-10 h-10 rounded-2xl bg-white/5 hover:bg-white/10 backdrop-blur-md text-on-surface-variant hover:text-on-surface border border-white/10 transition-all flex items-center justify-center cursor-pointer shadow-sm"
                   aria-haspopup="true"
                   aria-expanded={isMenuOpen}
@@ -545,19 +564,19 @@ export default function MatchDetailClient() {
                     className="w-full px-4 py-2.5 text-left text-xs font-bold text-on-surface hover:bg-white/10 flex items-center gap-2.5 transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[18px] text-primary">share</span>
-                    Partilhar
+                    {t("match.shareLink")}
                   </button>
 
                   {isOrganizer && (
                     match.tournament_id ? (
                       <button
                         disabled
-                        title="Jogos pertencentes a um torneio não podem ser eliminados individualmente"
+                        title={t("match.lockedTournamentMatch")}
                         className="w-full px-4 py-2.5 text-left text-xs font-bold text-rose-400/40 cursor-not-allowed flex items-center gap-2.5 border-t border-white/5 select-none"
                       >
                         <span className="material-symbols-outlined text-[18px] opacity-40">delete</span>
-                        <span className="flex-1 opacity-50">Remover</span>
-                        <span className="material-symbols-outlined text-[14px] text-on-surface-variant/40" title="Bloqueado por pertencer a um torneio">lock</span>
+                        <span className="flex-1 opacity-50">{t("common.delete")}</span>
+                        <span className="material-symbols-outlined text-[14px] text-on-surface-variant/40" title={t("match.lockedTournamentMatch")}>lock</span>
                       </button>
                     ) : (
                       <button
@@ -568,7 +587,7 @@ export default function MatchDetailClient() {
                         className="w-full px-4 py-2.5 text-left text-xs font-bold text-rose-400 hover:bg-rose-500/10 flex items-center gap-2.5 transition-colors cursor-pointer border-t border-white/5"
                       >
                         <span className="material-symbols-outlined text-[18px]">delete</span>
-                        Remover
+                        {t("match.deleteMatch")}
                       </button>
                     )
                   )}
@@ -669,7 +688,7 @@ export default function MatchDetailClient() {
                   <table className="w-full text-sm">
                     <thead className="border-b border-white/5 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                       <tr>
-                        <th className="py-2.5 px-4 text-left font-normal">Equipa</th>
+                        <th className="py-2.5 px-4 text-left font-normal">{t("common.team")}</th>
                         <th className="py-2.5 px-3 text-center min-w-[44px]">Q1</th>
                         <th className="py-2.5 px-3 text-center min-w-[44px]">Q2</th>
                         <th className="py-2.5 px-3 text-center min-w-[44px]">Q3</th>
@@ -678,13 +697,13 @@ export default function MatchDetailClient() {
                           <th className="py-2.5 px-3 text-center min-w-[44px]">OT</th>
                         )}
                         <th className="py-2.5 px-4 text-center text-secondary font-black min-w-[50px] bg-white/[0.03]">
-                          Total
+                          {t("common.total")}
                         </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {[0, 1].map((pIdx) => {
-                        const playerName = formatTeamOrPlayerName(match.participants?.[pIdx]?.name) || `Equipa ${pIdx + 1}`;
+                        const playerName = formatTeamOrPlayerName(match.participants?.[pIdx]?.name) || t("common.teamDefault", { num: pIdx + 1 });
                         const bQuarters = match.scores?.basketball?.quarters || [];
                         const totalScore = match.scores?.current?.[pIdx === 0 ? "home" : "away"] ?? 0;
                         const oppTotal = match.scores?.current?.[pIdx === 0 ? "away" : "home"] ?? 0;
@@ -728,7 +747,7 @@ export default function MatchDetailClient() {
                   <table className="w-full text-sm">
                     <thead className="border-b border-white/5 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                       <tr>
-                        <th className="py-2.5 px-4 text-left font-normal">Equipa</th>
+                        <th className="py-2.5 px-4 text-left font-normal">{t("common.team")}</th>
                         {setsData.map((_: any, idx: number) => (
                           <th key={idx} className="py-2.5 px-3 text-center font-normal min-w-[44px]">
                             Set {idx + 1}
@@ -738,10 +757,10 @@ export default function MatchDetailClient() {
                           (match.sport_type === "Tennis" || match.sport_type === "Padel") ? (
                             <>
                               <th className="py-2.5 px-3 text-center text-indigo-400 font-bold min-w-[44px]">
-                                Jogos
+                                {t("common.games")}
                               </th>
                               <th className="py-2.5 px-3 text-center text-primary font-bold min-w-[44px] bg-primary/5">
-                                Pontos
+                                {t("common.pointsLabel")}
                               </th>
                             </>
                           ) : (
@@ -760,7 +779,7 @@ export default function MatchDetailClient() {
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {[0, 1].map((pIdx) => {
-                        const playerName = formatTeamOrPlayerName(match.participants?.[pIdx]?.name) || `Player ${pIdx + 1}`;
+                        const playerName = formatTeamOrPlayerName(match.participants?.[pIdx]?.name) || t("common.teamDefault", { num: pIdx + 1 });
                         const isServing = match.status === "ongoing" && match.scores?.serving_index === pIdx;
                         const isMatchWinner = isCompleted && sets[pIdx] > sets[pIdx === 0 ? 1 : 0];
 
@@ -848,7 +867,7 @@ export default function MatchDetailClient() {
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">analytics</span>
-            Score Progress
+            {t("match.scoreProgress")}
           </button>
           <button
             type="button"
@@ -860,7 +879,7 @@ export default function MatchDetailClient() {
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">tune</span>
-            Match Rules
+            {t("match.matchRules")}
           </button>
           <button
             type="button"
@@ -872,7 +891,7 @@ export default function MatchDetailClient() {
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">gavel</span>
-            Match Official
+            {t("match.matchOfficial")}
           </button>
         </div>
 
@@ -931,10 +950,21 @@ export default function MatchDetailClient() {
               const twosCount = qBaskets.filter((b: any) => b.points === 2).length;
               const onesCount = qBaskets.filter((b: any) => b.points === 1).length;
 
+              const qQuarterName =
+                qIdx === 0
+                  ? t("match.quarter1")
+                  : qIdx === 1
+                  ? t("match.quarter2")
+                  : qIdx === 2
+                  ? t("match.quarter3")
+                  : qIdx === 3
+                  ? t("match.quarter4")
+                  : t("match.overtime");
+
               quartersList.push({
                 quarterNumber: qIdx + 1,
                 quarterLabel: qLabel,
-                quarterName: qIdx < 4 ? `${qIdx + 1}º Quarto` : "Prolongamento (OT)",
+                quarterName: qQuarterName,
                 home: qHome,
                 away: qAway,
                 isLive,
@@ -965,10 +995,10 @@ export default function MatchDetailClient() {
                   <span className="material-symbols-outlined text-secondary text-[20px]">analytics</span>
                   <div>
                     <h3 className="font-headline font-bold text-sm text-on-surface">
-                      Quarter & Point-by-Point Breakdown
+                      {t("match.quarterBreakdown")}
                     </h3>
                     <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/60">
-                      Clica num quarto para expandir a evolução detalhada dos pontos
+                      {t("match.clickQuarterHint")}
                     </p>
                   </div>
                 </div>
@@ -978,7 +1008,7 @@ export default function MatchDetailClient() {
                   onClick={toggleAllQuarters}
                   className="font-label text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/80 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5 cursor-pointer"
                 >
-                  {allExpanded ? "Recolher Todos" : "Expandir Todos"}
+                  {allExpanded ? t("match.collapseAll") : t("match.expandAll")}
                 </button>
               </div>
 
@@ -1039,14 +1069,14 @@ export default function MatchDetailClient() {
                             {q.onesCount > 0 && (
                               <span
                                 className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 font-bold border border-amber-500/20 text-[11px]"
-                                title="Lances livres convertidos"
+                                title={t("match.freeThrowsConverted")}
                               >
                                 {q.onesCount} FT
                               </span>
                             )}
                             {q.totalBaskets > 0 && (
                               <span className="text-[11px] text-on-surface-variant/60 font-label">
-                                ({q.totalBaskets} lançamentos)
+                                ({q.totalBaskets} {t("match.shots")})
                               </span>
                             )}
                           </div>
@@ -1068,7 +1098,7 @@ export default function MatchDetailClient() {
                             <div className="space-y-3 pt-2">
                               <div className="flex items-center gap-2">
                                 <span className="font-label text-[9px] font-black uppercase tracking-widest text-on-surface-variant/50">
-                                  Evolução do Marcador:
+                                  {t("match.scoreEvolution")}
                                 </span>
                               </div>
 
@@ -1086,7 +1116,7 @@ export default function MatchDetailClient() {
                                       key={bIdx}
                                       title={
                                         b.desc
-                                          ? `${teamName}: ${b.desc} (Placar: ${b.scoreAfter.home} - ${b.scoreAfter.away})`
+                                          ? `${teamName}: ${b.desc} (${b.scoreAfter.home} - ${b.scoreAfter.away})`
                                           : `${teamName} (+${b.points} pts)`
                                       }
                                       className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-mono text-xs transition-all cursor-default border ${
@@ -1128,7 +1158,7 @@ export default function MatchDetailClient() {
                             </div>
                           ) : (
                             <div className="pt-2 text-xs text-on-surface-variant">
-                              Quarto concluído com parcial de{" "}
+                              {t("match.quarterFinishedWith")}{" "}
                               <strong className="text-on-surface font-mono">
                                 {q.home} - {q.away}
                               </strong>
@@ -1239,13 +1269,13 @@ export default function MatchDetailClient() {
                   <div>
                     <h3 className="font-headline font-bold text-sm text-on-surface">
                       {isVolleyballLike
-                        ? "Set, Rally & Point-by-Point Breakdown"
-                        : "Set, Game & Point-by-Point Breakdown"}
+                        ? t("match.setBreakdown")
+                        : t("match.setGameBreakdown")}
                     </h3>
                     <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/60">
                       {isVolleyballLike
-                        ? "Clica num set para expandir a evolução detalhada dos pontos"
-                        : "Clica num set para expandir a progressão de cada jogo"}
+                        ? t("match.clickSetHint")
+                        : t("match.clickGameHint")}
                     </p>
                   </div>
                 </div>
@@ -1253,9 +1283,9 @@ export default function MatchDetailClient() {
                 <button
                   type="button"
                   onClick={toggleAll}
-                  className="font-label text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/80 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5"
+                  className="font-label text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/80 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5 cursor-pointer"
                 >
-                  {allExpanded ? "Recolher Todos" : "Expandir Todos"}
+                  {allExpanded ? t("match.collapseAll") : t("match.expandAll")}
                 </button>
               </div>
 
@@ -1276,7 +1306,7 @@ export default function MatchDetailClient() {
                       <button
                         type="button"
                         onClick={() => toggleSetExpanded(s.setNumber)}
-                        className="w-full p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left hover:bg-white/[0.02] transition-colors"
+                        className="w-full p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left hover:bg-white/[0.02] transition-colors cursor-pointer"
                       >
                         {/* Left: Set and Score */}
                         <div className="flex items-center gap-3">
@@ -1304,23 +1334,23 @@ export default function MatchDetailClient() {
                           {isVolleyballLike ? (
                             <>
                               <span className="px-2.5 py-1 rounded-lg bg-surface-container-high font-mono text-xs font-black text-on-surface">
-                                {ralliesCount} Rallies
+                                {t("match.ralliesCount", { count: ralliesCount })}
                               </span>
                               <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-label text-[9px] font-black uppercase tracking-widest">
-                                {sideoutsCount} Side-outs
+                                {t("match.sideoutsCount", { count: sideoutsCount })}
                               </span>
                               <span className="px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-label text-[9px] font-black uppercase tracking-widest">
-                                {servicePointsCount} Pontos no Serviço
+                                {t("match.servicePointsCount", { count: servicePointsCount })}
                               </span>
                             </>
                           ) : (
                             <>
                               <span className="px-2.5 py-1 rounded-lg bg-surface-container-high font-mono text-xs font-black text-on-surface">
-                                {s.gamesHistory.length} Games
+                                {t("match.gamesCount", { count: s.gamesHistory.length })}
                               </span>
                               {s.gamesHistory.filter((g: any) => g.is_break).length > 0 && (
                                 <span className="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-label text-[9px] font-black uppercase tracking-widest">
-                                  {s.gamesHistory.filter((g: any) => g.is_break).length} Breaks
+                                  {t("match.breaksCount", { count: s.gamesHistory.filter((g: any) => g.is_break).length })}
                                 </span>
                               )}
                             </>
@@ -1344,7 +1374,7 @@ export default function MatchDetailClient() {
                             s.pointsProgression.length > 0 ? (
                               <div className="flex flex-wrap items-center gap-1.5 pt-2">
                                 <span className="font-label text-[9px] font-black uppercase tracking-widest text-on-surface-variant/50 mr-1">
-                                  Evolução:
+                                  {t("match.scoreEvolution")}
                                 </span>
                                 {s.pointsProgression.map((pt: string, ptIdx: number) => {
                                   const isLast = ptIdx === s.pointsProgression.length - 1;
@@ -1360,7 +1390,7 @@ export default function MatchDetailClient() {
                                       title={
                                         r
                                           ? `Rally #${r.rally_number}: ${scorerName} (${
-                                              r.is_sideout ? "Side-out" : "Ponto no Serviço"
+                                              r.is_sideout ? "Side-out" : t("match.servicePointsCount", { count: 1 })
                                             })`
                                           : pt
                                       }
@@ -1379,7 +1409,7 @@ export default function MatchDetailClient() {
                               </div>
                             ) : (
                               <div className="pt-2 text-xs text-on-surface-variant">
-                                Set concluído{" "}
+                                {t("match.setFinishedWith")}{" "}
                                 <strong className="text-on-surface font-mono">
                                   {s.home} - {s.away}
                                 </strong>
@@ -1398,7 +1428,7 @@ export default function MatchDetailClient() {
                                     g.winner !== null && g.winner !== undefined
                                       ? formatTeamOrPlayerName(match.participants?.[g.winner]?.name) ||
                                         `Player ${g.winner + 1}`
-                                      : "In Progress";
+                                      : t("match.inProgress");
 
                                   return (
                                     <div
@@ -1414,7 +1444,7 @@ export default function MatchDetailClient() {
                                             <span className="material-symbols-outlined text-[14px] text-secondary">
                                               sports_tennis
                                             </span>
-                                            {serverName} serving
+                                            {serverName} {t("match.serving")}
                                           </span>
                                           {g.is_break && (
                                             <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-label text-[9px] font-black uppercase tracking-widest">
@@ -1424,7 +1454,7 @@ export default function MatchDetailClient() {
                                         </div>
                                         <div className="flex items-center gap-3">
                                           <span className="text-[11px] font-bold text-on-surface-variant">
-                                            Won by <strong className="text-on-surface">{winnerName}</strong>
+                                            {t("match.wonBy")} <strong className="text-on-surface">{winnerName}</strong>
                                           </span>
                                           <span className="px-2.5 py-0.5 rounded-lg bg-[#0c1324] border border-white/10 font-mono text-xs font-black text-primary">
                                             {g.games_after?.home ?? 0} - {g.games_after?.away ?? 0}
@@ -1436,7 +1466,7 @@ export default function MatchDetailClient() {
                                         g.points_progression.length > 0 && (
                                           <div className="flex flex-wrap items-center gap-1.5 pt-1">
                                             <span className="font-label text-[9px] font-black uppercase tracking-widest text-on-surface-variant/50 mr-1">
-                                              Points:
+                                              {t("match.points")}
                                             </span>
                                             {g.points_progression.map((pt: string, ptIdx: number) => {
                                               const isLast = ptIdx === g.points_progression.length - 1;
@@ -1465,7 +1495,7 @@ export default function MatchDetailClient() {
                               </div>
                             ) : (
                               <div className="pt-2 text-xs text-on-surface-variant">
-                                Set concluído{" "}
+                                {t("match.setFinishedWith")}{" "}
                                 <strong className="text-on-surface font-mono">
                                   {s.home} - {s.away}
                                 </strong>
@@ -1491,7 +1521,7 @@ export default function MatchDetailClient() {
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary text-[20px]">tune</span>
-                <h3 className="font-headline font-bold text-sm">Match Rules</h3>
+                <h3 className="font-headline font-bold text-sm">{t("match.matchRules")}</h3>
               </div>
               {isOrganizer && !match.tournament_id && (
                 <button
@@ -1499,7 +1529,7 @@ export default function MatchDetailClient() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-all font-label text-[10px] font-black uppercase tracking-widest cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[12px]">edit</span>
-                  Edit Rules
+                  {t("match.editRules")}
                 </button>
               )}
             </div>
@@ -1507,76 +1537,76 @@ export default function MatchDetailClient() {
             {match.sport_type === "Basketball" ? (
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">Format</p>
+                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("common.format")}</p>
                   <p className="font-headline font-bold text-sm text-on-surface">
                     {rules?.quarters_count || 4} Quarters ({rules?.quarter_minutes || 10} min)
                   </p>
                 </div>
                 <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">Shot Clock</p>
+                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.shotClock")}</p>
                   <p className="font-headline font-bold text-sm text-on-surface">
-                    {rules?.shot_clock_seconds || 24} Seconds
+                    {t("match.secondsCount", { count: rules?.shot_clock_seconds || 24 })}
                   </p>
                 </div>
                 <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">Overtime</p>
+                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.overtime")}</p>
                   <p className="font-headline font-bold text-sm text-on-surface">
-                    {rules?.overtime_minutes || 5} Minutes
+                    {t("match.minutesCount", { count: rules?.overtime_minutes || 5 })}
                   </p>
                 </div>
                 <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">Team Fouls Bonus</p>
+                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.teamFoulsBonus")}</p>
                   <p className="font-headline font-bold text-sm text-on-surface">
-                    {rules?.fouls_bonus || 5} Fouls / Quarter
+                    {t("match.foulsPerQuarter", { count: rules?.fouls_bonus || 5 })}
                   </p>
                 </div>
                 <div className="bg-surface-container rounded-2xl p-4 col-span-2">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">Venue / Court</p>
+                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.venueCourt")}</p>
                   <p className="font-headline font-bold text-sm text-on-surface">{match.court || "TBD"}</p>
                 </div>
               </div>
             ) : match.sport_type === "Football" ? (
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">Format</p>
+                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("common.format")}</p>
                   <p className="font-headline font-bold text-sm text-on-surface">
-                    2 Halves ({rules?.half_minutes || 45} min)
+                    {t("match.twoHalves", { min: rules?.half_minutes || 45 })}
                   </p>
                 </div>
                 <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">Total Duration</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">90 min + Stoppage</p>
+                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.totalDuration")}</p>
+                  <p className="font-headline font-bold text-sm text-on-surface">{t("match.stoppageDuration")}</p>
                 </div>
                 <div className="bg-surface-container rounded-2xl p-4 col-span-2">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">Venue / Stadium</p>
+                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.venueStadium")}</p>
                   <p className="font-headline font-bold text-sm text-on-surface">{match.court || "TBD"}</p>
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">Format</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">Best of {rules?.max_sets || 3} Sets</p>
+                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("common.format")}</p>
+                  <p className="font-headline font-bold text-sm text-on-surface">{t("match.bestOfSets", { count: rules?.max_sets || 3 })}</p>
                 </div>
                 <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">Score Target</p>
+                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.scoreTarget")}</p>
                   <p className="font-headline font-bold text-sm text-on-surface">
                     {match.sport_type === "Tennis" || match.sport_type === "Padel"
-                      ? "6 Games (Tiebreak)"
-                      : `${rules?.points_per_set || 21} Points`}
+                      ? t("match.gamesCountTiebreak")
+                      : t("match.pointsCount", { count: rules?.points_per_set || 21 })}
                   </p>
                 </div>
                 {(match.sport_type === "Padel" || rules?.no_ad !== undefined) && (
                   <div className="bg-surface-container rounded-2xl p-4 col-span-2">
-                    <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">Regra de Vantagem</p>
+                    <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.advantageRule")}</p>
                     <p className="font-headline font-bold text-sm text-on-surface flex items-center gap-1.5 text-amber-400">
                       <span className="material-symbols-outlined text-[16px]">stars</span>
-                      {rules?.no_ad ? "Ponto de Ouro (Golden Point - Sem Vantagens)" : "Com Vantagens (Ad standard)"}
+                      {rules?.no_ad ? t("match.goldenPoint") : t("match.standardAd")}
                     </p>
                   </div>
                 )}
                 <div className="bg-surface-container rounded-2xl p-4 col-span-2">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">Venue / Court</p>
+                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.venueCourt")}</p>
                   <p className="font-headline font-bold text-sm text-on-surface">{match.court || "TBD"}</p>
                 </div>
               </div>
@@ -1589,7 +1619,7 @@ export default function MatchDetailClient() {
           <div className="w-full bg-surface-container-low rounded-3xl p-6 sm:p-8 border border-white/5 shadow-xl">
             <div className="flex items-center gap-2 mb-5">
               <span className="material-symbols-outlined text-primary text-[20px]">gavel</span>
-              <h3 className="font-headline font-bold text-sm">Match Official</h3>
+              <h3 className="font-headline font-bold text-sm">{t("match.matchOfficial")}</h3>
             </div>
 
             {match.umpire ? (
@@ -1602,7 +1632,7 @@ export default function MatchDetailClient() {
                     {match.umpire.username || "Unknown"}
                   </p>
                   <p className="font-label text-[9px] font-black uppercase tracking-[0.18em] text-on-surface-variant/60">
-                    Official Umpire
+                    {t("match.officialUmpire")}
                   </p>
                 </div>
                 <span className="material-symbols-outlined text-secondary text-[20px]" aria-hidden>check_circle</span>
@@ -1612,13 +1642,13 @@ export default function MatchDetailClient() {
                       const { error } = await supabase.from("matches").update({ umpire_id: null }).eq("id", matchIdStr);
                       if (!error) {
                         setMatch({ ...match, umpire_id: null, umpire: null });
-                        toast.success("Umpire unassigned.");
+                        toast.success(t("match.umpireUnassigned"));
                       } else {
                         toast.error("Error unassigning: " + error.message);
                       }
                     }}
                     className="p-1.5 -mr-1 rounded-lg text-on-surface-variant/40 hover:text-error hover:bg-error-container/20 transition-all cursor-pointer"
-                    title="Unassign Umpire"
+                    title={t("match.unassignUmpire")}
                   >
                     <span className="material-symbols-outlined text-[18px]">person_remove</span>
                   </button>
@@ -1630,7 +1660,7 @@ export default function MatchDetailClient() {
                   <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 text-[18px]">person_search</span>
                   <input
                     type="text"
-                    placeholder="Search by name or email..."
+                    placeholder={t("match.searchUmpirePlaceholder")}
                     className="w-full pl-11 pr-10 py-3 bg-surface-container rounded-2xl text-sm font-body text-on-surface outline-none placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary-container/50 transition-all"
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
@@ -1655,12 +1685,12 @@ export default function MatchDetailClient() {
                     </div>
                   )}
                 </div>
-                <p className="font-label text-[10px] font-black uppercase tracking-[0.18em] text-tertiary">No Umpire Assigned</p>
+                <p className="font-label text-[10px] font-black uppercase tracking-[0.18em] text-tertiary">{t("match.noUmpireAssigned")}</p>
               </div>
             ) : (
               <div className="bg-surface-container rounded-2xl p-5 text-center">
                 <p className="font-label text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/60">
-                  Awaiting Umpire Assignment
+                  {t("match.awaitingUmpire")}
                 </p>
               </div>
             )}
@@ -1681,18 +1711,18 @@ export default function MatchDetailClient() {
                   router.push(`/match/${matchIdStr}/scoreboard`);
                 }
               }}
-              className="w-full py-5 rounded-full bg-primary-container hover:brightness-110 text-on-primary-container font-headline font-black uppercase tracking-[0.2em] text-sm transition-all active:scale-[0.99] flex items-center justify-center gap-3 shadow-[0_0_60px_-15px_rgba(79,70,229,0.6)]"
+              className="w-full py-5 rounded-full bg-primary-container hover:brightness-110 text-on-primary-container font-headline font-black uppercase tracking-[0.2em] text-sm transition-all active:scale-[0.99] flex items-center justify-center gap-3 shadow-[0_0_60px_-15px_rgba(79,70,229,0.6)] cursor-pointer"
             >
               <span className="material-symbols-outlined text-[22px]">play_circle</span>
-              Start Scoreboard
+              {t("match.startScoreboard")}
             </button>
           ) : isCompleted ? (
             <div className="w-full py-5 rounded-3xl bg-surface-container-low text-on-surface-variant text-center font-headline font-black uppercase tracking-[0.2em] text-sm">
-              Match Completed
+              {t("match.matchCompleted")}
             </div>
           ) : (
             <div className="w-full py-5 rounded-3xl bg-surface-container-low text-on-surface-variant/60 text-center font-label font-bold uppercase tracking-[0.2em] text-xs px-6">
-              Waiting for Umpire to Start Scoring
+              {t("match.waitingUmpireStart")}
             </div>
           )}
         </div>
@@ -1712,9 +1742,9 @@ export default function MatchDetailClient() {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteMatch}
-        title="Delete Match"
-        message="Are you sure you want to permanently delete this match? All recorded scores, set histories, and event logs for this match will be removed."
-        confirmText="Delete Match"
+        title={t("match.deleteMatch")}
+        message={t("match.deleteMatchConfirm")}
+        confirmText={t("match.deleteMatch")}
         isDanger={true}
       />
     </div>

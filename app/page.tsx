@@ -10,8 +10,9 @@ import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import MatchCard from "@/components/MatchCard";
 import SportIcon from "@/components/SportIcon";
 import { FollowButton } from "@/components/FollowButton";
+import Pagination from "@/components/Pagination";
 import { useFollow } from "@/lib/hooks/useFollow";
-import { useTranslation } from "@/lib/i18n/LanguageContext";
+import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 const MATCHES_PER_PAGE = 12;
 const TOURNAMENTS_PER_PAGE = 9;
@@ -688,7 +689,7 @@ function HomeContent() {
                                     className="text-primary text-[18px] shrink-0"
                                   />
                                   <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                                    {m.sport_type}
+                                    {getSportTranslation(m.sport_type, t)}
                                   </span>
                                 </div>
                               </td>
@@ -803,7 +804,7 @@ function HomeContent() {
                               className="text-primary text-[20px]"
                             />
                             <span className="text-[10px] font-label font-black uppercase tracking-wider text-on-surface-variant">
-                              {tItem.sport_type}
+                              {getSportTranslation(tItem.sport_type, t)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
@@ -911,7 +912,7 @@ function HomeContent() {
                                   className="text-primary text-[18px] shrink-0"
                                 />
                                 <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                                  {tItem.sport_type}
+                                  {getSportTranslation(tItem.sport_type, t)}
                                 </span>
                               </div>
                             </td>
@@ -1091,7 +1092,7 @@ function HomeContent() {
                                     className="text-primary text-[20px]"
                                   />
                                   <span className="text-[10px] font-label font-black uppercase tracking-wider text-on-surface-variant">
-                                    {tItem.sport_type}
+                                    {getSportTranslation(tItem.sport_type, t)}
                                   </span>
                                 </div>
                                 <FollowButton
@@ -1144,32 +1145,11 @@ function HomeContent() {
           )}
 
           {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between border-t border-white/5 pt-6 mt-8">
-              <span className="text-xs font-label text-on-surface-variant/60 font-bold uppercase tracking-wider">
-                {t("common.pageOf", { current: safePage, total: totalPages })}
-              </span>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={safePage <= 1}
-                  className="px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold text-on-surface transition-all cursor-pointer border border-white/5"
-                >
-                  {t("common.previous")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={safePage >= totalPages}
-                  className="px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold text-on-surface transition-all cursor-pointer border border-white/5"
-                >
-                  {t("common.next")}
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </>
       )}
 

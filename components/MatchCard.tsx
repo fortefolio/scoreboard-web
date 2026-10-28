@@ -6,7 +6,7 @@ import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import Link from "next/link";
 import SportIcon from "@/components/SportIcon";
 import { FollowButton } from "@/components/FollowButton";
-import { useTranslation } from "@/lib/i18n/LanguageContext";
+import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
 
@@ -101,9 +101,9 @@ export default function MatchCard({ match }: { match: any }) {
             <SportIcon sport={match.sport_type} className="text-primary text-[14px]" />
             <span 
               className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/70 truncate block"
-              title={match.tournaments?.name || match.sport_type}
+              title={match.tournaments?.name || getSportTranslation(match.sport_type, t)}
             >
-              {match.tournaments?.name || match.sport_type}
+              {match.tournaments?.name || getSportTranslation(match.sport_type, t)}
             </span>
           </div>
 
@@ -119,7 +119,11 @@ export default function MatchCard({ match }: { match: any }) {
               </span>
             ) : (
               <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/40 shrink-0">
-                {match.status === 'completed' || isMatchFinished ? t("status.final") : match.status}
+                {match.status === 'completed' || isMatchFinished
+                  ? t("status.final")
+                  : match.status === 'scheduled'
+                  ? t("status.scheduled")
+                  : match.status}
               </span>
             )}
             <FollowButton entityId={match.id} entityType="match" variant="icon" className="w-7 h-7" />

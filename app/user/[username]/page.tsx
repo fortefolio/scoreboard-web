@@ -6,9 +6,10 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import MatchCard from "@/components/MatchCard";
 import SportIcon from "@/components/SportIcon";
+import Pagination from "@/components/Pagination";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
-import { useTranslation } from "@/lib/i18n/LanguageContext";
+import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 const MATCHES_PER_PAGE = 12;
 const TOURNAMENTS_PER_PAGE = 9;
@@ -480,46 +481,50 @@ function UserProfileContent({
               ) : viewMode === "cards" ? (
                 /* Tournaments Cards Grid */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {paginatedTournaments.map((t) => (
+                  {paginatedTournaments.map((tourn) => (
                     <div
-                      key={t.id}
+                      key={tourn.id}
                       className="bg-surface-container-low p-6 rounded-3xl border border-white/5 hover:border-primary/40 transition-all duration-300 group shadow-xl flex flex-col justify-between"
                     >
                       <div>
                         <div className="flex justify-between items-start gap-3 mb-4">
                           <div className="flex items-center gap-2">
-                            <SportIcon sport={t.sport_type} className="text-primary text-[16px]" />
+                            <SportIcon sport={tourn.sport_type} className="text-primary text-[16px]" />
                             <span className="text-secondary font-label text-[10px] font-black uppercase tracking-[0.2em]">
-                              {t.sport_type}
+                              {getSportTranslation(tourn.sport_type, t)}
                             </span>
                           </div>
                           <span
                             className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                              t.status === "completed"
+                              tourn.status === "completed"
                                 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                : t.status === "ongoing"
+                                : tourn.status === "ongoing"
                                 ? "bg-primary/10 text-primary border border-primary/20"
                                 : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                             }`}
                           >
-                            {t.status}
+                            {tourn.status === "completed"
+                              ? t("status.completed")
+                              : tourn.status === "ongoing"
+                              ? t("status.live")
+                              : t("status.scheduled")}
                           </span>
                         </div>
 
                         <h3 className="font-headline font-bold text-xl text-on-surface group-hover:text-primary transition-colors leading-tight mb-2">
-                          {t.name}
+                          {tourn.name}
                         </h3>
 
-                        {t.start_date && (
+                        {tourn.start_date && (
                           <p className="text-on-surface-variant/60 font-label text-[10px] uppercase tracking-wider mb-4">
-                            Início: {new Date(t.start_date).toLocaleDateString()}
+                            Início: {new Date(tourn.start_date).toLocaleDateString()}
                           </p>
                         )}
                       </div>
 
                       <div className="mt-6 pt-4 border-t border-white/5">
                         <Link
-                          href={`/tournament/${t.id}`}
+                          href={`/tournament/${tourn.id}`}
                           className="w-full inline-flex items-center justify-center gap-2 bg-primary-container text-on-primary-container py-3 rounded-full font-label text-xs font-black uppercase tracking-wider hover:brightness-110 transition-all shadow-md shadow-primary/20"
                         >
                           Ver Torneio
@@ -570,7 +575,7 @@ function UserProfileContent({
                               <div className="flex items-center gap-2">
                                 <SportIcon sport={tItem.sport_type} className="text-primary text-[18px] shrink-0" />
                                 <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                                  {tItem.sport_type}
+                                  {getSportTranslation(tItem.sport_type, t)}
                                 </span>
                               </div>
                             </td>
@@ -729,7 +734,7 @@ function UserProfileContent({
                                 <div className="flex items-center gap-2">
                                   <SportIcon sport={m.sport_type} className="text-primary text-[18px] shrink-0" />
                                   <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                                    {m.sport_type}
+                                    {getSportTranslation(m.sport_type, t)}
                                   </span>
                                 </div>
                               </td>
@@ -798,64 +803,11 @@ function UserProfileContent({
           )}
 
           {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8 pt-6 border-t border-white/5">
-              <p className="text-xs font-label text-on-surface-variant/60">
-                {t("common.pageOf", { current: safePage, total: totalPages })}
-              </p>
-
-              <div className="flex items-center gap-1 self-center sm:self-auto">
-                {/* Previous Button */}
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={safePage === 1}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-on-surface-variant hover:text-on-surface bg-surface-container disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer flex items-center gap-1"
-                >
-                  <span className="material-symbols-outlined text-[16px]">chevron_left</span>
-                  {t("common.previous")}
-                </button>
-
-                {/* Page Number Buttons */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter((p) => {
-                    return p === 1 || p === totalPages || Math.abs(p - safePage) <= 1;
-                  })
-                  .map((p, pIdx, arr) => {
-                    const prevP = arr[pIdx - 1];
-                    const hasGap = prevP && p - prevP > 1;
-
-                    return (
-                      <div key={p} className="flex items-center">
-                        {hasGap && <span className="px-1 text-on-surface-variant/40 text-xs">...</span>}
-                        <button
-                          type="button"
-                          onClick={() => setCurrentPage(p)}
-                          className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
-                            safePage === p
-                              ? "bg-primary text-on-primary shadow-md shadow-primary/20 font-black"
-                              : "bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high"
-                          }`}
-                        >
-                          {p}
-                        </button>
-                      </div>
-                    );
-                  })}
-
-                {/* Next Button */}
-                <button
-                  type="button"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={safePage === totalPages}
-                  className="px-3 py-1.5 rounded-xl text-xs font-bold text-on-surface-variant hover:text-on-surface bg-surface-container disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer flex items-center gap-1"
-                >
-                  {t("common.next")}
-                  <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-                </button>
-              </div>
-            </div>
-          )}
+          <Pagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </>
       )}
     </div>

@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 import RuleModal from "./RuleModal";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
+import { useTranslation } from "@/lib/i18n";
 
 interface Match {
   id: string;
@@ -29,6 +30,7 @@ export default function GroupMatchesView({
   onSaveOverride: (roundNum: number, sets: number, points: number, cap: number | null) => void,
   onSaveScheduledDate: (key: string, date: string) => void
 }) {
+  const { t } = useTranslation();
   const [groups, setGroups] = useState<Record<string, Match[]>>({});
   const [loading, setLoading] = useState(true);
   const [isRuleModalOpen, setIsRuleModalOpen] = useState(false);
@@ -210,10 +212,14 @@ export default function GroupMatchesView({
                         <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${
                           match.status === 'completed' ? 'bg-secondary/10 text-secondary' : 'bg-primary/10 text-primary'
                         }`}>
-                          {match.status}
+                          {match.status === 'completed'
+                            ? t("status.final")
+                            : match.status === 'ongoing'
+                            ? t("status.live")
+                            : t("status.scheduled")}
                         </span>
                         <span className="text-[9px] text-on-surface-variant opacity-50 font-black uppercase">
-                          Round {match.round_number}
+                          {t("common.roundCount", { round: match.round_number })}
                         </span>
                       </div>
                     </div>

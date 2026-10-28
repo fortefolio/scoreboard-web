@@ -7,8 +7,10 @@ import { toast } from "sonner";
 import RuleModal from "./RuleModal";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
+import { useTranslation } from "@/lib/i18n";
 
 const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
+  const { t } = useTranslation();
   if (!match) return null;
 
   const hasStarted = match.status === 'completed' || match.status === 'ongoing';
@@ -105,7 +107,13 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
           </div>
           <span className={`px-1.5 py-0.5 rounded-full font-black ${
             match.status === 'completed' ? 'bg-secondary/10 text-secondary' : 'bg-primary/10 text-primary'
-          }`}>{match.status}</span>
+          }`}>
+            {match.status === 'completed'
+              ? t("status.final")
+              : match.status === 'ongoing'
+              ? t("status.live")
+              : t("status.scheduled")}
+          </span>
         </div>
       </div>
     </Link>
