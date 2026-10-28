@@ -115,8 +115,8 @@ describe("TopNavBar — authenticated", () => {
     renderNav(userWithEmail);
     expect(screen.queryByText(/signed in as/i)).not.toBeInTheDocument();
 
-    // The avatar button is the first <button> inside the nav.
-    const trigger = screen.getAllByRole("button")[0];
+    // The avatar button opens the user menu.
+    const trigger = screen.getByRole("button", { name: /user menu/i });
     await user.click(trigger);
 
     expect(screen.getByText(/signed in as/i)).toBeInTheDocument();
@@ -126,7 +126,7 @@ describe("TopNavBar — authenticated", () => {
   it("navigates and closes the menu when clicking Settings / My Matches / My Tournaments", async () => {
     const user = userEvent.setup();
     renderNav(userWithEmail);
-    const trigger = screen.getAllByRole("button")[0];
+    const trigger = screen.getByRole("button", { name: /user menu/i });
     await user.click(trigger);
 
     await user.click(screen.getByRole("button", { name: /settings/i }));
@@ -145,7 +145,7 @@ describe("TopNavBar — authenticated", () => {
   it("Sign Out delegates to supabase.auth.signOut and closes the menu", async () => {
     const user = userEvent.setup();
     renderNav(userWithEmail);
-    await user.click(screen.getAllByRole("button")[0]);
+    await user.click(screen.getByRole("button", { name: /user menu/i }));
 
     await user.click(screen.getByRole("button", { name: /sign out/i }));
 
@@ -156,7 +156,7 @@ describe("TopNavBar — authenticated", () => {
   it("closes the menu when clicking outside the nav", async () => {
     const user = userEvent.setup();
     renderNav(userWithEmail);
-    await user.click(screen.getAllByRole("button")[0]);
+    await user.click(screen.getByRole("button", { name: /user menu/i }));
     expect(screen.getByText(/signed in as/i)).toBeInTheDocument();
 
     // Click on the document body, outside the menu ref.

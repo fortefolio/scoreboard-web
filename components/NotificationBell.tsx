@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { useNotifications } from "@/lib/hooks/useNotifications";
 import { formatVersusTitle } from "@/lib/utils/formatName";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 const getRelativeTime = (dateString: string) => {
   const now = new Date();
@@ -23,6 +24,7 @@ const getRelativeTime = (dateString: string) => {
 
 export default function NotificationBell() {
   const { user, supabase } = useAuth();
+  const { t } = useTranslation();
   const { 
     notifications, 
     unreadCount, 
@@ -63,13 +65,13 @@ export default function NotificationBell() {
       {isOpen && (
         <div className="absolute right-0 mt-4 w-[360px] bg-[#0c1324] border border-white/5 rounded-3xl shadow-2xl z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="p-6 flex justify-between items-center bg-[#0c1324]/50 backdrop-blur-md">
-            <h3 className="text-xl font-headline font-black text-white italic uppercase tracking-tight">Notifications</h3>
+            <h3 className="text-xl font-headline font-black text-white italic uppercase tracking-tight">{t("notifications.title")}</h3>
             {unreadCount > 0 && (
               <button 
                 onClick={markAllAsRead}
                 className="text-[10px] font-black text-primary hover:text-primary/80 transition-colors uppercase tracking-[0.15em]"
               >
-                Mark all as read
+                {t("notifications.markAllAsRead")}
               </button>
             )}
           </div>
@@ -91,7 +93,7 @@ export default function NotificationBell() {
                     {/* Top Row: Badge & Action Icons */}
                     <div className="flex justify-between items-center mb-3">
                       <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${isInvitation ? 'bg-primary/20 text-primary border border-primary/20' : 'bg-slate-700/30 text-slate-400 border border-white/5'}`}>
-                        {isInvitation ? 'Umpire Invitation' : 'Match Update'}
+                        {isInvitation ? t("notifications.umpireInvitation") : t("notifications.matchUpdate")}
                       </span>
                       
                       <div className="flex items-center gap-2">
@@ -99,14 +101,14 @@ export default function NotificationBell() {
                           <>
                             <button 
                               onClick={() => handleInvitation(n.id, matchId, 'accept')}
-                              title="Accept"
+                              title={t("notifications.accept")}
                               className="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center transition-all hover:bg-emerald-500 hover:text-white border border-emerald-500/20"
                             >
                               <span className="material-symbols-outlined text-[14px]">check</span>
                             </button>
                             <button 
                               onClick={() => handleInvitation(n.id, matchId, 'refuse')}
-                              title="Decline"
+                              title={t("notifications.decline")}
                               className="w-6 h-6 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center transition-all hover:bg-rose-500 hover:text-white border border-rose-500/20"
                             >
                               <span className="material-symbols-outlined text-[14px]">close</span>
@@ -117,7 +119,7 @@ export default function NotificationBell() {
                           <button 
                             onClick={() => markAsRead(n.id)}
                             className="w-6 h-6 rounded-full bg-white/5 text-slate-500 flex items-center justify-center hover:text-white hover:bg-white/10 transition-colors"
-                            title="Mark as read"
+                            title={t("notifications.markAsRead")}
                           >
                             <span className="material-symbols-outlined text-[14px]">done</span>
                           </button>
@@ -128,8 +130,8 @@ export default function NotificationBell() {
                             deleteNotification(n.id);
                           }}
                           className="w-6 h-6 rounded-full bg-white/5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center transition-colors border border-transparent hover:border-rose-500/20"
-                          title="Delete"
-                          aria-label="Delete notification"
+                          title={t("notifications.deleteNotif")}
+                          aria-label={t("notifications.deleteNotif")}
                         >
                           <span className="material-symbols-outlined text-[14px]">delete</span>
                         </button>
@@ -165,7 +167,7 @@ export default function NotificationBell() {
                           }}
                           className="text-[9px] font-black uppercase tracking-[0.2em] text-primary hover:text-primary/80 transition-colors bg-primary/5 px-3 py-1 rounded-md border border-primary/10"
                         >
-                          {isInvitation ? 'Details' : 'Live Feed'}
+                          {isInvitation ? t("notifications.details") : t("notifications.liveFeed")}
                         </Link>
                       )}
                     </div>
@@ -175,7 +177,7 @@ export default function NotificationBell() {
             ) : (
               <div className="py-20 text-center">
                 <span className="material-symbols-outlined text-5xl text-white/5 mb-3">notifications_off</span>
-                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em]">No activity detected</p>
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em]">{t("notifications.quietDesc")}</p>
               </div>
             )}
           </div>

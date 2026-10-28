@@ -3,6 +3,7 @@ import { Manrope, Inter, Space_Grotesk } from "next/font/google";
 import { Suspense } from "react";
 import { Toaster } from "sonner";
 import { AuthProvider } from "@/components/AuthProvider";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import TopNavBar from "@/components/TopNavBar";
 import "./globals.css";
 
@@ -62,13 +63,15 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-background text-on-background pt-20">
-        <AuthProvider initialUser={null}>
-          <Suspense fallback={<nav className="fixed top-0 w-full h-20 bg-slate-950/40 backdrop-blur-xl z-50 border-b border-white/5" />}>
-            <TopNavBar />
-          </Suspense>
-          {children}
-          <Toaster richColors position="bottom-right" closeButton />
-        </AuthProvider>
+        <LanguageProvider>
+          <AuthProvider initialUser={null}>
+            <Suspense fallback={<nav className="fixed top-0 w-full h-20 bg-slate-950/40 backdrop-blur-xl z-50 border-b border-white/5" />}>
+              <TopNavBar />
+            </Suspense>
+            {children}
+            <Toaster richColors position="bottom-right" closeButton />
+          </AuthProvider>
+        </LanguageProvider>
       </body>
     </html>
   );

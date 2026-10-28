@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useAuth } from "@/components/AuthProvider";
 import { useNotifications } from "@/lib/hooks/useNotifications";
 import { formatVersusTitle } from "@/lib/utils/formatName";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 const getRelativeTime = (dateString: string) => {
   const now = new Date();
@@ -21,6 +22,7 @@ const getRelativeTime = (dateString: string) => {
 
 export default function NotificationsPage() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const {
     notifications,
     loading,
@@ -40,7 +42,7 @@ export default function NotificationsPage() {
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
       <h1 className="text-3xl font-black mb-4 uppercase italic tracking-tighter">Access Denied</h1>
       <p className="text-on-surface-variant mb-8 uppercase text-xs font-bold tracking-widest opacity-60">Please sign in to view your activity stream.</p>
-      <Link href="/" className="bg-primary text-on-primary px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:brightness-110 transition-all">Return Home</Link>
+      <Link href="/" className="bg-primary text-on-primary px-8 py-3 rounded-xl font-black uppercase tracking-widest text-xs hover:brightness-110 transition-all">{t("common.back")}</Link>
     </div>
   );
 
@@ -49,8 +51,8 @@ export default function NotificationsPage() {
       <main className="w-full pt-12 pb-20 px-6 max-w-7xl mx-auto">
         <header className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 mb-12">
           <div>
-            <h1 className="text-4xl sm:text-6xl font-black tracking-tighter mb-2 italic uppercase">Notifications</h1>
-            <p className="text-on-surface-variant font-label text-xs uppercase tracking-[0.3em] opacity-60">Your activity stream</p>
+            <h1 className="text-4xl sm:text-6xl font-black tracking-tighter mb-2 italic uppercase">{t("notifications.title")}</h1>
+            <p className="text-on-surface-variant font-label text-xs uppercase tracking-[0.3em] opacity-60">{t("notifications.subtitle")}</p>
           </div>
           {notifications.length > 0 && (
             <div className="flex items-center gap-3">
@@ -60,7 +62,7 @@ export default function NotificationsPage() {
                   className="bg-primary/10 hover:bg-primary text-primary hover:text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-primary/20 transition-all shadow-lg shadow-primary/5 flex items-center gap-1.5 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[16px]">done_all</span>
-                  Mark All as Read
+                  {t("notifications.markAllAsRead")}
                 </button>
               )}
               <button 
@@ -68,7 +70,7 @@ export default function NotificationsPage() {
                 className="bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest border border-rose-500/20 transition-all shadow-lg shadow-rose-500/5 flex items-center gap-1.5 cursor-pointer"
               >
                 <span className="material-symbols-outlined text-[16px]">delete_sweep</span>
-                Clear All
+                {t("notifications.clearAll")}
               </button>
             </div>
           )}
@@ -95,7 +97,7 @@ export default function NotificationsPage() {
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex flex-col gap-1">
                       <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border ${isInvitation ? 'bg-primary/10 text-primary border-primary/20' : 'bg-white/5 text-slate-400 border-white/10'}`}>
-                        {isInvitation ? 'Umpire Invitation' : 'Match Update'}
+                        {isInvitation ? t("notifications.umpireInvitation") : t("notifications.matchUpdate")}
                       </span>
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -106,8 +108,8 @@ export default function NotificationsPage() {
                             markAsRead(n.id);
                           }}
                           className="w-8 h-8 flex items-center justify-center text-primary hover:bg-primary/10 rounded-full transition-all border border-white/5 hover:border-primary/20 cursor-pointer"
-                          title="Mark as read"
-                          aria-label="Mark as read"
+                          title={t("notifications.markAsRead")}
+                          aria-label={t("notifications.markAsRead")}
                         >
                           <span className="material-symbols-outlined text-lg">done_all</span>
                         </button>
@@ -118,8 +120,8 @@ export default function NotificationsPage() {
                           deleteNotification(n.id);
                         }}
                         className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-full transition-all border border-white/10 hover:border-rose-500/30 cursor-pointer"
-                        title="Delete notification"
-                        aria-label="Delete notification"
+                        title={t("notifications.deleteNotif")}
+                        aria-label={t("notifications.deleteNotif")}
                       >
                         <span className="material-symbols-outlined text-lg">delete</span>
                       </button>
@@ -162,14 +164,14 @@ export default function NotificationsPage() {
                             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-emerald-500 text-white px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all hover:brightness-110 active:scale-95 shadow-lg shadow-emerald-500/20"
                           >
                             <span className="material-symbols-outlined text-[16px]">check</span>
-                            Accept
+                            {t("notifications.accept")}
                           </button>
                           <button 
                             onClick={() => handleInvitation(n.id, matchId, 'refuse')}
                             className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-white/5 hover:bg-rose-500 text-white px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 border border-white/10 hover:border-rose-500/50"
                           >
                             <span className="material-symbols-outlined text-[16px]">close</span>
-                            Decline
+                            {t("notifications.decline")}
                           </button>
                         </>
                       )}
@@ -182,7 +184,7 @@ export default function NotificationsPage() {
                           }}
                           className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-primary text-white px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all hover:brightness-110 active:scale-95 shadow-lg shadow-primary/20"
                         >
-                          {isInvitation ? 'Details' : 'Live Feed'}
+                          {isInvitation ? t("notifications.details") : t("notifications.liveFeed")}
                           <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
                         </Link>
                       )}
@@ -196,13 +198,13 @@ export default function NotificationsPage() {
               <div className="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="material-symbols-outlined text-4xl text-slate-700">notifications_off</span>
               </div>
-              <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest">No notifications</h2>
-              <p className="text-slate-600 text-xs font-bold uppercase tracking-tighter mt-2">No activity detected at the moment.</p>
+              <h2 className="text-xl font-bold text-slate-500 uppercase tracking-widest">{t("notifications.quietTitle")}</h2>
+              <p className="text-slate-600 text-xs font-bold uppercase tracking-tighter mt-2">{t("notifications.quietDesc")}</p>
             </div>
           ) : (
             <div className="py-20 text-center">
               <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-slate-500 font-black uppercase tracking-widest text-[10px]">Synchronizing Activity...</p>
+              <p className="text-slate-500 font-black uppercase tracking-widest text-[10px]">{t("notifications.syncing")}</p>
             </div>
           )}
         </div>

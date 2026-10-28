@@ -12,6 +12,7 @@ import TournamentBracket from "@/components/TournamentBracket";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import NotificationBell from "@/components/NotificationBell";
 import { FollowButton } from "@/components/FollowButton";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 const DEFAULT_TEAMS = [
   "Alpha", "Beta", "Gamma", "Delta", "Epsilon", 
@@ -22,6 +23,7 @@ const DEFAULT_TEAMS = [
 function TournamentContent() {
   const { id } = useParams();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'standings' | 'group_matches' | 'bracket' | 'teams' | 'settings'>('teams');
@@ -373,13 +375,13 @@ function TournamentContent() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary-container/5 rounded-full blur-[120px] -z-10"></div>
 
         <header className="mb-16 text-center animate-in fade-in slide-in-from-top-4 duration-700">
-          <p className="text-secondary font-label text-xs uppercase tracking-[0.3em] mb-4">{tournament?.sport_type} Official Tournament</p>
+          <p className="text-secondary font-label text-xs uppercase tracking-[0.3em] mb-4">{tournament?.sport_type} {t("tournament.officialTournament")}</p>
           <h1 className="font-headline text-5xl md:text-7xl font-black tracking-tighter leading-none mb-4">
             {tournament?.name || "Tournament"}
           </h1>
           <div className="flex items-center justify-center gap-3">
              <span className="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-on-surface-variant uppercase tracking-wider border border-outline-variant/10">
-                ID: {tournamentId.slice(0,8)}
+                {t("tournament.idBadge")}: {tournamentId.slice(0,8)}
              </span>
              <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                 tournament?.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
@@ -400,7 +402,7 @@ function TournamentContent() {
               className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'teams' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
             >
               <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'teams' ? "'FILL' 1" : "" }}>groups</span>
-              Teams
+              {t("tournament.teamsTab")}
             </button>
             {tournament?.settings?.stage_1?.type === 'groups' && tournament?.status !== 'pending' && (
               <>
@@ -409,14 +411,14 @@ function TournamentContent() {
                   className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'standings' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
                 >
                   <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'standings' ? "'FILL' 1" : "" }}>bar_chart</span>
-                  Standings
+                  {t("tournament.standingsTab")}
                 </button>
                 <button 
                   onClick={() => handleTabChange('group_matches')}
                   className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'group_matches' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
                 >
                   <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'group_matches' ? "'FILL' 1" : "" }}>sports_tennis</span>
-                  Matches
+                  {t("tournament.matchesTab")}
                 </button>
               </>
             )}
@@ -434,7 +436,7 @@ function TournamentContent() {
               className={`px-8 py-3 rounded-full text-sm font-bold transition-all duration-300 flex items-center gap-2 ${activeTab === 'settings' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
             >
               <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'settings' ? "'FILL' 1" : "" }}>settings</span>
-              Settings
+              {t("tournament.settingsTab")}
             </button>
           </div>
         </div>

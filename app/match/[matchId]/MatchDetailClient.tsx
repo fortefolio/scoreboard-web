@@ -98,7 +98,7 @@ const renderLivePoint = (match: any, idx: number) => {
 
 export default function MatchDetailClient() {
   const { matchId } = useParams();
-  const matchIdStr = Array.isArray(matchId) ? matchId[0] : matchId;
+  const matchIdStr = (Array.isArray(matchId) ? matchId[0] : matchId) || "";
   const router = useRouter();
   const [match, setMatch] = useState<any>(null);
   const [rules, setRules] = useState<any>(null);

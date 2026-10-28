@@ -7,7 +7,7 @@ interface RuleModalProps {
   initialRules: Record<string, any>;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (setsOrRules: any, pointsOrCourt?: any, cap?: any, court?: string | null) => void;
+  onSave: (setsOrRules: any, pointsOrCourt?: any, cap?: any, court?: string | null, noAd?: boolean) => void;
   sportType?: string;
   initialCourt?: string | null;
 }
