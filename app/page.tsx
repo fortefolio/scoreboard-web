@@ -1,12 +1,19 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState, useRef } from "react";
+import { Suspense, useCallback, useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
-import { countSetsWon } from "@/lib/scoring/sets";
+import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
+import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import MatchCard from "@/components/MatchCard";
+import SportIcon from "@/components/SportIcon";
+import { FollowButton } from "@/components/FollowButton";
+import { useFollow } from "@/lib/hooks/useFollow";
+
+const MATCHES_PER_PAGE = 12;
+const TOURNAMENTS_PER_PAGE = 9;
 
 export default function Home() {
   return (
@@ -18,774 +25,1314 @@ export default function Home() {
 
 function HomeContent() {
   const { user, supabase } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const followHook = useFollow();
+
+  // Authentication Modal State
+  const [authModal, setAuthModal] = useState<"login" | "signup" | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [liveMatches, setLiveMatches] = useState<any[]>([]);
-  const [featuredTournaments, setFeaturedTournaments] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const tournamentCarouselRef = useRef<HTMLDivElement>(null);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(false);
-  const [showTLeftArrow, setShowTLeftArrow] = useState(false);
-  const [showTRightArrow, setShowTRightArrow] = useState(false);
 
-  const updateScrollButtons = useCallback(() => {
-    if (!carouselRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
-    setShowLeftArrow(scrollLeft > 0);
-    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 5);
-  }, []);
+  // Content Data State
+  const [matches, setMatches] = useState<any[]>([]);
+  const [tournaments, setTournaments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const updateTScrollButtons = useCallback(() => {
-    if (!tournamentCarouselRef.current) return;
-    const { scrollLeft, scrollWidth, clientWidth } = tournamentCarouselRef.current;
-    setShowTLeftArrow(scrollLeft > 0);
-    setShowTRightArrow(scrollLeft < scrollWidth - clientWidth - 5);
-  }, []);
+  // Tabs & Views (Defaults: matches active, list view)
+  const [activeTab, setActiveTab] = useState<"matches" | "tournaments" | "following">("matches");
+  const [viewMode, setViewMode] = useState<"list" | "cards">("list");
+  const [followingFilter, setFollowingFilter] = useState<"all" | "matches" | "tournaments">("all");
 
-  useEffect(() => {
-    updateScrollButtons();
-    updateTScrollButtons();
-    window.addEventListener('resize', updateScrollButtons);
-    window.addEventListener('resize', updateTScrollButtons);
-    return () => {
-      window.removeEventListener('resize', updateScrollButtons);
-      window.removeEventListener('resize', updateTScrollButtons);
-    };
-  }, [liveMatches, featuredTournaments, updateScrollButtons, updateTScrollButtons]);
+  // Filters & Search State
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [sportFilter, setSportFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [dateSort, setDateSort] = useState<"desc" | "asc">("desc");
+  const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const scroll = (direction: 'left' | 'right', ref: React.RefObject<HTMLDivElement | null>) => {
-    if (!ref.current) return;
-    const amount = 288 + 24; // Card width + gap
-    ref.current.scrollBy({ 
-      left: direction === 'left' ? -amount : amount, 
-      behavior: 'smooth' 
-    });
-  };
-
-  const [authModal, setAuthModal] = useState<"login" | "signup" | null>(null);
-
+  // Auth modal query sync
   const closeAuthModal = useCallback(() => {
     setAuthModal(null);
     const params = new URLSearchParams(searchParams.toString());
-    params.delete('auth');
-    router.replace(window.location.pathname + (params.toString() ? '?' + params.toString() : ''), { scroll: false });
+    params.delete("auth");
+    router.replace(
+      window.location.pathname + (params.toString() ? "?" + params.toString() : ""),
+      { scroll: false }
+    );
   }, [searchParams, router]);
 
   useEffect(() => {
-    const auth = searchParams.get('auth');
-    if (auth === 'login') setAuthModal('login');
-    else if (auth === 'signup') setAuthModal('signup');
+    const auth = searchParams.get("auth");
+    if (auth === "login") setAuthModal("login");
+    else if (auth === "signup") setAuthModal("signup");
     else setAuthModal(null);
   }, [searchParams]);
 
-  const fetchLiveMatches = useCallback(async () => {
-    const { data } = await supabase
-      .from("matches")
-      .select("*, tournaments(name)")
-      .eq("status", "ongoing")
-      .limit(10);
-    if (data) setLiveMatches(data);
-  }, [supabase]);
+  // Load matches and tournaments
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
 
-  const fetchFeaturedTournaments = useCallback(async () => {
-    const { data } = await supabase
-      .from("tournaments")
-      .select("*")
-      .neq("status", "completed")
-      .limit(10);
-    if (data) setFeaturedTournaments(data);
+      const [matchesRes, tournamentsRes] = await Promise.all([
+        supabase
+          .from("matches")
+          .select("*, tournaments(name)")
+          .order("created_at", { ascending: false })
+          .limit(100),
+        supabase
+          .from("tournaments")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(100),
+      ]);
+
+      if (matchesRes.data) setMatches(matchesRes.data);
+      if (tournamentsRes.data) setTournaments(tournamentsRes.data);
+    } catch (err) {
+      console.error("Error fetching home data:", err);
+    } finally {
+      setLoading(false);
+    }
   }, [supabase]);
 
   useEffect(() => {
-    fetchLiveMatches();
-    fetchFeaturedTournaments();
+    fetchData();
+  }, [fetchData]);
 
-    const channel = supabase
-      .channel('live-arena-updates')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'matches' },
-        (payload: any) => {
-          if (payload.eventType === 'UPDATE') {
-            if (payload.new.status === 'ongoing') {
-              setLiveMatches((prev) => {
-                const idx = prev.findIndex((m) => m.id === payload.new.id);
-                if (idx >= 0) {
-                  const updated = [...prev];
-                  updated[idx] = { ...updated[idx], ...payload.new };
-                  return updated;
-                }
-                return [payload.new, ...prev];
-              });
-            } else {
-              setLiveMatches((prev) => prev.filter((m) => m.id !== payload.new.id));
-            }
-          } else {
-            fetchLiveMatches();
-          }
-        }
-      )
-      .subscribe();
+  // Handle Tab Switch
+  const handleTabChange = (tab: "matches" | "tournaments" | "following") => {
+    setActiveTab(tab);
+    setCurrentPage(1);
+  };
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, fetchLiveMatches, fetchFeaturedTournaments]);
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSportFilter("all");
+    setStatusFilter("all");
+    setDateSort("desc");
+    setCurrentPage(1);
+  };
 
-  const handleAuth = async (type: "login" | "signup") => {
-    if (!type) return;
+  // Auth form submissions
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      if (type === "signup") {
+      if (authModal === "signup") {
         if (!username.trim()) {
           toast.error("Username is required");
           setIsSubmitting(false);
           return;
         }
+
         if (password !== confirmPassword) {
           toast.error("Passwords do not match");
           setIsSubmitting(false);
           return;
         }
 
-        try {
-          const { data: existingUser } = await supabase
-            .from('users')
-            .select('id')
-            .ilike('username', username.trim())
-            .maybeSingle();
+        const { data: existingUser } = await supabase
+          .from("users")
+          .select("id")
+          .ilike("username", username.trim())
+          .maybeSingle();
 
-          if (existingUser) {
-            toast.error("Username already taken. Please choose another one.");
-            setIsSubmitting(false);
-            return;
-          }
-        } catch {
-          // Username check failed; proceed and let signup itself surface errors.
+        if (existingUser) {
+          toast.error("Username already taken. Please choose another one.");
+          setIsSubmitting(false);
+          return;
         }
-      }
 
-      const { data, error } = type === "login"
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({
-            email,
-            password,
-            options: { data: { display_name: username.trim() } },
-          });
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              display_name: username.trim(),
+            },
+          },
+        });
 
-      if (error) {
-        toast.error(error.message);
-        setIsSubmitting(false);
-      } else if (
-        type === "signup" &&
-        data?.user &&
-        Array.isArray(data.user.identities) &&
-        data.user.identities.length === 0
-      ) {
-        toast.error("An account with this email already exists.");
-        setIsSubmitting(false);
-      } else {
-        if (type === "signup") {
-          toast.success("Signup successful! Please check your email if confirmation is required.");
-        } else {
-          toast.success("Welcome back!");
+        if (error) {
+          toast.error(error.message);
+          setIsSubmitting(false);
+          return;
         }
+
+        if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
+          toast.error("An account with this email already exists.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        toast.success("Account created successfully!");
         closeAuthModal();
-        const next = searchParams.get('next');
-        const hasActiveSession = type === "login" || Boolean(data?.session);
-        if (hasActiveSession && next) {
-          try {
-            const targetUrl = new URL(next, window.location.origin);
-            if (targetUrl.origin === window.location.origin && !next.startsWith('/\\') && !next.startsWith('//')) {
-              router.push(targetUrl.pathname + targetUrl.search + targetUrl.hash);
-            }
-          } catch {
-            // Ignore invalid redirect targets
-          }
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          toast.error(error.message);
+          setIsSubmitting(false);
+          return;
+        }
+
+        toast.success("Welcome back!");
+        closeAuthModal();
+
+        const next = searchParams.get("next");
+        if (next && next.startsWith("/") && !next.startsWith("//")) {
+          router.push(next);
         }
       }
-    } catch {
-      toast.error("An unexpected error occurred. Please try again.");
+    } catch (err: any) {
+      toast.error(err.message || "Authentication failed");
+    } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Filter & Search Matches
+  const filteredMatches = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return matches
+      .filter((m) => {
+        // Sport filter
+        if (sportFilter !== "all") {
+          if (sportFilter === "Beach Volleyball") {
+            if (m.sport_type !== "Beach Volleyball" && m.sport_type !== "beach_volleyball") {
+              return false;
+            }
+          } else if (m.sport_type !== sportFilter) {
+            return false;
+          }
+        }
+
+        // Status filter
+        if (statusFilter !== "all") {
+          if (statusFilter === "scheduled") {
+            if (m.status !== "scheduled" && m.status !== "pending") return false;
+          } else if (m.status !== statusFilter) {
+            return false;
+          }
+        }
+
+        // Text search (participants, tournament, court)
+        if (query) {
+          const p1 = (m.participants?.[0]?.name || "").toLowerCase();
+          const p2 = (m.participants?.[1]?.name || "").toLowerCase();
+          const tName = (m.tournaments?.name || "").toLowerCase();
+          const court = (m.court || "").toLowerCase();
+          const sport = (m.sport_type || "").toLowerCase();
+          if (
+            !p1.includes(query) &&
+            !p2.includes(query) &&
+            !tName.includes(query) &&
+            !court.includes(query) &&
+            !sport.includes(query)
+          ) {
+            return false;
+          }
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(a.scheduled_at || a.created_at).getTime();
+        const dateB = new Date(b.scheduled_at || b.created_at).getTime();
+        return dateSort === "desc" ? dateB - dateA : dateA - dateB;
+      });
+  }, [matches, sportFilter, statusFilter, searchQuery, dateSort]);
+
+  // Filter & Search Tournaments
+  const filteredTournaments = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
+    return tournaments
+      .filter((t) => {
+        // Sport filter
+        if (sportFilter !== "all") {
+          if (sportFilter === "Beach Volleyball") {
+            if (t.sport_type !== "Beach Volleyball" && t.sport_type !== "beach_volleyball") {
+              return false;
+            }
+          } else if (t.sport_type !== sportFilter) {
+            return false;
+          }
+        }
+
+        // Status filter
+        if (statusFilter !== "all") {
+          if (statusFilter === "scheduled") {
+            if (t.status !== "scheduled" && t.status !== "pending") return false;
+          } else if (t.status !== statusFilter) {
+            return false;
+          }
+        }
+
+        // Text search
+        if (query) {
+          const name = (t.name || "").toLowerCase();
+          const sport = (t.sport_type || "").toLowerCase();
+          if (!name.includes(query) && !sport.includes(query)) {
+            return false;
+          }
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        const dateA = new Date(t.start_date || t.created_at).getTime();
+        const dateB = new Date(b.start_date || b.created_at).getTime();
+        return dateSort === "desc" ? dateB - dateA : dateA - dateB;
+      });
+  }, [tournaments, sportFilter, statusFilter, searchQuery, dateSort]);
+
+  // Followed Items
+  const followedMatches = useMemo(() => {
+    return filteredMatches.filter((m) => followHook.followedMatchIds.has(m.id));
+  }, [filteredMatches, followHook.followedMatchIds]);
+
+  const followedTournaments = useMemo(() => {
+    return filteredTournaments.filter((t) => followHook.followedTournamentIds.has(t.id));
+  }, [filteredTournaments, followHook.followedTournamentIds]);
+
+  // Pagination Calculations
+  const isMatchesTab = activeTab === "matches";
+  const isTournamentsTab = activeTab === "tournaments";
+  const isFollowingTab = activeTab === "following";
+
+  const totalMatchesCount = matches.length;
+  const totalTournamentsCount = tournaments.length;
+  const totalFollowedCount =
+    followHook.followedMatchIds.size + followHook.followedTournamentIds.size;
+
+  const currentItemsTotal = isMatchesTab
+    ? filteredMatches.length
+    : isTournamentsTab
+    ? filteredTournaments.length
+    : followingFilter === "matches"
+    ? followedMatches.length
+    : followingFilter === "tournaments"
+    ? followedTournaments.length
+    : followedMatches.length + followedTournaments.length;
+
+  const itemsPerPage = isTournamentsTab ? TOURNAMENTS_PER_PAGE : MATCHES_PER_PAGE;
+  const totalPages = Math.max(1, Math.ceil(currentItemsTotal / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+
+  const paginatedMatches = useMemo(() => {
+    const start = (safePage - 1) * MATCHES_PER_PAGE;
+    return filteredMatches.slice(start, start + MATCHES_PER_PAGE);
+  }, [filteredMatches, safePage]);
+
+  const paginatedTournaments = useMemo(() => {
+    const start = (safePage - 1) * TOURNAMENTS_PER_PAGE;
+    return filteredTournaments.slice(start, start + TOURNAMENTS_PER_PAGE);
+  }, [filteredTournaments, safePage]);
+
   return (
-    <div className="min-h-screen bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
-      
-      {/* Logged-in Content */}
-      {user && (
-        <>
-          {/* 1. Live Matches Carousel (Top) */}
-          <section className="pt-8 pb-12 bg-surface-container-lowest overflow-hidden" id="matches">
-            <div className="max-w-7xl mx-auto px-8 mb-8">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-headline text-3xl font-black tracking-tight mb-2 italic text-white">LIVE ARENA</h2>
-                  <p className="text-on-surface-variant text-[10px] font-black uppercase tracking-[0.3em] opacity-60">Real-time pulse from the vault</p>
-                </div>
-                <div className="flex items-center gap-2 bg-red-500/10 px-4 py-2 rounded-full border border-red-500/20">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
-                  <span className="text-red-500 font-black text-[9px] uppercase tracking-widest">Live Updates</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="max-w-7xl mx-auto relative group/carousel">
-              <div 
-                ref={carouselRef}
-                onScroll={updateScrollButtons}
-                className="flex gap-6 overflow-x-auto px-8 pb-8 no-scrollbar scroll-smooth"
-              >
-                {liveMatches.length > 0 ? liveMatches.map((match) => (
-                  <MatchCard key={match.id} match={match} />
-                )) : (
-                  <div className="w-full text-center py-10 opacity-30 font-black uppercase tracking-widest text-xs">No live matches at the moment</div>
-                )}
-              </div>
+    <div className="min-h-screen bg-background text-on-surface py-8 px-4 sm:px-8 max-w-7xl mx-auto">
+      {/* Hero Header */}
+      <div className="bg-surface-container-low rounded-[2.5rem] p-6 sm:p-10 border border-white/5 relative overflow-hidden mb-8 shadow-2xl">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 blur-3xl pointer-events-none rounded-full" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-secondary/10 blur-3xl pointer-events-none rounded-full" />
 
-              {/* Navigation Arrows */}
-              {liveMatches.length > 0 && (
-                <>
-                  <button 
-                    onClick={() => scroll('left', carouselRef)}
-                    className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-[#151b2d]/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-all hover:bg-primary/20 hover:border-primary/30 ${showLeftArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                  >
-                    <span className="material-symbols-outlined">chevron_left</span>
-                  </button>
-                  <button 
-                    onClick={() => scroll('right', carouselRef)}
-                    className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-[#151b2d]/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-all hover:bg-primary/20 hover:border-primary/30 ${showRightArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                  >
-                    <span className="material-symbols-outlined">chevron_right</span>
-                  </button>
-                </>
-              )}
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-label text-[10px] font-black uppercase tracking-widest mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+              Kinetic Vault & Live Scoreboard
             </div>
-          </section>
-
-          {/* 2. Featured Tournaments Carousel */}
-          <section className="py-12 overflow-hidden border-b border-white/5" id="tournaments">
-            <div className="max-w-7xl mx-auto px-8 mb-8">
-              <div>
-                <h2 className="font-headline text-3xl font-black tracking-tight mb-2 italic text-white">FEATURED EVENTS</h2>
-                <p className="text-on-surface-variant text-[10px] font-black uppercase tracking-[0.3em] opacity-60">The biggest competitions in the ecosystem</p>
-              </div>
-            </div>
-            
-            <div className="max-w-7xl mx-auto relative group/carousel">
-              <div 
-                ref={tournamentCarouselRef}
-                onScroll={updateTScrollButtons}
-                className="flex gap-6 overflow-x-auto px-8 pb-8 no-scrollbar scroll-smooth"
-              >
-                {featuredTournaments.length > 0 ? featuredTournaments.map((t) => (
-                  <Link key={t.id} href={`/tournament/${t.id}`} className="w-full max-w-[288px] group shrink-0">
-                    <div className="bg-[#151b2d]/80 backdrop-blur-xl p-6 rounded-2xl border border-white/5 group-hover:border-primary/40 transition-all duration-500 shadow-2xl relative overflow-hidden h-[240px] flex flex-col justify-between group-hover:scale-[1.01]">
-                      <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
-                      <div>
-                        <div className="flex justify-between items-start mb-4">
-                          <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-[8px] font-black uppercase tracking-widest border border-primary/10">
-                            {t.sport_type}
-                          </span>
-                          <span className="text-on-surface-variant text-[8px] font-black uppercase tracking-widest opacity-40 italic">{t.status}</span>
-                        </div>
-                        <h3 className="text-xl font-black text-on-surface group-hover:text-primary transition-colors line-clamp-2 uppercase tracking-tighter italic leading-[1.1]">{t.name}</h3>
-                      </div>
-                      <div className="flex items-center justify-between text-on-surface-variant">
-                        <div className="flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[14px] text-primary/60">groups</span>
-                          <span className="text-[9px] font-black uppercase tracking-widest opacity-60">{t.settings?.max_teams || 16} Teams Max</span>
-                        </div>
-                        <span className="material-symbols-outlined text-primary group-hover:translate-x-1 transition-transform text-[18px]">arrow_forward</span>
-                      </div>
-                    </div>
-                  </Link>
-                )) : (
-                  <div className="w-full text-center py-10 opacity-30 font-black uppercase tracking-widest text-xs italic">Synchronizing tournament data...</div>
-                )}
-              </div>
-
-              {/* Navigation Arrows */}
-              {featuredTournaments.length > 0 && (
-                <>
-                  <button 
-                    onClick={() => scroll('left', tournamentCarouselRef)}
-                    className={`absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-[#151b2d]/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-all hover:bg-primary/20 hover:border-primary/30 ${showTLeftArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                  >
-                    <span className="material-symbols-outlined">chevron_left</span>
-                  </button>
-                  <button 
-                    onClick={() => scroll('right', tournamentCarouselRef)}
-                    className={`absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-[#151b2d]/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-white transition-all hover:bg-primary/20 hover:border-primary/30 ${showTRightArrow ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-                  >
-                    <span className="material-symbols-outlined">chevron_right</span>
-                  </button>
-                </>
-              )}
-            </div>
-          </section>
-        </>
-      )}
-
-      {/* Guest-only Marketing Sections */}
-      {!user && (
-        <>
-          {/* Hero Section */}
-          <section className="relative py-24 md:py-32 overflow-hidden border-b border-white/5" id="hero">
-            <div className="absolute inset-0 z-0">
-              <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-container/20 rounded-full blur-[120px]"></div>
-              <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary-container/10 rounded-full blur-[120px]"></div>
-            </div>
-            
-            <div className="max-w-7xl mx-auto px-8 relative z-10">
-              <div className="grid lg:grid-cols-2 gap-12 items-center">
-                <div>
-                  <h1 className="font-headline text-6xl md:text-8xl font-black tracking-tighter leading-none mb-6 italic text-white">
-                    DON'T JUST FOLLOW.<br/>
-                    <span className="text-primary">BE PART OF THE GAME.</span>
-                  </h1>
-                  <p className="text-on-surface-variant text-xl md:text-2xl max-w-xl mb-10 leading-relaxed font-medium">
-                    The first tournament platform where every point is a post. Live brackets, real-time trash talk, and community-driven sports management.
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <button 
-                      onClick={() => setAuthModal("signup")}
-                      className="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-black uppercase tracking-widest text-sm hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95"
-                    >
-                      Create Your Tournament
-                    </button>
-                    <button 
-                      onClick={() => setAuthModal("login")}
-                      className="w-full bg-surface-container-high border border-outline-variant/30 text-on-surface px-8 py-4 rounded-xl font-black uppercase tracking-widest text-sm hover:bg-surface-bright transition-all active:scale-95"
-                    >
-                      Watch Live Feeds
-                    </button>
-                  </div>
-                </div>
-                <div className="relative">
-                  <div className="bg-surface-container rounded-[3rem] p-4 shadow-2xl relative overflow-hidden group">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-50"></div>
-                    <img 
-                      className="rounded-[2.5rem] w-full h-[500px] object-cover grayscale hover:grayscale-0 transition-all duration-700" 
-                      src="https://images.unsplash.com/photo-1541252260730-0412e8e2108e?q=80&w=2000&auto=format&fit=crop"
-                      alt="Hero sport"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Umpire-to-Crowd Connection */}
-          <section className="py-24 overflow-hidden" id="features">
-            <div className="max-w-7xl mx-auto px-8">
-              <div className="grid lg:grid-cols-2 gap-20 items-center">
-                <div className="relative order-2 lg:order-1">
-                  <div className="bg-surface-container-low rounded-[40px] p-8 aspect-square relative flex items-center justify-center">
-                    <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/10 opacity-30 blur-3xl"></div>
-                    <div className="w-64 h-[500px] bg-slate-900 rounded-[3rem] border-8 border-slate-800 shadow-2xl relative overflow-hidden flex flex-col">
-                      <div className="h-6 w-32 bg-slate-800 absolute top-0 left-1/2 -translate-x-1/2 rounded-b-2xl"></div>
-                      <div className="mt-12 p-4">
-                        <div className="text-center mb-8">
-                          <div className="text-[10px] uppercase tracking-widest text-on-surface-variant font-label font-black">Official Scorer</div>
-                          <div className="font-black text-xl italic tracking-tighter text-white">ARENA UPDATE</div>
-                        </div>
-                        <div className="space-y-4">
-                          <div className="bg-surface-container p-4 rounded-xl border border-outline-variant/20">
-                            <div className="flex justify-between text-[10px] font-black uppercase mb-2 tracking-widest">
-                              <span>Warriors</span>
-                              <span className="text-secondary">+2</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
-                              <div className="h-full bg-secondary w-3/4"></div>
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-primary-container/20 p-4 rounded-xl border border-primary/30 flex flex-col items-center">
-                              <span className="material-symbols-outlined text-primary">add</span>
-                              <span className="text-[10px] font-black uppercase tracking-widest mt-1">SCORE</span>
-                            </div>
-                            <div className="bg-surface-container p-4 rounded-xl border border-outline-variant/20 flex flex-col items-center">
-                              <span className="material-symbols-outlined text-on-surface">undo</span>
-                              <span className="text-[10px] font-black uppercase tracking-widest mt-1">UNDO</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-auto p-4 bg-primary-container text-center py-4 font-black tracking-[0.2em] text-[10px] text-on-primary-container">
-                        TRANSMITTING LIVE...
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="order-1 lg:order-2">
-                  <div className="inline-flex items-center gap-2 text-primary font-black tracking-widest uppercase text-xs mb-6">
-                    <span className="material-symbols-outlined text-lg">sensors</span>
-                    THE CONNECTION
-                  </div>
-                  <h2 className="font-headline text-5xl md:text-6xl font-black tracking-tighter mb-8 leading-[0.9] italic uppercase text-white">Umpire-to-Crowd Instant Sync</h2>
-                  <p className="text-on-surface-variant text-xl leading-relaxed mb-10 font-medium">
-                    Zero-latency scoring. When the umpire taps the screen, the arena phone vibrates, the leaderboard flashes, and the community goes wild. No more waiting for "official results."
-                  </p>
-                  <ul className="space-y-8">
-                    <li className="flex items-start gap-5">
-                      <div className="mt-1 w-8 h-8 rounded-xl bg-secondary-container flex items-center justify-center flex-shrink-0">
-                        <span className="material-symbols-outlined text-lg text-on-secondary-container" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
-                      </div>
-                      <div>
-                        <h4 className="font-black text-lg uppercase tracking-tight italic text-white">One-Tap Management</h4>
-                        <p className="text-on-surface-variant font-medium">Simplified umpire tools that anyone can use.</p>
-                      </div>
-                    </li>
-                    <li className="flex items-start gap-5">
-                      <div className="mt-1 w-8 h-8 rounded-xl bg-primary-container flex items-center justify-center flex-shrink-0">
-                        <span className="material-symbols-outlined text-lg text-on-primary-container" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
-                      </div>
-                      <div>
-                        <h4 className="font-black text-lg uppercase tracking-tight italic text-white">Live Notifications</h4>
-                        <p className="text-on-surface-variant font-medium">Followers get pinged the moment the score changes.</p>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Tournament Social Tiers */}
-          <section className="py-24 bg-surface-container-lowest border-y border-white/5">
-            <div className="max-w-7xl mx-auto px-8">
-              <div className="text-center max-w-2xl mx-auto mb-20">
-                <h2 className="font-headline text-5xl font-black mb-4 italic tracking-tighter uppercase text-white">Community Ecosystem</h2>
-                <p className="text-on-surface-variant font-medium">Define how your audience interacts with the tournament universe.</p>
-              </div>
-              <div className="grid md:grid-cols-3 gap-8">
-                {/* Tier 1 */}
-                <div className="group p-10 rounded-[2.5rem] bg-surface-container border border-outline-variant/10 hover:border-primary/40 transition-all duration-500 shadow-xl">
-                  <span className="material-symbols-outlined text-4xl text-primary mb-8">person</span>
-                  <h3 className="text-2xl font-black mb-4 uppercase italic tracking-tighter text-white">Supporters</h3>
-                  <p className="text-on-surface-variant mb-10 font-medium leading-relaxed">Follow teams, receive goal alerts, and participate in global live chats.</p>
-                  <ul className="space-y-4 mb-12">
-                    <li className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-on-surface">
-                      <span className="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                      Push Notifications
-                    </li>
-                    <li className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-on-surface">
-                      <span className="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                      Cheer Emojis
-                    </li>
-                  </ul>
-                  <button 
-                    onClick={() => setAuthModal("signup")}
-                    className="w-full py-4 rounded-xl border border-outline-variant/30 font-black uppercase tracking-widest text-[10px] group-hover:bg-primary-container group-hover:text-on-primary-container transition-all"
-                  >
-                    Join as Fan
-                  </button>
-                </div>
-                {/* Tier 2 */}
-                <div className="group p-10 rounded-[2.5rem] bg-surface-container-high border-2 border-primary shadow-2xl shadow-primary/10 relative -translate-y-4">
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-on-primary text-[9px] font-black uppercase tracking-[0.3em] px-5 py-1.5 rounded-full">Most Popular</div>
-                  <span className="material-symbols-outlined text-4xl text-secondary mb-8">military_tech</span>
-                  <h3 className="text-2xl font-black mb-4 uppercase italic tracking-tighter text-white">Competitors</h3>
-                  <p className="text-on-surface-variant mb-10 font-medium leading-relaxed">Personal player profiles, career stats, and highlight reel generation.</p>
-                  <ul className="space-y-4 mb-12">
-                    <li className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white">
-                      <span className="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                      ELO Ranking
-                    </li>
-                    <li className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-white">
-                      <span className="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                      Bracket History
-                    </li>
-                  </ul>
-                  <button 
-                    onClick={() => setAuthModal("signup")}
-                    className="w-full py-4 rounded-full bg-primary-container text-on-primary-container font-black uppercase tracking-widest text-[10px] shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
-                  >
-                    Register Team
-                  </button>
-                </div>
-                {/* Tier 3 */}
-                <div className="group p-10 rounded-[2.5rem] bg-surface-container border border-outline-variant/10 hover:border-primary/40 transition-all duration-500 shadow-xl">
-                  <span className="material-symbols-outlined text-4xl text-tertiary mb-8">verified</span>
-                  <h3 className="text-2xl font-black mb-4 uppercase italic tracking-tighter text-white">Organizers</h3>
-                  <p className="text-on-surface-variant mb-10 font-medium leading-relaxed">Full bracket control, sponsor placement, and revenue management tools.</p>
-                  <ul className="space-y-4 mb-12">
-                    <li className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-on-surface">
-                      <span className="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                      Sponsor Panels
-                    </li>
-                    <li className="flex items-center gap-3 text-xs font-black uppercase tracking-widest text-on-surface">
-                      <span className="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                      Ticket Sales
-                    </li>
-                  </ul>
-                  <button 
-                    onClick={() => setAuthModal("signup")}
-                    className="w-full py-4 rounded-xl border border-outline-variant/30 font-black uppercase tracking-widest text-[10px] group-hover:bg-primary-container group-hover:text-on-primary-container transition-all"
-                  >
-                    Host Event
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Hall of Fame (Leaderboard) */}
-          <section className="py-24 relative overflow-hidden" id="leaderboard">
-            <div className="max-w-7xl mx-auto px-8">
-              <div className="mb-20">
-                <h2 className="font-headline text-5xl font-black tracking-tighter italic uppercase mb-4 text-white">Hall of Fame</h2>
-                <p className="text-on-surface-variant text-xl font-medium">The legends, the favorites, the most cheered.</p>
-              </div>
-              <div className="grid lg:grid-cols-3 gap-12">
-                <div className="lg:col-span-2 space-y-4">
-                  <div className="grid grid-cols-12 px-8 py-4 text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant opacity-50">
-                    <div className="col-span-1">Rank</div>
-                    <div className="col-span-5">Team / Player</div>
-                    <div className="col-span-2 text-center">Score</div>
-                    <div className="col-span-2 text-center">Wins</div>
-                    <div className="col-span-2 text-right">Support</div>
-                  </div>
-                  <div className="grid grid-cols-12 px-8 py-8 bg-surface-container-low rounded-3xl items-center hover:bg-surface-container transition-all duration-500 group border border-white/5 shadow-2xl">
-                    <div className="col-span-1 font-label text-3xl font-black text-primary italic">01</div>
-                    <div className="col-span-5 flex items-center gap-6">
-                      <div className="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center font-black text-lg border border-outline-variant/20 shadow-inner italic">KV</div>
-                      <div>
-                        <div className="font-black text-lg uppercase italic tracking-tight text-white">Kinetic Vault</div>
-                        <div className="text-[10px] text-on-surface-variant font-black uppercase tracking-widest opacity-50">Elite Division</div>
-                      </div>
-                    </div>
-                    <div className="col-span-2 text-center font-digital text-3xl text-white">2,450</div>
-                    <div className="col-span-2 text-center">
-                      <span className="bg-secondary-container/20 text-secondary text-[10px] font-black px-3 py-1 rounded-lg border border-secondary/20">12-1</span>
-                    </div>
-                    <div className="col-span-2 text-right flex items-center justify-end gap-2 text-secondary">
-                      <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>favorite</span>
-                      <span className="font-label font-black text-base italic">12.8k</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-12 px-8 py-8 bg-surface-container-low/50 rounded-3xl items-center hover:bg-surface-container transition-all duration-500 border border-white/5 opacity-80 hover:opacity-100">
-                    <div className="col-span-1 font-label text-3xl font-black text-on-surface-variant italic">02</div>
-                    <div className="col-span-5 flex items-center gap-6">
-                      <div className="w-14 h-14 rounded-2xl bg-slate-800 flex items-center justify-center font-black text-lg border border-outline-variant/20 italic text-white">RA</div>
-                      <div>
-                        <div className="font-black text-lg uppercase italic tracking-tight text-white">Rapid Apex</div>
-                        <div className="text-[10px] text-on-surface-variant font-black uppercase tracking-widest opacity-50">Elite Division</div>
-                      </div>
-                    </div>
-                    <div className="col-span-2 text-center font-digital text-3xl text-slate-400">2,210</div>
-                    <div className="col-span-2 text-center">
-                      <span className="bg-secondary-container/10 text-slate-400 text-[10px] font-black px-3 py-1 rounded-lg border border-white/5">10-3</span>
-                    </div>
-                    <div className="col-span-2 text-right flex items-center justify-end gap-2 text-on-surface-variant">
-                      <span className="material-symbols-outlined text-sm">favorite</span>
-                      <span className="font-label font-black text-base italic">8.4k</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="relative h-full">
-                  <div className="bg-gradient-to-br from-primary-container to-indigo-950 p-10 rounded-[3rem] shadow-2xl relative overflow-hidden h-full flex flex-col justify-end min-h-[600px] border border-white/10">
-                    <div className="absolute top-0 left-0 w-full h-full">
-                      <img 
-                        className="w-full h-full object-cover opacity-40 mix-blend-overlay grayscale" 
-                        src="https://images.unsplash.com/photo-1541252260730-0412e8e2108e?q=80&w=2000&auto=format&fit=crop" 
-                        alt="MVP spotlight"
-                      />
-                    </div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent"></div>
-                    <div className="relative z-10">
-                      <div className="inline-block bg-secondary text-on-secondary font-black px-4 py-1 rounded-full text-[10px] uppercase tracking-[0.2em] mb-6">Week MVP</div>
-                      <div className="font-digital text-[12rem] font-black text-white/5 absolute -top-20 -left-10 select-none">#07</div>
-                      <h3 className="text-5xl font-black text-white mb-4 uppercase italic tracking-tighter leading-none">Marcus "Volt" Chen</h3>
-                      <p className="text-indigo-200 text-lg mb-10 font-medium italic">Leading the league with 42 highlight-reel scores this season.</p>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-white/5 backdrop-blur-xl p-6 rounded-3xl border border-white/10">
-                          <div className="text-[10px] uppercase font-black tracking-widest text-indigo-200 opacity-60 mb-2">Win Rate</div>
-                          <div className="text-3xl font-black font-digital italic text-white">92%</div>
-                        </div>
-                        <div className="bg-white/5 backdrop-blur-xl p-6 rounded-3xl border border-white/10">
-                          <div className="text-[10px] uppercase font-black tracking-widest text-indigo-200 opacity-60 mb-2">Likes</div>
-                          <div className="text-3xl font-black font-digital italic text-white">4.1k</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </>
-      )}
-
-      {/* Footer (Always visible) */}
-      <footer className="w-full border-t border-white/5 bg-slate-950">
-        <div className="flex flex-col md:flex-row justify-between items-center px-12 py-10 w-full font-inter text-sm antialiased max-w-7xl mx-auto">
-          <div className="mb-6 md:mb-0">
-            <div className="text-lg font-digital text-slate-200 mb-2">SCORE:BOARD</div>
-            <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest opacity-40">© 2024 Kinetic Vault. All Rights Reserved.</div>
+            <h1 className="font-headline font-black text-3xl sm:text-5xl text-on-surface tracking-tight mb-2">
+              Resultados e Torneios
+            </h1>
+            <p className="text-on-surface-variant text-sm max-w-xl">
+              Acompanha resultados em tempo real, segue os teus jogos e torneios favoritos e recebe notificações instantâneas com cada ponto.
+            </p>
           </div>
-          <div className="flex gap-8 items-center">
-            <Link className="text-slate-500 hover:text-indigo-400 transition-colors text-[10px] font-black uppercase tracking-widest" href="#">Privacy</Link>
-            <Link className="text-slate-500 hover:text-indigo-400 transition-colors text-[10px] font-black uppercase tracking-widest" href="#">Terms</Link>
-            <Link className="text-slate-500 hover:text-indigo-400 transition-colors text-[10px] font-black uppercase tracking-widest" href="#">Docs</Link>
-            <Link className="text-slate-500 hover:text-indigo-400 transition-colors text-[10px] font-black uppercase tracking-widest" href="#">Support</Link>
+
+          <div className="flex items-center gap-4 bg-surface-container/60 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/5 shrink-0 self-start md:self-auto">
+            <div className="text-center">
+              <div className="font-mono text-2xl font-black text-primary">
+                {totalMatchesCount}
+              </div>
+              <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
+                Jogos
+              </div>
+            </div>
+            <div className="w-px h-8 bg-white/10" />
+            <div className="text-center">
+              <div className="font-mono text-2xl font-black text-secondary">
+                {totalTournamentsCount}
+              </div>
+              <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
+                Torneios
+              </div>
+            </div>
+            {user && (
+              <>
+                <div className="w-px h-8 bg-white/10" />
+                <div className="text-center">
+                  <div className="font-mono text-2xl font-black text-amber-400">
+                    {totalFollowedCount}
+                  </div>
+                  <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
+                    Favoritos
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
-      </footer>
+      </div>
 
-      {/* AUTH MODAL */}
-      {authModal && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] overflow-hidden">
-          <div className="absolute inset-0 z-0 bg-gradient-radial from-surface-container-low via-surface to-surface opacity-80 pointer-events-none"></div>
-          <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-primary-container blur-[150px] opacity-10 pointer-events-none"></div>
-          <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-secondary-container blur-[150px] opacity-10 pointer-events-none"></div>
-          
-          <main className="w-full max-w-[480px] p-6 relative z-10 flex flex-col gap-8 animate-in zoom-in-95 duration-300">
-            <header className="text-center space-y-4">
-              <h1 className="font-digital text-5xl tracking-tighter text-on-surface">SCORE:BOARD</h1>
-              <p className="font-body text-on-surface-variant text-lg">
-                {authModal === "login" ? "Welcome Athlete or Organizer" : "Create your organizer account"}
-              </p>
-            </header>
+      {/* Navigation Tabs (Consistent with Profile Page + Favoritos Tab) */}
+      <div className="flex items-center gap-2 mb-6 border-b border-white/5 pb-4 overflow-x-auto">
+        <button
+          onClick={() => handleTabChange("matches")}
+          className={`px-5 py-2.5 rounded-full font-label text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+            activeTab === "matches"
+              ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
+              : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
+          }`}
+        >
+          <span className="material-symbols-outlined text-[16px]">sports</span>
+          Jogos ({matches.length})
+        </button>
 
-            <section className="glass-panel rounded-xl p-8 shadow-[0_0_40px_rgba(79,70,229,0.06)] flex flex-col gap-6">
-              <div className="flex flex-col gap-4">
-                <button className="flex items-center justify-center gap-3 w-full h-12 rounded-xl bg-surface-container-highest hover:bg-surface-variant transition-colors text-on-surface font-body font-semibold">
-                  <span className="material-symbols-outlined text-xl">account_circle</span>
-                  Continue with Google
-                </button>
-                <button className="flex items-center justify-center gap-3 w-full h-12 rounded-xl bg-surface-container-highest hover:bg-surface-variant transition-colors text-on-surface font-body font-semibold">
-                  <span className="material-symbols-outlined text-xl">forum</span>
-                  Continue with Discord
-                </button>
-              </div>
+        <button
+          onClick={() => handleTabChange("tournaments")}
+          className={`px-5 py-2.5 rounded-full font-label text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+            activeTab === "tournaments"
+              ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
+              : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
+          }`}
+        >
+          <span className="material-symbols-outlined text-[16px]">emoji_events</span>
+          Torneios ({tournaments.length})
+        </button>
 
-              <div className="flex items-center gap-4 py-2">
-                <div className="h-px bg-outline-variant opacity-20 flex-1"></div>
-                <span className="font-label text-sm text-outline uppercase tracking-widest">Or</span>
-                <div className="h-px bg-outline-variant opacity-20 flex-1"></div>
-              </div>
+        <button
+          onClick={() => handleTabChange("following")}
+          className={`px-5 py-2.5 rounded-full font-label text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+            activeTab === "following"
+              ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-lg shadow-amber-500/10"
+              : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
+          }`}
+        >
+          <span
+            className="material-symbols-outlined text-[16px] text-amber-400"
+            style={{ fontVariationSettings: activeTab === "following" ? "'FILL' 1" : undefined }}
+          >
+            star
+          </span>
+          Favoritos / A Seguir {user ? `(${totalFollowedCount})` : ""}
+        </button>
+      </div>
 
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleAuth(authModal as any);
-                }}
-                className="flex flex-col gap-5"
-              >
-                {authModal === "signup" && (
-                  <label className="flex flex-col gap-2">
-                    <span className="font-body text-sm font-medium text-on-surface-variant">Username</span>
-                    <div className="relative">
-                      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">person</span>
-                      <input 
-                        className="w-full h-14 bg-surface-container-lowest text-on-surface font-body rounded-lg pl-12 pr-4 border-none focus:ring-1 focus:ring-primary-container focus:outline-none placeholder:text-outline transition-shadow" 
-                        placeholder="Choose a username" 
-                        type="text"
-                        value={username}
-                        onChange={e => setUsername(e.target.value)}
-                      />
-                    </div>
-                  </label>
-                )}
-                <label className="flex flex-col gap-2">
-                  <span className="font-body text-sm font-medium text-on-surface-variant">Email</span>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">mail</span>
-                    <input 
-                      className="w-full h-14 bg-surface-container-lowest text-on-surface font-body rounded-lg pl-12 pr-4 border-none focus:ring-1 focus:ring-primary-container focus:outline-none placeholder:text-outline transition-shadow" 
-                      placeholder="Enter your email" 
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                    />
-                  </div>
-                </label>
-                <label className="flex flex-col gap-2">
-                  <span className="font-body text-sm font-medium text-on-surface-variant">Password</span>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">lock</span>
-                    <input 
-                      className="w-full h-14 bg-surface-container-lowest text-on-surface font-body rounded-lg pl-12 pr-4 border-none focus:ring-1 focus:ring-primary-container focus:outline-none placeholder:text-outline transition-shadow" 
-                      placeholder="Enter your password" 
-                      type="password"
-                      value={password}
-                      onChange={e => setPassword(e.target.value)}
-                    />
-                  </div>
-                </label>
+      {/* Filter, Search & View Controls Bar */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8 bg-surface-container-low p-4 rounded-2xl border border-white/5 shadow-lg">
+        {/* Search & Filters */}
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 flex-1">
+          {/* Search Box */}
+          <div className="relative min-w-[200px] flex-1 max-w-xs">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant/50">
+              search
+            </span>
+            <input
+              type="text"
+              placeholder="Pesquisar..."
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full bg-surface-container text-on-surface text-xs font-bold pl-9 pr-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors placeholder:text-on-surface-variant/40"
+            />
+          </div>
 
-                {authModal === "signup" && (
-                  <label className="flex flex-col gap-2">
-                    <span className="font-body text-sm font-medium text-on-surface-variant">Confirm Password</span>
-                    <div className="relative">
-                      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">lock</span>
-                      <input 
-                        className="w-full h-14 bg-surface-container-lowest text-on-surface font-body rounded-lg pl-12 pr-4 border-none focus:ring-1 focus:ring-primary-container focus:outline-none placeholder:text-outline transition-shadow" 
-                        placeholder="Confirm your password" 
-                        type="password"
-                        value={confirmPassword}
-                        onChange={e => setConfirmPassword(e.target.value)}
-                      />
-                    </div>
-                  </label>
-                )}
+          {/* Sport Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
+              Desporto:
+            </span>
+            <select
+              value={sportFilter}
+              onChange={(e) => {
+                setSportFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
+            >
+              <option value="all">Todos os Desportos</option>
+              <option value="Basketball">Basquetebol</option>
+              <option value="Volleyball">Voleibol</option>
+              <option value="Beach Volleyball">Voleibol de Praia</option>
+              <option value="Football">Futebol</option>
+              <option value="Tennis">Ténis</option>
+              <option value="Padel">Padel</option>
+            </select>
+          </div>
 
-                {authModal === "login" && (
-                  <div className="flex items-center justify-between pt-1 pb-3">
-                    <label className="flex items-center gap-2 cursor-pointer group">
-                      <input className="form-checkbox rounded bg-surface-container-lowest border-none text-primary-container focus:ring-0 focus:ring-offset-0 w-5 h-5 transition-colors" type="checkbox" />
-                      <span className="font-body text-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Remember me</span>
-                    </label>
-                    <button type="button" className="font-body text-sm text-primary hover:text-primary-fixed transition-colors">Forgot password?</button>
-                  </div>
-                )}
+          {/* Status Filter */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
+              Estado:
+            </span>
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
+            >
+              <option value="all">Todos os Estados</option>
+              <option value="scheduled">Não decorreu (Agendado)</option>
+              <option value="ongoing">A decorrer (Ao Vivo)</option>
+              <option value="completed">Terminado (Final)</option>
+            </select>
+          </div>
 
-                <button 
-                  disabled={isSubmitting}
-                  className="w-full h-14 rounded-full bg-primary-container/80 hover:bg-primary-container backdrop-blur-md text-on-primary-container font-headline font-bold text-lg tracking-wide transition-all shadow-[0_0_15px_rgba(195,192,255,0.1)] hover:shadow-[0_0_20px_rgba(195,192,255,0.2)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3" 
-                  type="submit"
-                >
-                  {isSubmitting ? (
-                    <div className="w-5 h-5 border-2 border-on-primary-container border-t-transparent rounded-full animate-spin"></div>
-                  ) : (
-                    authModal === "login" ? "Sign In" : "Sign Up"
+          {/* Date Sort */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
+              Data:
+            </span>
+            <select
+              value={dateSort}
+              onChange={(e) => {
+                setDateSort(e.target.value as "desc" | "asc");
+                setCurrentPage(1);
+              }}
+              className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
+            >
+              <option value="desc">Mais recentes primeiro</option>
+              <option value="asc">Mais antigos primeiro</option>
+            </select>
+          </div>
+
+          {/* Clear filters button */}
+          {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "" || dateSort !== "desc") && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="text-[10px] font-label font-bold uppercase tracking-wider text-primary hover:underline cursor-pointer"
+            >
+              Limpar Filtros
+            </button>
+          )}
+        </div>
+
+        {/* View Mode Toggle: List on Left, Grid on Right */}
+        <div className="flex items-center gap-1 bg-surface-container p-1 rounded-xl border border-white/10 self-start lg:self-auto shrink-0">
+          <button
+            type="button"
+            onClick={() => setViewMode("list")}
+            title="Ver em Lista"
+            className={`p-1.5 rounded-lg transition-all flex items-center cursor-pointer ${
+              viewMode === "list"
+                ? "bg-primary text-on-primary shadow-sm"
+                : "text-on-surface-variant hover:text-on-surface"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">view_list</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("cards")}
+            title="Ver em Cartões"
+            className={`p-1.5 rounded-lg transition-all flex items-center cursor-pointer ${
+              viewMode === "cards"
+                ? "bg-primary text-on-primary shadow-sm"
+                : "text-on-surface-variant hover:text-on-surface"
+            }`}
+          >
+            <span className="material-symbols-outlined text-[18px]">grid_view</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Loading Indicator */}
+      {loading ? (
+        <div className="py-24 text-center">
+          <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-on-surface-variant font-label uppercase tracking-widest text-xs">
+            A carregar eventos...
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* TAB 1: MATCHES */}
+          {activeTab === "matches" && (
+            <div>
+              {filteredMatches.length === 0 ? (
+                <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5">
+                  <span className="material-symbols-outlined text-4xl text-on-surface-variant/40 mb-3">
+                    sports
+                  </span>
+                  <h3 className="font-headline font-bold text-base text-on-surface mb-1">
+                    Nenhum jogo encontrado
+                  </h3>
+                  <p className="text-on-surface-variant/60 text-xs mb-4">
+                    Não existem jogos correspondentes aos filtros selecionados.
+                  </p>
+                  {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "") && (
+                    <button
+                      onClick={clearFilters}
+                      className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-xs font-bold text-primary transition-all"
+                    >
+                      Limpar Filtros
+                    </button>
                   )}
-                </button>
+                </div>
+              ) : viewMode === "cards" ? (
+                /* Cards Grid View */
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {paginatedMatches.map((m) => (
+                    <MatchCard key={m.id} match={m} />
+                  ))}
+                </div>
+              ) : (
+                /* List / Table View */
+                <div className="bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
+                        <tr>
+                          <th className="py-3.5 px-4 w-12 text-center">Seguir</th>
+                          <th className="py-3.5 px-5">Equipas / Jogadores</th>
+                          <th className="py-3.5 px-5">Evento</th>
+                          <th className="py-3.5 px-4">Desporto</th>
+                          <th className="py-3.5 px-4 text-center">Resultado</th>
+                          <th className="py-3.5 px-4 text-center">Estado</th>
+                          <th className="py-3.5 px-5 text-right">Data</th>
+                          <th className="py-3.5 px-5 text-right">Ação</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-sm font-body">
+                        {paginatedMatches.map((m) => {
+                          const rawSetData = extractSetsData(m.scores);
+                          const isTimedOrPointsSport =
+                            m.sport_type === "Football" || m.sport_type === "Basketball";
+                          const setsWon0 = countSetsWon(rawSetData, 0);
+                          const setsWon1 = countSetsWon(rawSetData, 1);
+                          const mainScore0 = isTimedOrPointsSport
+                            ? m.scores?.current?.home ?? 0
+                            : setsWon0;
+                          const mainScore1 = isTimedOrPointsSport
+                            ? m.scores?.current?.away ?? 0
+                            : setsWon1;
 
-                <button 
-                  onClick={closeAuthModal}
-                  className="w-full py-2 text-on-surface-variant font-medium hover:text-on-surface transition-colors"
+                          const setScores = Array.isArray(rawSetData)
+                            ? rawSetData.map((s: any) => ({
+                                t1: s.team1 ?? s.home ?? 0,
+                                t2: s.team2 ?? s.away ?? 0,
+                              }))
+                            : [];
+
+                          return (
+                            <tr
+                              key={m.id}
+                              className="hover:bg-white/[0.02] transition-colors group"
+                            >
+                              {/* Follow Toggle */}
+                              <td className="py-4 px-4 text-center">
+                                <FollowButton
+                                  entityId={m.id}
+                                  entityType="match"
+                                  variant="icon"
+                                  followHook={followHook}
+                                />
+                              </td>
+
+                              {/* Equipas / Jogadores */}
+                              <td className="py-4 px-5">
+                                <div className="space-y-1">
+                                  <div className="font-bold text-xs text-on-surface flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />
+                                    {formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD"}
+                                  </div>
+                                  <div className="font-bold text-xs text-on-surface flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-secondary/40 shrink-0" />
+                                    {formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD"}
+                                  </div>
+                                </div>
+                              </td>
+
+                              {/* Evento */}
+                              <td className="py-4 px-5">
+                                <div className="font-headline font-bold text-on-surface text-xs leading-snug">
+                                  {m.tournaments?.name || "Jogo Isolado"}
+                                </div>
+                                {m.court && (
+                                  <div className="text-[10px] text-on-surface-variant/60 font-label mt-0.5">
+                                    {m.court}
+                                  </div>
+                                )}
+                              </td>
+
+                              {/* Desporto */}
+                              <td className="py-4 px-4">
+                                <div className="flex items-center gap-2">
+                                  <SportIcon
+                                    sport={m.sport_type}
+                                    className="text-primary text-[18px] shrink-0"
+                                  />
+                                  <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
+                                    {m.sport_type}
+                                  </span>
+                                </div>
+                              </td>
+
+                              {/* Score & Sets */}
+                              <td className="py-4 px-4 text-center">
+                                <div className="inline-flex flex-col items-center">
+                                  <span className="font-mono text-base font-black text-secondary tracking-tight">
+                                    {mainScore0} - {mainScore1}
+                                  </span>
+                                  {!isTimedOrPointsSport && setScores.length > 0 && (
+                                    <span className="font-mono text-[10px] text-on-surface-variant/60 tracking-tighter">
+                                      ({setScores.map((s: any) => `${s.t1}-${s.t2}`).join(", ")})
+                                    </span>
+                                  )}
+                                  {m.sport_type === "Basketball" && m.scores?.basketball?.quarters && (
+                                    <span className="font-mono text-[10px] text-on-surface-variant/60 tracking-tighter">
+                                      ({m.scores.basketball.quarters
+                                        .filter(
+                                          (q: any) =>
+                                            (q.home ?? 0) > 0 || (q.away ?? 0) > 0
+                                        )
+                                        .map((q: any) => `${q.home}-${q.away}`)
+                                        .join(", ")})
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+
+                              {/* Status */}
+                              <td className="py-4 px-4 text-center">
+                                <span
+                                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                                    m.status === "completed"
+                                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                      : m.status === "ongoing"
+                                      ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
+                                      : "bg-white/5 text-on-surface-variant/70 border border-white/10"
+                                  }`}
+                                >
+                                  {m.status === "completed"
+                                    ? "Concluído"
+                                    : m.status === "ongoing"
+                                    ? "Ao Vivo"
+                                    : "Agendado"}
+                                </span>
+                              </td>
+
+                              {/* Data */}
+                              <td className="py-4 px-5 text-right font-mono text-xs text-on-surface-variant/70">
+                                {m.scheduled_at
+                                  ? new Date(m.scheduled_at).toLocaleDateString(undefined, {
+                                      day: "numeric",
+                                      month: "short",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : m.created_at
+                                  ? new Date(m.created_at).toLocaleDateString(undefined, {
+                                      day: "numeric",
+                                      month: "short",
+                                    })
+                                  : "-"}
+                              </td>
+
+                              {/* Ação */}
+                              <td className="py-4 px-5 text-right">
+                                <Link
+                                  href={`/match/${m.id}`}
+                                  title="Ver Jogo"
+                                  className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-container/20 hover:bg-primary-container text-primary hover:text-on-primary-container transition-all cursor-pointer border border-primary/20"
+                                >
+                                  <span className="material-symbols-outlined text-[16px]">
+                                    arrow_forward
+                                  </span>
+                                </Link>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: TOURNAMENTS */}
+          {activeTab === "tournaments" && (
+            <div>
+              {filteredTournaments.length === 0 ? (
+                <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5">
+                  <span className="material-symbols-outlined text-4xl text-on-surface-variant/40 mb-3">
+                    emoji_events
+                  </span>
+                  <h3 className="font-headline font-bold text-base text-on-surface mb-1">
+                    Nenhum torneio encontrado
+                  </h3>
+                  <p className="text-on-surface-variant/60 text-xs mb-4">
+                    Não existem torneios correspondentes aos filtros selecionados.
+                  </p>
+                  {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "") && (
+                    <button
+                      onClick={clearFilters}
+                      className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-xs font-bold text-primary transition-all"
+                    >
+                      Limpar Filtros
+                    </button>
+                  )}
+                </div>
+              ) : viewMode === "cards" ? (
+                /* Cards Grid View */
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {paginatedTournaments.map((t) => (
+                    <div
+                      key={t.id}
+                      className="bg-surface-container-low rounded-3xl p-6 border border-white/5 hover:border-primary/20 transition-all flex flex-col justify-between group shadow-lg"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-4">
+                          <div className="flex items-center gap-2">
+                            <SportIcon
+                              sport={t.sport_type}
+                              className="text-primary text-[20px]"
+                            />
+                            <span className="text-[10px] font-label font-black uppercase tracking-wider text-on-surface-variant">
+                              {t.sport_type}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                                t.status === "completed"
+                                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                  : t.status === "ongoing"
+                                  ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
+                                  : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                              }`}
+                            >
+                              {t.status === "completed"
+                                ? "Concluído"
+                                : t.status === "ongoing"
+                                ? "Em Curso"
+                                : "Agendado"}
+                            </span>
+                            <FollowButton
+                              entityId={t.id}
+                              entityType="tournament"
+                              variant="icon"
+                              followHook={followHook}
+                            />
+                          </div>
+                        </div>
+
+                        <h3 className="font-headline font-black text-lg text-on-surface mb-2 group-hover:text-primary transition-colors">
+                          {t.name}
+                        </h3>
+
+                        <p className="text-xs text-on-surface-variant/70 font-label uppercase tracking-wider mb-4">
+                          {t.settings?.stage_1?.type === "groups"
+                            ? "Fase de Grupos"
+                            : t.settings?.stage_1?.type === "double_elimination"
+                            ? "Dupla Eliminatória"
+                            : "Eliminatória"}
+                        </p>
+                      </div>
+
+                      <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                        <span className="font-mono text-xs text-on-surface-variant/60">
+                          {t.start_date
+                            ? new Date(t.start_date).toLocaleDateString(undefined, {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })
+                            : "Data a definir"}
+                        </span>
+                        <Link
+                          href={`/tournament/${t.id}`}
+                          className="inline-flex items-center gap-1 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform"
+                        >
+                          Ver Torneio
+                          <span className="material-symbols-outlined text-[16px]">
+                            arrow_forward
+                          </span>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* List / Table View */
+                <div className="bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
+                        <tr>
+                          <th className="py-3.5 px-4 w-12 text-center">Seguir</th>
+                          <th className="py-3.5 px-5">Torneio</th>
+                          <th className="py-3.5 px-4">Desporto</th>
+                          <th className="py-3.5 px-4">Formato</th>
+                          <th className="py-3.5 px-4 text-center">Estado</th>
+                          <th className="py-3.5 px-5 text-right">Data</th>
+                          <th className="py-3.5 px-5 text-right">Ação</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5 text-sm font-body">
+                        {paginatedTournaments.map((t) => (
+                          <tr
+                            key={t.id}
+                            className="hover:bg-white/[0.02] transition-colors group"
+                          >
+                            {/* Follow Toggle */}
+                            <td className="py-4 px-4 text-center">
+                              <FollowButton
+                                entityId={t.id}
+                                entityType="tournament"
+                                variant="icon"
+                                followHook={followHook}
+                              />
+                            </td>
+
+                            {/* Torneio */}
+                            <td className="py-4 px-5">
+                              <div className="font-headline font-bold text-sm text-on-surface">
+                                {t.name}
+                              </div>
+                            </td>
+
+                            {/* Desporto */}
+                            <td className="py-4 px-4">
+                              <div className="flex items-center gap-2">
+                                <SportIcon
+                                  sport={t.sport_type}
+                                  className="text-primary text-[18px] shrink-0"
+                                />
+                                <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
+                                  {t.sport_type}
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* Formato */}
+                            <td className="py-4 px-4 font-label text-xs uppercase tracking-wider text-on-surface-variant/80">
+                              {t.settings?.stage_1?.type === "groups"
+                                ? "Fase de Grupos"
+                                : t.settings?.stage_1?.type === "double_elimination"
+                                ? "Dupla Eliminatória"
+                                : "Eliminatória"}
+                            </td>
+
+                            {/* Estado */}
+                            <td className="py-4 px-4 text-center">
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                                  t.status === "completed"
+                                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                    : t.status === "ongoing"
+                                    ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
+                                    : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                }`}
+                              >
+                                {t.status === "completed"
+                                  ? "Concluído"
+                                  : t.status === "ongoing"
+                                  ? "Em Curso"
+                                  : "Agendado"}
+                              </span>
+                            </td>
+
+                            {/* Data */}
+                            <td className="py-4 px-5 text-right font-mono text-xs text-on-surface-variant/70">
+                              {t.start_date
+                                ? new Date(t.start_date).toLocaleDateString(undefined, {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                  })
+                                : "-"}
+                            </td>
+
+                            {/* Ação */}
+                            <td className="py-4 px-5 text-right">
+                              <Link
+                                href={`/tournament/${t.id}`}
+                                title="Ver Torneio"
+                                className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-container/20 hover:bg-primary-container text-primary hover:text-on-primary-container transition-all cursor-pointer border border-primary/20"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">
+                                  arrow_forward
+                                </span>
+                              </Link>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: FOLLOWING / FAVORITOS */}
+          {activeTab === "following" && (
+            <div>
+              {!user ? (
+                /* Unauthenticated Call to Action */
+                <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5 max-w-xl mx-auto shadow-2xl">
+                  <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4 text-amber-400">
+                    <span className="material-symbols-outlined text-3xl">star</span>
+                  </div>
+                  <h3 className="font-headline font-black text-2xl mb-2 text-on-surface">
+                    Acompanha os teus favoritos
+                  </h3>
+                  <p className="text-on-surface-variant text-sm mb-6 leading-relaxed">
+                    Inicia sessão para marcares jogos e torneios como favoritos. Vais receber notificações automáticas em tempo real para cada evolução de resultado.
+                  </p>
+                  <button
+                    onClick={() => {
+                      const params = new URLSearchParams(searchParams.toString());
+                      params.set("auth", "login");
+                      router.replace(window.location.pathname + "?" + params.toString());
+                    }}
+                    className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full font-label text-xs font-black uppercase tracking-wider hover:brightness-110 transition-all cursor-pointer shadow-lg shadow-primary/20"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">login</span>
+                    Iniciar Sessão
+                  </button>
+                </div>
+              ) : followedMatches.length === 0 && followedTournaments.length === 0 ? (
+                /* Empty Following State */
+                <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5">
+                  <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 text-amber-400/60">
+                    <span className="material-symbols-outlined text-3xl">star_outline</span>
+                  </div>
+                  <h3 className="font-headline font-bold text-lg text-on-surface mb-2">
+                    Ainda não estás a seguir nenhum evento
+                  </h3>
+                  <p className="text-on-surface-variant/70 text-xs max-w-md mx-auto mb-6">
+                    Explora as abas <strong className="text-on-surface">Jogos</strong> ou <strong className="text-on-surface">Torneios</strong> e clica no ícone da estrela para começares a seguir os teus favoritos e receberes notificações agregadas de cada pontuação.
+                  </p>
+                  <div className="flex items-center justify-center gap-3">
+                    <button
+                      onClick={() => handleTabChange("matches")}
+                      className="px-5 py-2.5 rounded-full bg-primary-container text-on-primary-container font-label text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all cursor-pointer"
+                    >
+                      Explorar Jogos
+                    </button>
+                    <button
+                      onClick={() => handleTabChange("tournaments")}
+                      className="px-5 py-2.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border border-white/10"
+                    >
+                      Explorar Torneios
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Followed Items List */
+                <div className="space-y-6">
+                  {/* Sub-filter chips */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setFollowingFilter("all")}
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        followingFilter === "all"
+                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                          : "bg-surface-container text-on-surface-variant hover:text-on-surface border border-transparent"
+                      }`}
+                    >
+                      Todos ({followedMatches.length + followedTournaments.length})
+                    </button>
+                    <button
+                      onClick={() => setFollowingFilter("matches")}
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        followingFilter === "matches"
+                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                          : "bg-surface-container text-on-surface-variant hover:text-on-surface border border-transparent"
+                      }`}
+                    >
+                      Jogos ({followedMatches.length})
+                    </button>
+                    <button
+                      onClick={() => setFollowingFilter("tournaments")}
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        followingFilter === "tournaments"
+                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                          : "bg-surface-container text-on-surface-variant hover:text-on-surface border border-transparent"
+                      }`}
+                    >
+                      Torneios ({followedTournaments.length})
+                    </button>
+                  </div>
+
+                  {/* Followed Matches Section */}
+                  {(followingFilter === "all" || followingFilter === "matches") && followedMatches.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 font-label text-xs font-black uppercase tracking-wider text-amber-400">
+                        <span className="material-symbols-outlined text-[16px]">sports</span>
+                        Jogos a Seguir ({followedMatches.length})
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {followedMatches.map((m) => (
+                          <MatchCard key={m.id} match={m} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Followed Tournaments Section */}
+                  {(followingFilter === "all" || followingFilter === "tournaments") && followedTournaments.length > 0 && (
+                    <div className="space-y-3 pt-4">
+                      <div className="flex items-center gap-2 font-label text-xs font-black uppercase tracking-wider text-amber-400">
+                        <span className="material-symbols-outlined text-[16px]">emoji_events</span>
+                        Torneios a Seguir ({followedTournaments.length})
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {followedTournaments.map((t) => (
+                          <div
+                            key={t.id}
+                            className="bg-surface-container-low rounded-3xl p-6 border border-white/5 hover:border-amber-500/30 transition-all flex flex-col justify-between group shadow-lg"
+                          >
+                            <div>
+                              <div className="flex items-center justify-between gap-2 mb-4">
+                                <div className="flex items-center gap-2">
+                                  <SportIcon
+                                    sport={t.sport_type}
+                                    className="text-primary text-[20px]"
+                                  />
+                                  <span className="text-[10px] font-label font-black uppercase tracking-wider text-on-surface-variant">
+                                    {t.sport_type}
+                                  </span>
+                                </div>
+                                <FollowButton
+                                  entityId={t.id}
+                                  entityType="tournament"
+                                  variant="icon"
+                                  followHook={followHook}
+                                />
+                              </div>
+
+                              <h3 className="font-headline font-black text-lg text-on-surface mb-2 group-hover:text-primary transition-colors">
+                                {t.name}
+                              </h3>
+
+                              <p className="text-xs text-on-surface-variant/70 font-label uppercase tracking-wider mb-4">
+                                {t.settings?.stage_1?.type === "groups"
+                                  ? "Fase de Grupos"
+                                  : "Eliminatória"}
+                              </p>
+                            </div>
+
+                            <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                              <span className="font-mono text-xs text-on-surface-variant/60">
+                                {t.start_date
+                                  ? new Date(t.start_date).toLocaleDateString(undefined, {
+                                      day: "numeric",
+                                      month: "short",
+                                      year: "numeric",
+                                    })
+                                  : "Data a definir"}
+                              </span>
+                              <Link
+                                href={`/tournament/${t.id}`}
+                                className="inline-flex items-center gap-1 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform"
+                              >
+                                Ver Torneio
+                                <span className="material-symbols-outlined text-[16px]">
+                                  arrow_forward
+                                </span>
+                              </Link>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between border-t border-white/5 pt-6 mt-8">
+              <span className="text-xs font-label text-on-surface-variant/60 font-bold uppercase tracking-wider">
+                Página {safePage} de {totalPages}
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
                   type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={safePage <= 1}
+                  className="px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold text-on-surface transition-all cursor-pointer border border-white/5"
                 >
-                  Cancel
+                  Anterior
                 </button>
-              </form>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={safePage >= totalPages}
+                  className="px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold text-on-surface transition-all cursor-pointer border border-white/5"
+                >
+                  Seguinte
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
-              <p className="text-center font-body text-sm text-on-surface-variant mt-2">
-                {authModal === "login" ? "Don't have an account?" : "Already have an account?"}{" "}
-                <button 
-                  onClick={() => setAuthModal(authModal === "login" ? "signup" : "login")}
-                  className="text-primary hover:text-primary-fixed font-semibold transition-colors"
-                >
-                  {authModal === "login" ? "Sign Up" : "Sign In"}
-                </button>
+      {/* Authentication Modal (Preserved for full compatibility with tests & auth flow) */}
+      {authModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-surface-container-low border border-outline-variant/10 rounded-[2.5rem] p-8 max-w-md w-full relative shadow-2xl animate-in zoom-in-95 duration-200">
+            <button
+              onClick={closeAuthModal}
+              className="absolute top-6 right-6 text-on-surface-variant/50 hover:text-on-surface transition-colors cursor-pointer"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+
+            <div className="text-center mb-8">
+              <h2 className="font-headline text-3xl font-black uppercase tracking-tight text-on-surface">
+                {authModal === "signup" ? "Create Account" : "Welcome Back"}
+              </h2>
+              <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant/60 mt-1">
+                {authModal === "signup"
+                  ? "Join Kinetic Vault ScoreBoard"
+                  : "Sign in to manage your events"}
               </p>
-            </section>
-            
-            <footer className="text-center font-label text-xs text-outline opacity-60">
-              Secure Gateway • v2.4.1
-            </footer>
-          </main>
+            </div>
+
+            <form onSubmit={handleAuthSubmit} className="space-y-4">
+              {authModal === "signup" && (
+                <div>
+                  <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="Choose a username"
+                    className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                  className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                  className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
+                />
+              </div>
+
+              {authModal === "signup" && (
+                <div>
+                  <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
+                    Confirm Password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm your password"
+                    className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
+                  />
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-primary text-on-primary py-3.5 rounded-2xl font-label text-xs font-black uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-primary/20 mt-2"
+              >
+                {isSubmitting
+                  ? "Processing..."
+                  : authModal === "signup"
+                  ? "Sign Up"
+                  : "Sign In"}
+              </button>
+            </form>
+
+            <div className="mt-6 text-center">
+              {authModal === "signup" ? (
+                <p className="text-xs text-on-surface-variant">
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthModal("login");
+                      const params = new URLSearchParams(searchParams.toString());
+                      params.set("auth", "login");
+                      router.replace(window.location.pathname + "?" + params.toString());
+                    }}
+                    className="text-primary font-bold hover:underline cursor-pointer"
+                  >
+                    Sign in
+                  </button>
+                </p>
+              ) : (
+                <p className="text-xs text-on-surface-variant">
+                  Don't have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAuthModal("signup");
+                      const params = new URLSearchParams(searchParams.toString());
+                      params.set("auth", "signup");
+                      router.replace(window.location.pathname + "?" + params.toString());
+                    }}
+                    className="text-primary font-bold hover:underline cursor-pointer"
+                  >
+                    Sign up
+                  </button>
+                </p>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

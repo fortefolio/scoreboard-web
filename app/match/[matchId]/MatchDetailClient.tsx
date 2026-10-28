@@ -10,6 +10,7 @@ import ConfirmationModal from "@/components/ConfirmationModal";
 import SportIcon from "@/components/SportIcon";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
+import { FollowButton } from "@/components/FollowButton";
 
 const getInitials = (name?: string) => {
   if (!name) return "?";
@@ -520,17 +521,19 @@ export default function MatchDetailClient() {
               </span>
             </div>
 
-            {/* Top-Right: 3-Dots Dropdown Menu */}
-            <div className="relative shrink-0" ref={menuRef}>
-              <button
-                onClick={() => setIsMenuOpen((prev) => !prev)}
-                title="Opções do Jogo"
-                className="w-10 h-10 rounded-2xl bg-white/5 hover:bg-white/10 backdrop-blur-md text-on-surface-variant hover:text-on-surface border border-white/10 transition-all flex items-center justify-center cursor-pointer shadow-sm"
-                aria-haspopup="true"
-                aria-expanded={isMenuOpen}
-              >
-                <span className="material-symbols-outlined text-[22px]">more_vert</span>
-              </button>
+            {/* Top-Right: Follow Button & 3-Dots Dropdown Menu */}
+            <div className="flex items-center gap-2">
+              <FollowButton entityId={matchIdStr} entityType="match" variant="pill" />
+              <div className="relative shrink-0" ref={menuRef}>
+                <button
+                  onClick={() => setIsMenuOpen((prev) => !prev)}
+                  title="Opções do Jogo"
+                  className="w-10 h-10 rounded-2xl bg-white/5 hover:bg-white/10 backdrop-blur-md text-on-surface-variant hover:text-on-surface border border-white/10 transition-all flex items-center justify-center cursor-pointer shadow-sm"
+                  aria-haspopup="true"
+                  aria-expanded={isMenuOpen}
+                >
+                  <span className="material-symbols-outlined text-[22px]">more_vert</span>
+                </button>
 
               {isMenuOpen && (
                 <div className="absolute right-0 top-12 w-48 py-1.5 bg-[#151c2f]/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
@@ -571,6 +574,7 @@ export default function MatchDetailClient() {
                   )}
                 </div>
               )}
+            </div>
             </div>
           </div>
 
