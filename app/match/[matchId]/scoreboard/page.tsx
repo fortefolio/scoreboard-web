@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import TennisScoreboard from "./TennisScoreboard";
 import VolleyballScoreboard from "./VolleyballScoreboard";
 import FootballScoreboard from "./FootballScoreboard";
+import BasketballScoreboard from "./BasketballScoreboard";
 
 function ScoreboardContent() {
   const { matchId } = useParams();
@@ -60,8 +61,10 @@ function ScoreboardContent() {
 
     const channel = supabase
       .channel(`match-${matchIdStr}`)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'matches', filter: `id=eq.${matchIdStr}` }, (payload: any) => {
-        setMatch((prev: any) => ({ ...prev, ...payload.new }));
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, (payload: any) => {
+        if (payload.new && payload.new.id === matchIdStr) {
+          setMatch((prev: any) => ({ ...prev, ...payload.new }));
+        }
       })
       .subscribe();
 
@@ -81,7 +84,7 @@ function ScoreboardContent() {
 
   if (!match || !rules) return <div className="p-10 text-white bg-gray-950 min-h-screen text-center">Loading...</div>;
 
-  if (match.sport_type === 'Tennis') {
+  if (match.sport_type === 'Tennis' || match.sport_type === 'Padel') {
     return (
       <div className="min-h-screen bg-[#0c1324] text-on-background p-6 flex flex-col items-center">
         <div className="w-full max-w-2xl mb-8">
@@ -120,6 +123,27 @@ function ScoreboardContent() {
         matchData={match} 
         canEdit={canEdit} 
       />
+    );
+  }
+
+  if (match.sport_type === 'Basketball') {
+    return (
+      <div className="min-h-screen bg-[#0c1324] text-on-background p-4 md:p-6 flex flex-col items-center">
+        <div className="w-full max-w-5xl mb-6">
+          <button 
+            onClick={() => router.push(`/match/${matchIdStr}`)}
+            className="text-slate-500 hover:text-indigo-300 text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            Match Overview
+          </button>
+        </div>
+        <BasketballScoreboard 
+          matchData={match} 
+          canEdit={canEdit} 
+          rules={rules}
+        />
+      </div>
     );
   }
 

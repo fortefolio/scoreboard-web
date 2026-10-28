@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import RuleModal from "./RuleModal";
-import { countSetsWon } from "@/lib/scoring/sets";
+import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
+import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 
 interface Match {
   id: string;
@@ -86,7 +87,9 @@ export default function GroupMatchesView({
           <div>
             <h3 className="text-on-surface font-black uppercase tracking-tighter">Group Stage Config</h3>
             <p className="text-on-surface-variant text-[10px] font-label uppercase tracking-widest opacity-60">
-              {tournament?.settings?.overrides?.[1]?.max_sets || tournament?.settings?.default?.max_sets || 3} Sets • {tournament?.settings?.overrides?.[1]?.points_per_set || tournament?.settings?.default?.points_per_set || 21} Points
+              {tournament?.sport_type === "Tennis"
+                ? `Best of ${tournament?.settings?.overrides?.[1]?.max_sets || tournament?.settings?.default?.max_sets || 3} Sets`
+                : `${tournament?.settings?.overrides?.[1]?.max_sets || tournament?.settings?.default?.max_sets || 3} Sets • ${tournament?.settings?.overrides?.[1]?.points_per_set || tournament?.settings?.default?.points_per_set || 21} Points`}
             </p>
           </div>
         </div>
@@ -141,7 +144,8 @@ export default function GroupMatchesView({
                           const side = i === 0 ? 'home' : 'away';
                           let livePoints: string | number = 0;
                           let games: number | null = null;
-                          const sets = countSetsWon(match.scores?.sets, i as 0 | 1);
+                          const setsList = extractSetsData(match.scores);
+                          const sets = countSetsWon(setsList, i as 0 | 1);
 
                           if (match.status === 'ongoing' && match.scores) {
                             if (match.sport_type === 'Tennis' && match.scores.tennis) {
@@ -163,28 +167,39 @@ export default function GroupMatchesView({
                             <div key={i} className="flex justify-between items-center pr-4">
                               <div className="flex items-center gap-2 truncate max-w-[140px]">
                                 <span className={`text-sm font-bold tracking-tight truncate ${match.participants?.[i] ? 'text-on-surface' : 'text-on-surface-variant opacity-50 italic'}`}>
-                                  {match.participants?.[i]?.name || "TBD"}
+                                  {formatTeamOrPlayerName(match.participants?.[i]?.name) || "TBD"}
                                 </span>
                                 {match.status === 'ongoing' && match.scores?.serving_index === i && (
                                   <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" title="Serving"></span>
                                 )}
                               </div>
                               <div className="flex items-center gap-3">
-                                <div className="flex flex-col items-end">
-                                  <span className="text-[7px] font-black uppercase text-on-surface-variant opacity-40 leading-none mb-1">Sets</span>
-                                  <span className="text-xs font-bold text-on-surface-variant">{sets}</span>
+                                {setsList.map((s: any, sIdx: number) => {
+                                  const pScore = i === 0 ? (s.home ?? s.team1 ?? 0) : (s.away ?? s.team2 ?? 0);
+                                  const oScore = i === 0 ? (s.away ?? s.team2 ?? 0) : (s.home ?? s.team1 ?? 0);
+                                  const tbVal = s.tiebreak ? (i === 0 ? s.tiebreak.home : s.tiebreak.away) : null;
+                                  return (
+                                    <span
+                                      key={sIdx}
+                                      className={`text-xs font-mono min-w-[16px] text-right ${
+                                        pScore > oScore ? "font-black text-on-surface" : "text-on-surface-variant/60"
+                                      }`}
+                                    >
+                                      {pScore}
+                                      {tbVal !== null && tbVal !== undefined && (
+                                        <sup className="text-[8px] text-primary ml-0.5">{tbVal}</sup>
+                                      )}
+                                    </span>
+                                  );
+                                })}
+                                <div className="flex items-center justify-end pl-2 border-l border-outline-variant/10 min-w-[20px]">
+                                  <span className="text-xs font-black text-secondary">{sets}</span>
                                 </div>
                                 {games !== null && (
-                                  <div className="flex flex-col items-end">
-                                    <span className="text-[7px] font-black uppercase text-indigo-400/60 leading-none mb-1">Games</span>
-                                    <span className="text-xs font-bold text-indigo-400">{games}</span>
-                                  </div>
+                                  <span className="text-xs font-bold text-indigo-400 min-w-[16px] text-right">{games}</span>
                                 )}
                                 {match.status === 'ongoing' && (
-                                  <div className="flex flex-col items-end min-w-[30px]">
-                                    <span className="text-[7px] font-black uppercase text-primary/60 leading-none mb-1">Pts</span>
-                                    <span className="text-sm font-digital text-primary">{livePoints}</span>
-                                  </div>
+                                  <span className="text-sm font-digital text-primary min-w-[24px] text-right">{livePoints}</span>
                                 )}
                               </div>
                             </div>

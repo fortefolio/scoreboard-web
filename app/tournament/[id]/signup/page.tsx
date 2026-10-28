@@ -19,29 +19,32 @@ function SignupContent() {
 
   const tournamentId = Array.isArray(id) ? id[0] : id;
 
+  const buildInitialFormResponses = (schema: any[] = []) => {
+    const initialData: Record<string, any> = {};
+    schema.forEach((field: any) => {
+      if (field.type === 'checkbox') initialData[field.id] = false;
+      else initialData[field.id] = "";
+    });
+    return initialData;
+  };
+
   useEffect(() => {
     if (tournamentId) {
       const fetchTournament = async () => {
         const { data } = await supabase
           .from("tournaments")
-          .select("name, sport_type, status, settings, signup_form_config")
+          .select("name, sport_type, status, settings, signup_schema")
           .eq("id", tournamentId)
           .single();
 
         if (data) {
           setTournament(data);
-          // Initialize formResponses with defaults if necessary
-          const initialData: Record<string, any> = {};
-          (data.signup_form_config || []).forEach((field: any) => {
-            if (field.type === 'checkbox') initialData[field.id] = false;
-            else initialData[field.id] = "";
-          });
-          setFormResponses(initialData);
+          setFormResponses(buildInitialFormResponses(data.signup_schema || []));
         }
 
         const { count } = await supabase
           .from("tournament_participants")
-          .select("*", { count: 'exact', head: true })
+          .select("id", { count: 'exact', head: true })
           .eq("tournament_id", tournamentId);
         
         setParticipantCount(count || 0);
@@ -51,6 +54,8 @@ function SignupContent() {
     }
   }, [tournamentId]);
 
+  const maxTeams = tournament?.settings?.max_teams ?? tournament?.settings?.stage_1?.max_teams ?? 16;
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!teamName.trim() || !contactEmail.trim()) return;
@@ -59,7 +64,6 @@ function SignupContent() {
       return;
     }
 
-    const maxTeams = tournament?.settings?.max_teams || 16;
     if (participantCount >= maxTeams) {
       toast.error("This tournament has reached its maximum number of teams.");
       return;
@@ -78,6 +82,7 @@ function SignupContent() {
 
       if (error) throw error;
 
+      setParticipantCount((prev) => prev + 1);
       setSuccess(true);
       toast.success("Successfully registered for the tournament!");
     } catch (err: any) {
@@ -136,7 +141,12 @@ function SignupContent() {
                 View Registered Teams
               </Link>
               <button 
-                onClick={() => setSuccess(false)}
+                onClick={() => {
+                  setTeamName("");
+                  setContactEmail("");
+                  setFormResponses(buildInitialFormResponses(tournament?.signup_schema || []));
+                  setSuccess(false);
+                }}
                 className="text-primary font-bold text-sm hover:underline"
               >
                 Register another team
@@ -148,14 +158,14 @@ function SignupContent() {
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-50"></div>
             
             <form onSubmit={handleSignup} className="relative z-10 space-y-6">
-              {participantCount >= (tournament?.settings?.max_teams || 16) ? (
+              {participantCount >= maxTeams ? (
                 <div className="text-center py-6">
                   <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <span className="material-symbols-outlined text-3xl text-amber-500">lock</span>
                   </div>
                   <h2 className="text-xl font-headline font-black mb-2 text-on-surface">Tournament Full</h2>
                   <p className="text-on-surface-variant text-xs mb-6 px-4">
-                    The maximum number of teams ({tournament?.settings?.max_teams || 16}) has already registered for this tournament.
+                    The maximum number of teams ({maxTeams}) has already registered for this tournament.
                   </p>
                   <Link href={`/tournament/${tournamentId}/teams`} className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:underline">
                     <span className="material-symbols-outlined text-sm">groups</span>
@@ -189,7 +199,7 @@ function SignupContent() {
                   </div>
 
                   {/* Dynamic Fields */}
-                  {(tournament.signup_form_config || []).map((field: any) => (
+                  {(tournament.signup_schema || []).map((field: any) => (
                     <div key={field.id}>
                       <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3">
                         {field.label} {field.required && <span className="text-primary">*</span>}
@@ -210,18 +220,21 @@ function SignupContent() {
                         <div className="flex items-center gap-3 px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10">
                           <input 
                             type="checkbox"
+                            required={field.required}
                             className="w-6 h-6 rounded bg-surface-container-highest border-none text-primary focus:ring-0"
                             checked={formResponses[field.id] || false}
                             onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.checked })}
                           />
-                          <span className="text-on-surface-variant text-sm font-medium">I agree to {field.label}</span>
+                          <span className="text-on-surface-variant text-sm font-medium">{field.description || `I agree to ${field.label}`}</span>
                         </div>
                       ) : (
                         <input 
                           required={field.required}
                           type={field.type}
+                          min={field.type === 'number' && field.min != null ? field.min : undefined}
+                          max={field.type === 'number' && field.max != null ? field.max : undefined}
                           className="w-full px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold text-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-on-surface-variant/30"
-                          placeholder={`Enter ${field.label.toLowerCase()}`}
+                          placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
                           value={formResponses[field.id] || ""}
                           onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.value })}
                         />
