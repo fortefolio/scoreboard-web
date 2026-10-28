@@ -327,7 +327,7 @@ describe("Home — tabs & tournaments sorting", () => {
     await renderHome();
 
     // Switch to tournaments tab
-    const tournamentsBtn = screen.getByRole("button", { name: /Torneios/i });
+    const tournamentsBtn = screen.getByRole("button", { name: /(Torneios|Tournaments)/i });
     expect(tournamentsBtn).toBeInTheDocument();
     await user.click(tournamentsBtn);
 

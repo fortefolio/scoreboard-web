@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo, use } from "react";
+import { useEffect, useState, useMemo, use, Suspense } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
@@ -8,6 +8,7 @@ import MatchCard from "@/components/MatchCard";
 import SportIcon from "@/components/SportIcon";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 const MATCHES_PER_PAGE = 12;
 const TOURNAMENTS_PER_PAGE = 9;
@@ -17,10 +18,23 @@ export default function UserProfilePage({
 }: {
   params: Promise<{ username: string }>;
 }) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <UserProfileContent params={params} />
+    </Suspense>
+  );
+}
+
+function UserProfileContent({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}) {
   const resolvedParams = use(params);
   const rawParam = decodeURIComponent(resolvedParams.username || "");
   const router = useRouter();
   const { supabase } = useAuth();
+  const { t } = useTranslation();
 
   const [targetUser, setTargetUser] = useState<any>(null);
   const [tournaments, setTournaments] = useState<any[]>([]);
@@ -292,7 +306,7 @@ export default function UserProfilePage({
                     {tournaments.length}
                   </div>
                   <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                    Torneios
+                    {t("home.tournamentsCount")}
                   </div>
                 </div>
                 <div className="w-px h-8 bg-white/10" />
@@ -301,7 +315,7 @@ export default function UserProfilePage({
                     {matches.length}
                   </div>
                   <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                    Jogos
+                    {t("home.matchesCount")}
                   </div>
                 </div>
               </div>
@@ -319,7 +333,7 @@ export default function UserProfilePage({
               }`}
             >
               <span className="material-symbols-outlined text-[16px]">sports</span>
-              Jogos ({matches.length})
+              {t("home.matchesTab")} ({matches.length})
             </button>
             <button
               onClick={() => handleTabChange("tournaments")}
@@ -330,7 +344,7 @@ export default function UserProfilePage({
               }`}
             >
               <span className="material-symbols-outlined text-[16px]">emoji_events</span>
-              Torneios ({tournaments.length})
+              {t("home.tournamentsTab")} ({tournaments.length})
             </button>
           </div>
 
@@ -341,7 +355,7 @@ export default function UserProfilePage({
               {/* Sport Filter */}
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
-                  Desporto:
+                  {t("common.sport")}:
                 </span>
                 <select
                   value={sportFilter}
@@ -351,20 +365,20 @@ export default function UserProfilePage({
                   }}
                   className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
                 >
-                  <option value="all">Todos os Desportos</option>
-                  <option value="Basketball">Basquetebol</option>
-                  <option value="Volleyball">Voleibol</option>
-                  <option value="Beach Volleyball">Voleibol de Praia</option>
-                  <option value="Football">Futebol</option>
-                  <option value="Tennis">Ténis</option>
-                  <option value="Padel">Padel</option>
+                  <option value="all">{t("sports.all")}</option>
+                  <option value="Basketball">{t("sports.basketball")}</option>
+                  <option value="Volleyball">{t("sports.volleyball")}</option>
+                  <option value="Beach Volleyball">{t("sports.beachVolleyball")}</option>
+                  <option value="Football">{t("sports.football")}</option>
+                  <option value="Tennis">{t("sports.tennis")}</option>
+                  <option value="Padel">{t("sports.padel")}</option>
                 </select>
               </div>
 
               {/* Status Filter */}
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
-                  Estado:
+                  {t("common.status")}:
                 </span>
                 <select
                   value={statusFilter}
@@ -374,17 +388,17 @@ export default function UserProfilePage({
                   }}
                   className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
                 >
-                  <option value="all">Todos os Estados</option>
-                  <option value="scheduled">Não decorreu (Agendado)</option>
-                  <option value="ongoing">A decorrer (Ao Vivo)</option>
-                  <option value="completed">Terminado (Final)</option>
+                  <option value="all">{t("status.all")}</option>
+                  <option value="scheduled">{t("status.scheduled")}</option>
+                  <option value="ongoing">{t("status.ongoing")}</option>
+                  <option value="completed">{t("status.completed")}</option>
                 </select>
               </div>
 
               {/* Date Sort */}
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
-                  Data:
+                  {t("common.date")}:
                 </span>
                 <select
                   value={dateSort}
@@ -394,8 +408,8 @@ export default function UserProfilePage({
                   }}
                   className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
                 >
-                  <option value="desc">Mais recentes primeiro</option>
-                  <option value="asc">Mais antigos primeiro</option>
+                  <option value="desc">{t("common.recentFirst")}</option>
+                  <option value="asc">{t("common.oldestFirst")}</option>
                 </select>
               </div>
 
@@ -406,7 +420,7 @@ export default function UserProfilePage({
                   onClick={clearFilters}
                   className="text-[10px] font-label font-bold uppercase tracking-wider text-primary hover:underline cursor-pointer"
                 >
-                  Limpar Filtros
+                  {t("common.clearFilters")}
                 </button>
               )}
             </div>
@@ -416,7 +430,7 @@ export default function UserProfilePage({
               <button
                 type="button"
                 onClick={() => setViewMode("list")}
-                title="Ver em Lista"
+                title={t("common.viewList")}
                 className={`p-1.5 rounded-lg transition-all flex items-center cursor-pointer ${
                   viewMode === "list"
                     ? "bg-primary text-on-primary shadow-sm"
@@ -428,7 +442,7 @@ export default function UserProfilePage({
               <button
                 type="button"
                 onClick={() => setViewMode("cards")}
-                title="Ver em Cartões"
+                title={t("common.viewCards")}
                 className={`p-1.5 rounded-lg transition-all flex items-center cursor-pointer ${
                   viewMode === "cards"
                     ? "bg-primary text-on-primary shadow-sm"
@@ -522,24 +536,24 @@ export default function UserProfilePage({
                     <table className="w-full text-left border-collapse">
                       <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         <tr>
-                          <th className="py-3.5 px-6">Torneio</th>
-                          <th className="py-3.5 px-4">Desporto</th>
-                          <th className="py-3.5 px-4">Formato</th>
-                          <th className="py-3.5 px-4 text-center">Estado</th>
-                          <th className="py-3.5 px-6 text-right">Data de Início</th>
+                          <th className="py-3.5 px-6">{t("common.event")}</th>
+                          <th className="py-3.5 px-4">{t("common.sport")}</th>
+                          <th className="py-3.5 px-4">{t("common.format")}</th>
+                          <th className="py-3.5 px-4 text-center">{t("common.status")}</th>
+                          <th className="py-3.5 px-6 text-right">{t("common.date")}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5 text-sm font-body">
-                        {paginatedTournaments.map((t) => (
+                        {paginatedTournaments.map((tItem) => (
                           <tr
-                            key={t.id}
-                            onClick={() => router.push(`/tournament/${t.id}`)}
+                            key={tItem.id}
+                            onClick={() => router.push(`/tournament/${tItem.id}`)}
                             role="button"
                             tabIndex={0}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" || e.key === " ") {
                                 e.preventDefault();
-                                router.push(`/tournament/${t.id}`);
+                                router.push(`/tournament/${tItem.id}`);
                               }
                             }}
                             className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
@@ -547,52 +561,52 @@ export default function UserProfilePage({
                             {/* Torneio */}
                             <td className="py-4 px-5">
                               <div className="font-headline font-bold text-on-surface text-sm leading-snug group-hover:text-primary transition-colors">
-                                {t.name}
+                                {tItem.name}
                               </div>
                             </td>
 
                             {/* Desporto */}
                             <td className="py-4 px-4">
                               <div className="flex items-center gap-2">
-                                <SportIcon sport={t.sport_type} className="text-primary text-[18px] shrink-0" />
+                                <SportIcon sport={tItem.sport_type} className="text-primary text-[18px] shrink-0" />
                                 <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                                  {t.sport_type}
+                                  {tItem.sport_type}
                                 </span>
                               </div>
                             </td>
 
                             {/* Formato */}
                             <td className="py-4 px-4 font-label text-xs uppercase tracking-wider text-on-surface-variant/80">
-                              {t.settings?.stage_1?.type === "groups"
-                                ? "Fase de Grupos"
-                                : t.settings?.stage_1?.type === "double_elimination"
-                                ? "Dupla Eliminatória"
-                                : "Eliminatória"}
+                              {tItem.settings?.stage_1?.type === "groups"
+                                ? t("tournament.groupStage")
+                                : tItem.settings?.stage_1?.type === "double_elimination"
+                                ? t("tournament.doubleElimination")
+                                : t("tournament.singleElimination")}
                             </td>
 
                             {/* Estado */}
                             <td className="py-4 px-4 text-center">
                               <span
                                 className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                                  t.status === "completed"
+                                  tItem.status === "completed"
                                     ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                    : t.status === "ongoing"
+                                    : tItem.status === "ongoing"
                                     ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
-                                    : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                    : "bg-white/5 text-on-surface-variant/70 border border-white/10"
                                 }`}
                               >
-                                {t.status === "completed"
-                                  ? "Concluído"
-                                  : t.status === "ongoing"
-                                  ? "Em Curso"
-                                  : "Agendado"}
+                                {tItem.status === "completed"
+                                  ? t("status.completed")
+                                  : tItem.status === "ongoing"
+                                  ? t("status.live")
+                                  : t("status.scheduled")}
                               </span>
                             </td>
 
                             {/* Data */}
                             <td className="py-4 px-5 text-right font-mono text-xs text-on-surface-variant/70">
-                              {t.start_date
-                                ? new Date(t.start_date).toLocaleDateString(undefined, {
+                              {tItem.start_date
+                                ? new Date(tItem.start_date).toLocaleDateString(undefined, {
                                     day: "numeric",
                                     month: "short",
                                     year: "numeric",
@@ -646,12 +660,12 @@ export default function UserProfilePage({
                     <table className="w-full text-left border-collapse">
                       <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         <tr>
-                          <th className="py-3.5 px-6">Equipas / Jogadores</th>
-                          <th className="py-3.5 px-6">Evento</th>
-                          <th className="py-3.5 px-4">Desporto</th>
-                          <th className="py-3.5 px-4 text-center">Resultado</th>
-                          <th className="py-3.5 px-4 text-center">Estado</th>
-                          <th className="py-3.5 px-6 text-right">Data</th>
+                          <th className="py-3.5 px-6">{t("common.teamsOrPlayers")}</th>
+                          <th className="py-3.5 px-6">{t("common.event")}</th>
+                          <th className="py-3.5 px-4">{t("common.sport")}</th>
+                          <th className="py-3.5 px-4 text-center">{t("common.score")}</th>
+                          <th className="py-3.5 px-4 text-center">{t("common.status")}</th>
+                          <th className="py-3.5 px-6 text-right">{t("common.date")}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5 text-sm font-body">
@@ -701,7 +715,7 @@ export default function UserProfilePage({
                               {/* Evento */}
                               <td className="py-4 px-5">
                                 <div className="font-headline font-bold text-on-surface text-xs leading-snug">
-                                  {m.tournaments?.name || "Jogo Isolado"}
+                                  {m.tournaments?.name || t("home.isolatedMatch")}
                                 </div>
                                 {m.court && (
                                   <div className="text-[10px] text-on-surface-variant/60 font-label mt-0.5">
@@ -757,10 +771,10 @@ export default function UserProfilePage({
                                     <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
                                   )}
                                   {m.status === "completed"
-                                    ? "Final"
+                                    ? t("status.completed")
                                     : m.status === "ongoing"
-                                    ? "Live"
-                                    : "Agendado"}
+                                    ? t("status.live")
+                                    : t("status.scheduled")}
                                 </span>
                               </td>
 
@@ -787,15 +801,7 @@ export default function UserProfilePage({
           {totalPages > 1 && (
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8 pt-6 border-t border-white/5">
               <p className="text-xs font-label text-on-surface-variant/60">
-                A mostrar{" "}
-                <span className="font-bold text-on-surface">
-                  {(safePage - 1) * itemsPerPage + 1}
-                </span>{" "}
-                a{" "}
-                <span className="font-bold text-on-surface">
-                  {Math.min(safePage * itemsPerPage, currentItemsTotal)}
-                </span>{" "}
-                de <span className="font-bold text-on-surface">{currentItemsTotal}</span> {isMatchesTab ? "jogos" : "torneios"}
+                {t("common.pageOf", { current: safePage, total: totalPages })}
               </p>
 
               <div className="flex items-center gap-1 self-center sm:self-auto">
@@ -807,7 +813,7 @@ export default function UserProfilePage({
                   className="px-3 py-1.5 rounded-xl text-xs font-bold text-on-surface-variant hover:text-on-surface bg-surface-container disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer flex items-center gap-1"
                 >
                   <span className="material-symbols-outlined text-[16px]">chevron_left</span>
-                  Anterior
+                  {t("common.previous")}
                 </button>
 
                 {/* Page Number Buttons */}
@@ -844,7 +850,7 @@ export default function UserProfilePage({
                   disabled={safePage === totalPages}
                   className="px-3 py-1.5 rounded-xl text-xs font-bold text-on-surface-variant hover:text-on-surface bg-surface-container disabled:opacity-30 disabled:pointer-events-none transition-all cursor-pointer flex items-center gap-1"
                 >
-                  Seguinte
+                  {t("common.next")}
                   <span className="material-symbols-outlined text-[16px]">chevron_right</span>
                 </button>
               </div>

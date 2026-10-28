@@ -6,6 +6,7 @@ import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import Link from "next/link";
 import SportIcon from "@/components/SportIcon";
 import { FollowButton } from "@/components/FollowButton";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
 
@@ -26,6 +27,7 @@ const getInitials = (name?: string) => {
 };
 
 export default function MatchCard({ match }: { match: any }) {
+  const { t } = useTranslation();
   const [matchTime, setMatchTime] = useState("0:00:00");
   const isOngoing = match.status === 'ongoing';
   
@@ -110,14 +112,14 @@ export default function MatchCard({ match }: { match: any }) {
               <span className="text-[10px] font-black uppercase tracking-wider text-primary flex items-center gap-1.5 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
                 {match.sport_type === 'Basketball'
-                  ? (match.scores?.basketball?.period || "Live")
+                  ? (match.scores?.basketball?.period || t("status.live"))
                   : match.sport_type !== 'Football'
                   ? `Set ${currentSetNum}`
-                  : "Live"}
+                  : t("status.live")}
               </span>
             ) : (
               <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/40 shrink-0">
-                {match.status === 'completed' || isMatchFinished ? 'Final' : match.status}
+                {match.status === 'completed' || isMatchFinished ? t("status.final") : match.status}
               </span>
             )}
             <FollowButton entityId={match.id} entityType="match" variant="icon" className="w-7 h-7" />

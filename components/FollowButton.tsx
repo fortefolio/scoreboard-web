@@ -3,6 +3,7 @@
 import React from "react";
 import { useAuth } from "@/components/AuthProvider";
 import { useFollow } from "@/lib/hooks/useFollow";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 interface FollowButtonProps {
   entityId: string;
@@ -23,6 +24,7 @@ export function FollowButton({
   followHook,
 }: FollowButtonProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const internalHook = useFollow();
   const { isFollowing, toggleFollow, updatingIds } = followHook || internalHook;
 
@@ -50,8 +52,8 @@ export function FollowButton({
       <button
         onClick={handleClick}
         disabled={isUpdating}
-        title={following ? "Remover dos favoritos" : "Seguir"}
-        aria-label={following ? "Remover dos favoritos" : "Seguir"}
+        title={following ? t("common.following") : t("common.follow")}
+        aria-label={following ? t("common.following") : t("common.follow")}
         className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all cursor-pointer backdrop-blur-md shadow-sm ${
           following
             ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-lg shadow-amber-500/10 hover:bg-amber-500/30"
@@ -75,8 +77,8 @@ export function FollowButton({
     <button
       onClick={handleClick}
       disabled={isUpdating}
-      title={following ? "Remover dos favoritos" : "Seguir"}
-      aria-label={following ? "Remover dos favoritos" : "Seguir"}
+      title={following ? t("common.following") : t("common.follow")}
+      aria-label={following ? t("common.following") : t("common.follow")}
       className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
         following
           ? "bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-lg shadow-amber-500/10"

@@ -11,6 +11,7 @@ import MatchCard from "@/components/MatchCard";
 import SportIcon from "@/components/SportIcon";
 import { FollowButton } from "@/components/FollowButton";
 import { useFollow } from "@/lib/hooks/useFollow";
+import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 const MATCHES_PER_PAGE = 12;
 const TOURNAMENTS_PER_PAGE = 9;
@@ -25,6 +26,7 @@ export default function Home() {
 
 function HomeContent() {
   const { user, supabase } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const followHook = useFollow();
@@ -125,13 +127,13 @@ function HomeContent() {
     try {
       if (authModal === "signup") {
         if (!username.trim()) {
-          toast.error("Username is required");
+          toast.error(t("auth.usernameRequired"));
           setIsSubmitting(false);
           return;
         }
 
         if (password !== confirmPassword) {
-          toast.error("Passwords do not match");
+          toast.error(t("auth.passwordsDoNotMatch"));
           setIsSubmitting(false);
           return;
         }
@@ -143,7 +145,7 @@ function HomeContent() {
           .maybeSingle();
 
         if (existingUser) {
-          toast.error("Username already taken. Please choose another one.");
+          toast.error(t("auth.usernameTaken"));
           setIsSubmitting(false);
           return;
         }
@@ -165,12 +167,12 @@ function HomeContent() {
         }
 
         if (data?.user && (!data.user.identities || data.user.identities.length === 0)) {
-          toast.error("An account with this email already exists.");
+          toast.error(t("auth.userAlreadyRegistered"));
           setIsSubmitting(false);
           return;
         }
 
-        toast.success("Account created successfully!");
+        toast.success(t("auth.accountCreatedToast"));
         closeAuthModal();
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -184,7 +186,7 @@ function HomeContent() {
           return;
         }
 
-        toast.success("Welcome back!");
+        toast.success(t("auth.welcomeBackToast"));
         closeAuthModal();
 
         const next = searchParams.get("next");
@@ -350,13 +352,13 @@ function HomeContent() {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-label text-[10px] font-black uppercase tracking-widest mb-3">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              Live Scoreboard
+              {t("home.liveBadge")}
             </div>
             <h1 className="font-headline font-black text-3xl sm:text-5xl text-on-surface tracking-tight mb-2">
-              Resultados e Torneios
+              {t("home.heroTitle")}
             </h1>
             <p className="text-on-surface-variant text-sm max-w-xl">
-              Acompanha resultados em tempo real, segue os teus jogos e torneios favoritos e recebe notificações instantâneas com cada ponto.
+              {t("home.heroSubtitle")}
             </p>
           </div>
 
@@ -366,7 +368,7 @@ function HomeContent() {
                 {totalMatchesCount}
               </div>
               <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                Jogos
+                {t("home.matchesCount")}
               </div>
             </div>
             <div className="w-px h-8 bg-white/10" />
@@ -375,7 +377,7 @@ function HomeContent() {
                 {totalTournamentsCount}
               </div>
               <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                Torneios
+                {t("home.tournamentsCount")}
               </div>
             </div>
             {user && (
@@ -386,7 +388,7 @@ function HomeContent() {
                     {totalFollowedCount}
                   </div>
                   <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                    Favoritos
+                    {t("home.favoritesCount")}
                   </div>
                 </div>
               </>
@@ -406,7 +408,7 @@ function HomeContent() {
           }`}
         >
           <span className="material-symbols-outlined text-[16px]">sports</span>
-          Jogos ({matches.length})
+          {t("home.matchesTab")} ({matches.length})
         </button>
 
         <button
@@ -418,7 +420,7 @@ function HomeContent() {
           }`}
         >
           <span className="material-symbols-outlined text-[16px]">emoji_events</span>
-          Torneios ({tournaments.length})
+          {t("home.tournamentsTab")} ({tournaments.length})
         </button>
 
         <button
@@ -435,7 +437,7 @@ function HomeContent() {
           >
             star
           </span>
-          Favoritos / A Seguir {user ? `(${totalFollowedCount})` : ""}
+          {t("home.followingTab")} {user ? `(${totalFollowedCount})` : ""}
         </button>
       </div>
 
@@ -450,7 +452,7 @@ function HomeContent() {
             </span>
             <input
               type="text"
-              placeholder="Pesquisar..."
+              placeholder={t("common.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -463,7 +465,7 @@ function HomeContent() {
           {/* Sport Filter */}
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
-              Desporto:
+              {t("common.sport")}:
             </span>
             <select
               value={sportFilter}
@@ -473,20 +475,20 @@ function HomeContent() {
               }}
               className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
             >
-              <option value="all">Todos os Desportos</option>
-              <option value="Basketball">Basquetebol</option>
-              <option value="Volleyball">Voleibol</option>
-              <option value="Beach Volleyball">Voleibol de Praia</option>
-              <option value="Football">Futebol</option>
-              <option value="Tennis">Ténis</option>
-              <option value="Padel">Padel</option>
+              <option value="all">{t("sports.all")}</option>
+              <option value="Basketball">{t("sports.basketball")}</option>
+              <option value="Volleyball">{t("sports.volleyball")}</option>
+              <option value="Beach Volleyball">{t("sports.beachVolleyball")}</option>
+              <option value="Football">{t("sports.football")}</option>
+              <option value="Tennis">{t("sports.tennis")}</option>
+              <option value="Padel">{t("sports.padel")}</option>
             </select>
           </div>
 
           {/* Status Filter */}
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
-              Estado:
+              {t("common.status")}:
             </span>
             <select
               value={statusFilter}
@@ -496,17 +498,17 @@ function HomeContent() {
               }}
               className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
             >
-              <option value="all">Todos os Estados</option>
-              <option value="scheduled">Não decorreu (Agendado)</option>
-              <option value="ongoing">A decorrer (Ao Vivo)</option>
-              <option value="completed">Terminado (Final)</option>
+              <option value="all">{t("status.all")}</option>
+              <option value="scheduled">{t("status.scheduled")}</option>
+              <option value="ongoing">{t("status.ongoing")}</option>
+              <option value="completed">{t("status.completed")}</option>
             </select>
           </div>
 
           {/* Date Sort */}
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
-              Data:
+              {t("common.date")}:
             </span>
             <select
               value={dateSort}
@@ -516,8 +518,8 @@ function HomeContent() {
               }}
               className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
             >
-              <option value="desc">Mais recentes primeiro</option>
-              <option value="asc">Mais antigos primeiro</option>
+              <option value="desc">{t("common.recentFirst")}</option>
+              <option value="asc">{t("common.oldestFirst")}</option>
             </select>
           </div>
 
@@ -528,7 +530,7 @@ function HomeContent() {
               onClick={clearFilters}
               className="text-[10px] font-label font-bold uppercase tracking-wider text-primary hover:underline cursor-pointer"
             >
-              Limpar Filtros
+              {t("common.clearFilters")}
             </button>
           )}
         </div>
@@ -538,7 +540,7 @@ function HomeContent() {
           <button
             type="button"
             onClick={() => setViewMode("list")}
-            title="Ver em Lista"
+            title={t("common.viewList")}
             className={`p-1.5 rounded-lg transition-all flex items-center cursor-pointer ${
               viewMode === "list"
                 ? "bg-primary text-on-primary shadow-sm"
@@ -550,7 +552,7 @@ function HomeContent() {
           <button
             type="button"
             onClick={() => setViewMode("cards")}
-            title="Ver em Cartões"
+            title={t("common.viewCards")}
             className={`p-1.5 rounded-lg transition-all flex items-center cursor-pointer ${
               viewMode === "cards"
                 ? "bg-primary text-on-primary shadow-sm"
@@ -567,7 +569,7 @@ function HomeContent() {
         <div className="py-24 text-center">
           <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-4 text-on-surface-variant font-label uppercase tracking-widest text-xs">
-            A carregar eventos...
+            {t("common.loading")}
           </p>
         </div>
       ) : (
@@ -581,17 +583,17 @@ function HomeContent() {
                     sports
                   </span>
                   <h3 className="font-headline font-bold text-base text-on-surface mb-1">
-                    Nenhum jogo encontrado
+                    {t("home.noMatchesFound")}
                   </h3>
                   <p className="text-on-surface-variant/60 text-xs mb-4">
-                    Não existem jogos correspondentes aos filtros selecionados.
+                    {t("home.noMatchesFilterDesc")}
                   </p>
                   {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "") && (
                     <button
                       onClick={clearFilters}
                       className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-xs font-bold text-primary transition-all"
                     >
-                      Limpar Filtros
+                      {t("common.clearFilters")}
                     </button>
                   )}
                 </div>
@@ -609,12 +611,12 @@ function HomeContent() {
                     <table className="w-full text-left border-collapse">
                       <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         <tr>
-                          <th className="py-3.5 px-6">Equipas / Jogadores</th>
-                          <th className="py-3.5 px-6">Evento</th>
-                          <th className="py-3.5 px-4">Desporto</th>
-                          <th className="py-3.5 px-4 text-center">Resultado</th>
-                          <th className="py-3.5 px-4 text-center">Estado</th>
-                          <th className="py-3.5 px-6 text-right">Data</th>
+                          <th className="py-3.5 px-6">{t("common.teamsOrPlayers")}</th>
+                          <th className="py-3.5 px-6">{t("common.event")}</th>
+                          <th className="py-3.5 px-4">{t("common.sport")}</th>
+                          <th className="py-3.5 px-4 text-center">{t("common.score")}</th>
+                          <th className="py-3.5 px-4 text-center">{t("common.status")}</th>
+                          <th className="py-3.5 px-6 text-right">{t("common.date")}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5 text-sm font-body">
@@ -669,7 +671,7 @@ function HomeContent() {
                               {/* Evento */}
                               <td className="py-4 px-6">
                                 <div className="font-headline font-bold text-on-surface text-xs leading-snug">
-                                  {m.tournaments?.name || "Jogo Isolado"}
+                                  {m.tournaments?.name || t("home.isolatedMatch")}
                                 </div>
                                 {m.court && (
                                   <div className="text-[10px] text-on-surface-variant/60 font-label mt-0.5">
@@ -728,10 +730,10 @@ function HomeContent() {
                                   }`}
                                 >
                                   {m.status === "completed"
-                                    ? "Concluído"
+                                    ? t("status.completed")
                                     : m.status === "ongoing"
-                                    ? "Ao Vivo"
-                                    : "Agendado"}
+                                    ? t("status.live")
+                                    : t("status.scheduled")}
                                 </span>
                               </td>
 
@@ -771,57 +773,57 @@ function HomeContent() {
                     emoji_events
                   </span>
                   <h3 className="font-headline font-bold text-base text-on-surface mb-1">
-                    Nenhum torneio encontrado
+                    {t("home.noTournamentsFound")}
                   </h3>
                   <p className="text-on-surface-variant/60 text-xs mb-4">
-                    Não existem torneios correspondentes aos filtros selecionados.
+                    {t("home.noTournamentsFilterDesc")}
                   </p>
                   {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "") && (
                     <button
                       onClick={clearFilters}
                       className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-xs font-bold text-primary transition-all"
                     >
-                      Limpar Filtros
+                      {t("common.clearFilters")}
                     </button>
                   )}
                 </div>
               ) : viewMode === "cards" ? (
                 /* Cards Grid View */
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {paginatedTournaments.map((t) => (
+                  {paginatedTournaments.map((tItem) => (
                     <div
-                      key={t.id}
+                      key={tItem.id}
                       className="bg-surface-container-low rounded-3xl p-6 border border-white/5 hover:border-primary/20 transition-all flex flex-col justify-between group shadow-lg"
                     >
                       <div>
                         <div className="flex items-center justify-between gap-2 mb-4">
                           <div className="flex items-center gap-2">
                             <SportIcon
-                              sport={t.sport_type}
+                              sport={tItem.sport_type}
                               className="text-primary text-[20px]"
                             />
                             <span className="text-[10px] font-label font-black uppercase tracking-wider text-on-surface-variant">
-                              {t.sport_type}
+                              {tItem.sport_type}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <span
                               className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                                t.status === "completed"
+                                tItem.status === "completed"
                                   ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                  : t.status === "ongoing"
+                                  : tItem.status === "ongoing"
                                   ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
                                   : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                               }`}
                             >
-                              {t.status === "completed"
-                                ? "Concluído"
-                                : t.status === "ongoing"
-                                ? "Em Curso"
-                                : "Agendado"}
+                              {tItem.status === "completed"
+                                ? t("status.completed")
+                                : tItem.status === "ongoing"
+                                ? t("status.live")
+                                : t("status.scheduled")}
                             </span>
                             <FollowButton
-                              entityId={t.id}
+                              entityId={tItem.id}
                               entityType="tournament"
                               variant="icon"
                               followHook={followHook}
@@ -830,33 +832,33 @@ function HomeContent() {
                         </div>
 
                         <h3 className="font-headline font-black text-lg text-on-surface mb-2 group-hover:text-primary transition-colors">
-                          {t.name}
+                          {tItem.name}
                         </h3>
 
                         <p className="text-xs text-on-surface-variant/70 font-label uppercase tracking-wider mb-4">
-                          {t.settings?.stage_1?.type === "groups"
-                            ? "Fase de Grupos"
-                            : t.settings?.stage_1?.type === "double_elimination"
-                            ? "Dupla Eliminatória"
-                            : "Eliminatória"}
+                          {tItem.settings?.stage_1?.type === "groups"
+                            ? t("tournament.groupStage")
+                            : tItem.settings?.stage_1?.type === "double_elimination"
+                            ? t("tournament.doubleElimination")
+                            : t("tournament.singleElimination")}
                         </p>
                       </div>
 
                       <div className="pt-4 border-t border-white/5 flex items-center justify-between">
                         <span className="font-mono text-xs text-on-surface-variant/60">
-                          {t.start_date
-                            ? new Date(t.start_date).toLocaleDateString(undefined, {
+                          {tItem.start_date
+                            ? new Date(tItem.start_date).toLocaleDateString(undefined, {
                                 day: "numeric",
                                 month: "short",
                                 year: "numeric",
                               })
-                            : "Data a definir"}
+                            : t("home.tbdDate")}
                         </span>
                         <Link
-                          href={`/tournament/${t.id}`}
+                          href={`/tournament/${tItem.id}`}
                           className="inline-flex items-center gap-1 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform"
                         >
-                          Ver Torneio
+                          {t("home.viewTournament")}
                           <span className="material-symbols-outlined text-[16px]">
                             arrow_forward
                           </span>
@@ -872,24 +874,24 @@ function HomeContent() {
                     <table className="w-full text-left border-collapse">
                       <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         <tr>
-                          <th className="py-3.5 px-6">Torneio</th>
-                          <th className="py-3.5 px-4">Desporto</th>
-                          <th className="py-3.5 px-4">Formato</th>
-                          <th className="py-3.5 px-4 text-center">Estado</th>
-                          <th className="py-3.5 px-6 text-right">Data</th>
+                          <th className="py-3.5 px-6">{t("common.event")}</th>
+                          <th className="py-3.5 px-4">{t("common.sport")}</th>
+                          <th className="py-3.5 px-4">{t("common.format")}</th>
+                          <th className="py-3.5 px-4 text-center">{t("common.status")}</th>
+                          <th className="py-3.5 px-6 text-right">{t("common.date")}</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/5 text-sm font-body">
-                        {paginatedTournaments.map((t) => (
+                        {paginatedTournaments.map((tItem) => (
                           <tr
-                            key={t.id}
-                            onClick={() => router.push(`/tournament/${t.id}`)}
+                            key={tItem.id}
+                            onClick={() => router.push(`/tournament/${tItem.id}`)}
                             role="button"
                             tabIndex={0}
                             onKeyDown={(e) => {
                               if (e.key === "Enter" || e.key === " ") {
                                 e.preventDefault();
-                                router.push(`/tournament/${t.id}`);
+                                router.push(`/tournament/${tItem.id}`);
                               }
                             }}
                             className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
@@ -897,7 +899,7 @@ function HomeContent() {
                             {/* Torneio */}
                             <td className="py-4 px-6">
                               <div className="font-headline font-bold text-sm text-on-surface">
-                                {t.name}
+                                {tItem.name}
                               </div>
                             </td>
 
@@ -905,47 +907,47 @@ function HomeContent() {
                             <td className="py-4 px-4">
                               <div className="flex items-center gap-2">
                                 <SportIcon
-                                  sport={t.sport_type}
+                                  sport={tItem.sport_type}
                                   className="text-primary text-[18px] shrink-0"
                                 />
                                 <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                                  {t.sport_type}
+                                  {tItem.sport_type}
                                 </span>
                               </div>
                             </td>
 
                             {/* Formato */}
                             <td className="py-4 px-4 font-label text-xs uppercase tracking-wider text-on-surface-variant/80">
-                              {t.settings?.stage_1?.type === "groups"
-                                ? "Fase de Grupos"
-                                : t.settings?.stage_1?.type === "double_elimination"
-                                ? "Dupla Eliminatória"
-                                : "Eliminatória"}
+                              {tItem.settings?.stage_1?.type === "groups"
+                                ? t("tournament.groupStage")
+                                : tItem.settings?.stage_1?.type === "double_elimination"
+                                ? t("tournament.doubleElimination")
+                                : t("tournament.singleElimination")}
                             </td>
 
                             {/* Estado */}
                             <td className="py-4 px-4 text-center">
                               <span
                                 className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                                  t.status === "completed"
+                                  tItem.status === "completed"
                                     ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                    : t.status === "ongoing"
+                                    : tItem.status === "ongoing"
                                     ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
                                     : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                                 }`}
                               >
-                                {t.status === "completed"
-                                  ? "Concluído"
-                                  : t.status === "ongoing"
-                                  ? "Em Curso"
-                                  : "Agendado"}
+                                {tItem.status === "completed"
+                                  ? t("status.completed")
+                                  : tItem.status === "ongoing"
+                                  ? t("status.live")
+                                  : t("status.scheduled")}
                               </span>
                             </td>
 
                             {/* Data */}
                             <td className="py-4 px-6 text-right font-mono text-xs text-on-surface-variant/70">
-                              {t.start_date
-                                ? new Date(t.start_date).toLocaleDateString(undefined, {
+                              {tItem.start_date
+                                ? new Date(tItem.start_date).toLocaleDateString(undefined, {
                                     day: "numeric",
                                     month: "short",
                                     year: "numeric",
@@ -972,10 +974,10 @@ function HomeContent() {
                     <span className="material-symbols-outlined text-3xl">star</span>
                   </div>
                   <h3 className="font-headline font-black text-2xl mb-2 text-on-surface">
-                    Acompanha os teus favoritos
+                    {t("home.unauthTitle")}
                   </h3>
                   <p className="text-on-surface-variant text-sm mb-6 leading-relaxed">
-                    Inicia sessão para marcares jogos e torneios como favoritos. Vais receber notificações automáticas em tempo real para cada evolução de resultado.
+                    {t("home.unauthDesc")}
                   </p>
                   <button
                     onClick={() => {
@@ -986,7 +988,7 @@ function HomeContent() {
                     className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full font-label text-xs font-black uppercase tracking-wider hover:brightness-110 transition-all cursor-pointer shadow-lg shadow-primary/20"
                   >
                     <span className="material-symbols-outlined text-[18px]">login</span>
-                    Iniciar Sessão
+                    {t("home.unauthSignIn")}
                   </button>
                 </div>
               ) : followedMatches.length === 0 && followedTournaments.length === 0 ? (
@@ -996,23 +998,23 @@ function HomeContent() {
                     <span className="material-symbols-outlined text-3xl">star_outline</span>
                   </div>
                   <h3 className="font-headline font-bold text-lg text-on-surface mb-2">
-                    Ainda não estás a seguir nenhum evento
+                    {t("home.emptyFollowingTitle")}
                   </h3>
                   <p className="text-on-surface-variant/70 text-xs max-w-md mx-auto mb-6">
-                    Explora as abas <strong className="text-on-surface">Jogos</strong> ou <strong className="text-on-surface">Torneios</strong> e clica no ícone da estrela para começares a seguir os teus favoritos e receberes notificações agregadas de cada pontuação.
+                    {t("home.emptyFollowingDesc")}
                   </p>
                   <div className="flex items-center justify-center gap-3">
                     <button
                       onClick={() => handleTabChange("matches")}
                       className="px-5 py-2.5 rounded-full bg-primary-container text-on-primary-container font-label text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all cursor-pointer"
                     >
-                      Explorar Jogos
+                      {t("home.exploreMatches")}
                     </button>
                     <button
                       onClick={() => handleTabChange("tournaments")}
                       className="px-5 py-2.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border border-white/10"
                     >
-                      Explorar Torneios
+                      {t("home.exploreTournaments")}
                     </button>
                   </div>
                 </div>
@@ -1029,7 +1031,7 @@ function HomeContent() {
                           : "bg-surface-container text-on-surface-variant hover:text-on-surface border border-transparent"
                       }`}
                     >
-                      Todos ({followedMatches.length + followedTournaments.length})
+                      {t("home.allFollowed")} ({followedMatches.length + followedTournaments.length})
                     </button>
                     <button
                       onClick={() => setFollowingFilter("matches")}
@@ -1039,7 +1041,7 @@ function HomeContent() {
                           : "bg-surface-container text-on-surface-variant hover:text-on-surface border border-transparent"
                       }`}
                     >
-                      Jogos ({followedMatches.length})
+                      {t("home.matchesTab")} ({followedMatches.length})
                     </button>
                     <button
                       onClick={() => setFollowingFilter("tournaments")}
@@ -1049,7 +1051,7 @@ function HomeContent() {
                           : "bg-surface-container text-on-surface-variant hover:text-on-surface border border-transparent"
                       }`}
                     >
-                      Torneios ({followedTournaments.length})
+                      {t("home.tournamentsTab")} ({followedTournaments.length})
                     </button>
                   </div>
 
@@ -1058,7 +1060,7 @@ function HomeContent() {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 font-label text-xs font-black uppercase tracking-wider text-amber-400">
                         <span className="material-symbols-outlined text-[16px]">sports</span>
-                        Jogos a Seguir ({followedMatches.length})
+                        {t("home.followedMatchesTitle")} ({followedMatches.length})
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {followedMatches.map((m) => (
@@ -1073,27 +1075,27 @@ function HomeContent() {
                     <div className="space-y-3 pt-4">
                       <div className="flex items-center gap-2 font-label text-xs font-black uppercase tracking-wider text-amber-400">
                         <span className="material-symbols-outlined text-[16px]">emoji_events</span>
-                        Torneios a Seguir ({followedTournaments.length})
+                        {t("home.followedTournamentsTitle")} ({followedTournaments.length})
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {followedTournaments.map((t) => (
+                        {followedTournaments.map((tItem) => (
                           <div
-                            key={t.id}
+                            key={tItem.id}
                             className="bg-surface-container-low rounded-3xl p-6 border border-white/5 hover:border-amber-500/30 transition-all flex flex-col justify-between group shadow-lg"
                           >
                             <div>
                               <div className="flex items-center justify-between gap-2 mb-4">
                                 <div className="flex items-center gap-2">
                                   <SportIcon
-                                    sport={t.sport_type}
+                                    sport={tItem.sport_type}
                                     className="text-primary text-[20px]"
                                   />
                                   <span className="text-[10px] font-label font-black uppercase tracking-wider text-on-surface-variant">
-                                    {t.sport_type}
+                                    {tItem.sport_type}
                                   </span>
                                 </div>
                                 <FollowButton
-                                  entityId={t.id}
+                                  entityId={tItem.id}
                                   entityType="tournament"
                                   variant="icon"
                                   followHook={followHook}
@@ -1101,31 +1103,31 @@ function HomeContent() {
                               </div>
 
                               <h3 className="font-headline font-black text-lg text-on-surface mb-2 group-hover:text-primary transition-colors">
-                                {t.name}
+                                {tItem.name}
                               </h3>
 
                               <p className="text-xs text-on-surface-variant/70 font-label uppercase tracking-wider mb-4">
-                                {t.settings?.stage_1?.type === "groups"
-                                  ? "Fase de Grupos"
-                                  : "Eliminatória"}
+                                {tItem.settings?.stage_1?.type === "groups"
+                                  ? t("tournament.groupStage")
+                                  : t("tournament.singleElimination")}
                               </p>
                             </div>
 
                             <div className="pt-4 border-t border-white/5 flex items-center justify-between">
                               <span className="font-mono text-xs text-on-surface-variant/60">
-                                {t.start_date
-                                  ? new Date(t.start_date).toLocaleDateString(undefined, {
+                                {tItem.start_date
+                                  ? new Date(tItem.start_date).toLocaleDateString(undefined, {
                                       day: "numeric",
                                       month: "short",
                                       year: "numeric",
                                     })
-                                  : "Data a definir"}
+                                  : t("home.tbdDate")}
                               </span>
                               <Link
-                                href={`/tournament/${t.id}`}
+                                href={`/tournament/${tItem.id}`}
                                 className="inline-flex items-center gap-1 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform"
                               >
-                                Ver Torneio
+                                {t("home.viewTournament")}
                                 <span className="material-symbols-outlined text-[16px]">
                                   arrow_forward
                                 </span>
@@ -1145,7 +1147,7 @@ function HomeContent() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-white/5 pt-6 mt-8">
               <span className="text-xs font-label text-on-surface-variant/60 font-bold uppercase tracking-wider">
-                Página {safePage} de {totalPages}
+                {t("common.pageOf", { current: safePage, total: totalPages })}
               </span>
 
               <div className="flex items-center gap-2">
@@ -1155,7 +1157,7 @@ function HomeContent() {
                   disabled={safePage <= 1}
                   className="px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold text-on-surface transition-all cursor-pointer border border-white/5"
                 >
-                  Anterior
+                  {t("common.previous")}
                 </button>
                 <button
                   type="button"
@@ -1163,7 +1165,7 @@ function HomeContent() {
                   disabled={safePage >= totalPages}
                   className="px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high disabled:opacity-40 disabled:cursor-not-allowed text-xs font-bold text-on-surface transition-all cursor-pointer border border-white/5"
                 >
-                  Seguinte
+                  {t("common.next")}
                 </button>
               </div>
             </div>
@@ -1184,12 +1186,12 @@ function HomeContent() {
 
             <div className="text-center mb-8">
               <h2 className="font-headline text-3xl font-black uppercase tracking-tight text-on-surface">
-                {authModal === "signup" ? "Create Account" : "Welcome Back"}
+                {authModal === "signup" ? t("auth.createAccount") : t("auth.welcomeBack")}
               </h2>
               <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant/60 mt-1">
                 {authModal === "signup"
-                  ? "Join ScoreBoard"
-                  : "Sign in to manage your events"}
+                  ? t("auth.joinSubtitle")
+                  : t("auth.manageSubtitle")}
               </p>
             </div>
 
@@ -1197,13 +1199,13 @@ function HomeContent() {
               {authModal === "signup" && (
                 <div>
                   <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
-                    Username
+                    {t("auth.username")}
                   </label>
                   <input
                     type="text"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Choose a username"
+                    placeholder={t("auth.usernamePlaceholder")}
                     className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
                   />
                 </div>
@@ -1211,13 +1213,13 @@ function HomeContent() {
 
               <div>
                 <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
-                  Email
+                  {t("auth.email")}
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
+                  placeholder={t("auth.emailPlaceholder")}
                   required
                   className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
                 />
@@ -1225,13 +1227,13 @@ function HomeContent() {
 
               <div>
                 <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
-                  Password
+                  {t("auth.password")}
                 </label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder={t("auth.passwordPlaceholder")}
                   required
                   className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
                 />
@@ -1240,13 +1242,13 @@ function HomeContent() {
               {authModal === "signup" && (
                 <div>
                   <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
-                    Confirm Password
+                    {t("auth.confirmPassword")}
                   </label>
                   <input
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm your password"
+                    placeholder={t("auth.confirmPasswordPlaceholder")}
                     className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
                   />
                 </div>
@@ -1258,17 +1260,17 @@ function HomeContent() {
                 className="w-full bg-primary text-on-primary py-3.5 rounded-2xl font-label text-xs font-black uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-primary/20 mt-2"
               >
                 {isSubmitting
-                  ? "Processing..."
+                  ? t("auth.processing")
                   : authModal === "signup"
-                  ? "Sign Up"
-                  : "Sign In"}
+                  ? t("auth.signUpBtn")
+                  : t("auth.signInBtn")}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               {authModal === "signup" ? (
                 <p className="text-xs text-on-surface-variant">
-                  Already have an account?{" "}
+                  {t("auth.alreadyHaveAccount")}{" "}
                   <button
                     type="button"
                     onClick={() => {
@@ -1279,12 +1281,12 @@ function HomeContent() {
                     }}
                     className="text-primary font-bold hover:underline cursor-pointer"
                   >
-                    Sign in
+                    {t("auth.signInBtn")}
                   </button>
                 </p>
               ) : (
                 <p className="text-xs text-on-surface-variant">
-                  Don't have an account?{" "}
+                  {t("auth.dontHaveAccount")}{" "}
                   <button
                     type="button"
                     onClick={() => {
@@ -1295,7 +1297,7 @@ function HomeContent() {
                     }}
                     className="text-primary font-bold hover:underline cursor-pointer"
                   >
-                    Sign up
+                    {t("auth.signUpBtn")}
                   </button>
                 </p>
               )}
