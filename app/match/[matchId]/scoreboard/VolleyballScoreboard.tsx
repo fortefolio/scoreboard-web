@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 export default function VolleyballScoreboard({ 
   matchData, 
@@ -13,6 +14,7 @@ export default function VolleyballScoreboard({
   rules: any;
   canEdit: boolean;
 }) {
+  const { t } = useTranslation();
   // Scoring State
   const [currentSetScores, setCurrentSetScores] = useState({ team1: 0, team2: 0 });
   const [setHistory, setSetHistory] = useState<{ team1: number; team2: number }[]>([]);
@@ -139,7 +141,7 @@ export default function VolleyballScoreboard({
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span className="bg-primary-container/10 text-primary-container px-3 py-1 rounded text-[10px] font-black uppercase tracking-widest border border-primary-container/20">Round {matchData.round_number}</span>
-              <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Match {matchData.match_order} • {matchData.sport_type}</span>
+              <span className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">Match {matchData.match_order} • {getSportTranslation(matchData.sport_type, t)}</span>
             </div>
             <h1 className="text-4xl font-headline font-extrabold tracking-tight italic">UMPIRE CONTROL PANEL</h1>
           </div>

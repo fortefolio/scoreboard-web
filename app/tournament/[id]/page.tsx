@@ -12,7 +12,7 @@ import TournamentBracket from "@/components/TournamentBracket";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import NotificationBell from "@/components/NotificationBell";
 import { FollowButton } from "@/components/FollowButton";
-import { useTranslation } from "@/lib/i18n/LanguageContext";
+import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 const DEFAULT_TEAMS = [
   "Alpha", "Beta", "Gamma", "Delta", "Epsilon", 
@@ -375,7 +375,7 @@ function TournamentContent() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary-container/5 rounded-full blur-[120px] -z-10"></div>
 
         <header className="mb-16 text-center animate-in fade-in slide-in-from-top-4 duration-700">
-          <p className="text-secondary font-label text-xs uppercase tracking-[0.3em] mb-4">{tournament?.sport_type} {t("tournament.officialTournament")}</p>
+          <p className="text-secondary font-label text-xs uppercase tracking-[0.3em] mb-4">{getSportTranslation(tournament?.sport_type, t)} {t("tournament.officialTournament")}</p>
           <h1 className="font-headline text-5xl md:text-7xl font-black tracking-tighter leading-none mb-4">
             {tournament?.name || "Tournament"}
           </h1>

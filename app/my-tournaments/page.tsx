@@ -4,9 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
+import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 export default function MyTournamentsPage() {
   const { user, supabase } = useAuth();
+  const { t: tr } = useTranslation();
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -150,7 +152,7 @@ export default function MyTournamentsPage() {
               <div>
                 <div className="flex justify-between items-start mb-6">
                   <div>
-                    <p className="text-secondary font-label text-[10px] font-black uppercase tracking-[0.2em] mb-2">{t.sport_type}</p>
+                    <p className="text-secondary font-label text-[10px] font-black uppercase tracking-[0.2em] mb-2">{getSportTranslation(t.sport_type, tr)}</p>
                     <h3 className="text-2xl font-black group-hover:text-primary transition-colors leading-tight">{t.name}</h3>
                   </div>
                   <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
@@ -158,7 +160,7 @@ export default function MyTournamentsPage() {
                     t.status === 'scheduled' ? 'bg-indigo-500/10 text-indigo-500' :
                     'bg-emerald-500/10 text-emerald-500'
                   }`}>
-                    {t.status}
+                    {t.status === 'pending' || t.status === 'scheduled' ? tr("status.scheduled") : tr("status.completed")}
                   </span>
                 </div>
               </div>

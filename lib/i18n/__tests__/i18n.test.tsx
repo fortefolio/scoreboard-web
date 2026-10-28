@@ -2,6 +2,7 @@ import { describe, expect, it, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LanguageProvider, useTranslation } from "../LanguageContext";
+import { getSportTranslation } from "../index";
 import LanguageSelector from "@/components/LanguageSelector";
 
 function TestComponent() {
@@ -120,5 +121,49 @@ describe("i18n System", () => {
     render(<TestComponent />);
     expect(screen.getByTestId("current-locale").textContent).toBe("en");
     expect(screen.getByTestId("hero-title").textContent).toBe("Scores and Tournaments");
+  });
+
+  it("translates sports correctly in both English and Portuguese", () => {
+    function SportTranslationTest() {
+      const { t, setLocale } = useTranslation();
+      return (
+        <div>
+          <span data-testid="sport-basketball">{getSportTranslation("Basketball", t)}</span>
+          <span data-testid="sport-beach-volleyball">{getSportTranslation("Beach Volleyball", t)}</span>
+          <span data-testid="sport-beach-snake">{getSportTranslation("beach_volleyball", t)}</span>
+          <span data-testid="sport-volleyball">{getSportTranslation("Volleyball", t)}</span>
+          <span data-testid="sport-football">{getSportTranslation("Football", t)}</span>
+          <span data-testid="sport-tennis">{getSportTranslation("Tennis", t)}</span>
+          <span data-testid="sport-padel">{getSportTranslation("Padel", t)}</span>
+          <button onClick={() => setLocale("pt")}>Set PT</button>
+        </div>
+      );
+    }
+
+    const { rerender } = render(
+      <LanguageProvider>
+        <SportTranslationTest />
+      </LanguageProvider>
+    );
+
+    // English
+    expect(screen.getByTestId("sport-basketball").textContent).toBe("Basketball");
+    expect(screen.getByTestId("sport-beach-volleyball").textContent).toBe("Beach Volleyball");
+    expect(screen.getByTestId("sport-beach-snake").textContent).toBe("Beach Volleyball");
+    expect(screen.getByTestId("sport-volleyball").textContent).toBe("Volleyball");
+    expect(screen.getByTestId("sport-football").textContent).toBe("Football");
+    expect(screen.getByTestId("sport-tennis").textContent).toBe("Tennis");
+    expect(screen.getByTestId("sport-padel").textContent).toBe("Padel");
+
+    // Switch to Portuguese
+    fireEvent.click(screen.getByText("Set PT"));
+
+    expect(screen.getByTestId("sport-basketball").textContent).toBe("Basquetebol");
+    expect(screen.getByTestId("sport-beach-volleyball").textContent).toBe("Voleibol de Praia");
+    expect(screen.getByTestId("sport-beach-snake").textContent).toBe("Voleibol de Praia");
+    expect(screen.getByTestId("sport-volleyball").textContent).toBe("Voleibol");
+    expect(screen.getByTestId("sport-football").textContent).toBe("Futebol");
+    expect(screen.getByTestId("sport-tennis").textContent).toBe("Ténis");
+    expect(screen.getByTestId("sport-padel").textContent).toBe("Padel");
   });
 });

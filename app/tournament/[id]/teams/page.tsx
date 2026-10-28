@@ -4,8 +4,10 @@ import { useEffect, useState, Suspense } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 function ParticipantsContent() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const [tournament, setTournament] = useState<any>(null);
   const [participants, setParticipants] = useState<any[]>([]);
@@ -65,7 +67,7 @@ function ParticipantsContent() {
       <main className="w-full max-w-2xl relative z-10 pt-12">
         <header className="text-center mb-16">
           <Link href={`/tournament/${tournamentId}/signup`} className="text-2xl font-digital text-indigo-500 tracking-tighter mb-8 inline-block">SCORE:BOARD</Link>
-          <p className="text-secondary font-label text-[10px] uppercase tracking-[0.3em] mb-2">{tournament?.sport_type} Roster</p>
+          <p className="text-secondary font-label text-[10px] uppercase tracking-[0.3em] mb-2">{getSportTranslation(tournament?.sport_type, t)} Roster</p>
           <h1 className="text-4xl font-headline font-black tracking-tight mb-4">{tournament?.name}</h1>
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-surface-container-high rounded-full border border-outline-variant/10">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
