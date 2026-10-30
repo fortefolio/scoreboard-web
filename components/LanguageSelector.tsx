@@ -8,12 +8,11 @@ export interface LanguageOption {
   code: Locale;
   label: string;
   nativeName: string;
-  flag: string;
 }
 
 export const SUPPORTED_LANGUAGES: LanguageOption[] = [
-  { code: "en", label: "English", nativeName: "English", flag: "🇬🇧" },
-  { code: "pt", label: "Portuguese", nativeName: "Português", flag: "🇵🇹" },
+  { code: "en", label: "English", nativeName: "English" },
+  { code: "pt", label: "Portuguese", nativeName: "Português" },
 ];
 
 export default function LanguageSelector() {
@@ -60,24 +59,10 @@ export default function LanguageSelector() {
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={`Select language (current: ${currentLanguage.label})`}
-        className="flex items-center gap-1.5 bg-slate-900/90 hover:bg-slate-800/90 text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 rounded-xl px-2.5 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+        className="flex items-center justify-center bg-slate-900/90 hover:bg-slate-800/90 text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
       >
-        <span
-          className="material-symbols-outlined text-slate-400 text-[18px] select-none"
-          aria-hidden="true"
-        >
-          language
-        </span>
         <span className="font-black text-[11px] tracking-wider uppercase">
           {currentLanguage.code.toUpperCase()}
-        </span>
-        <span
-          className={`material-symbols-outlined text-slate-400 text-sm transition-transform duration-200 ${
-            isOpen ? "rotate-180" : ""
-          }`}
-          aria-hidden="true"
-        >
-          expand_more
         </span>
       </button>
 
@@ -104,18 +89,13 @@ export default function LanguageSelector() {
                   role="option"
                   aria-selected={isSelected}
                   onClick={() => handleSelectLanguage(lang.code)}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     isSelected
                       ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 font-black shadow-sm"
                       : "text-slate-300 hover:text-white hover:bg-slate-800/70 border border-transparent"
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base leading-none select-none" aria-hidden="true">
-                      {lang.flag}
-                    </span>
-                    <span>{lang.nativeName}</span>
-                  </div>
+                  <span>{lang.nativeName}</span>
                   <span
                     className={`text-[10px] font-mono font-black uppercase px-1.5 py-0.5 rounded-md ${
                       isSelected
