@@ -10,6 +10,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:e2e": "playwright test",
+    "sync:i18n": "node scripts/sync-i18n.js",
+    "check:i18n": "node scripts/sync-i18n.js --check",
     "replay:match136": "tsx scripts/interactive-match-136.ts",
     "replay:basketball": "tsx scripts/interactive-basketball-game.ts",
     "replay:padel": "tsx scripts/interactive-padel-game.ts"
