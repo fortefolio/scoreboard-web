@@ -89,7 +89,8 @@ describe("TennisScoreboard - Server Selection", () => {
     await waitFor(() => {
       expect(screen.queryByText(/Select First Server/i)).not.toBeInTheDocument();
       // Find the "Serving" indicator specifically for Nadal
-      const nadalSection = screen.getByText("Rafael Nadal").closest("div");
+      const nadalElements = screen.getAllByText("Rafael Nadal");
+      const nadalSection = nadalElements.find(el => el.closest("div")?.parentElement?.textContent?.includes("Serving"))?.closest("div")?.parentElement;
       expect(nadalSection).toHaveTextContent(/Serving/i);
     });
   });
