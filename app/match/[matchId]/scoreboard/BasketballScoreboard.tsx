@@ -340,21 +340,21 @@ export default function BasketballScoreboard({
             </div>
 
             {/* Home Score */}
-            <div className="text-7xl md:text-8xl font-mono font-black text-white tracking-tighter my-2 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+            <div className="text-7xl md:text-8xl font-digital text-white tracking-tighter my-2 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">
               {scores.home}
             </div>
 
             {/* Home Fouls & Timeouts */}
             <div className="flex items-center gap-3 text-xs mt-2">
-              <span className={`px-2.5 py-1 rounded-lg border font-mono font-bold ${
+              <span className={`px-2.5 py-1 rounded-lg border font-bold ${
                 teamFouls.home >= 5
                   ? "bg-rose-500/20 text-rose-400 border-rose-500/40 animate-pulse"
                   : "bg-surface-container text-on-surface-variant border-white/5"
               }`}>
-                Faltas: {teamFouls.home} {teamFouls.home >= 5 && "(BÓNUS)"}
+                Faltas: <span className="font-digital text-sm">{teamFouls.home}</span> {teamFouls.home >= 5 && "(BÓNUS)"}
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant border border-white/5 font-mono">
-                Descontos: {timeouts.home}
+              <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant border border-white/5">
+                Descontos: <span className="font-digital text-sm">{timeouts.home}</span>
               </span>
             </div>
 
@@ -421,7 +421,7 @@ export default function BasketballScoreboard({
             {/* Game Clock */}
             <div
               onClick={toggleClock}
-              className={`text-5xl md:text-6xl font-mono font-black tracking-tight cursor-pointer select-none py-2 px-5 rounded-2xl border transition-all ${
+              className={`text-5xl md:text-6xl font-digital tracking-tight cursor-pointer select-none py-2 px-5 rounded-2xl border transition-all ${
                 isClockRunning
                   ? "text-primary border-primary/40 bg-primary/10 shadow-[0_0_20px_rgba(99,102,241,0.2)]"
                   : "text-white border-white/10 bg-surface-container/60 hover:border-white/30"
@@ -438,7 +438,7 @@ export default function BasketballScoreboard({
                   Posse:
                 </span>
                 <span
-                  className={`font-mono text-xl font-black ${
+                  className={`font-digital text-2xl font-black ${
                     shotClock <= 5 ? "text-rose-400 animate-pulse" : "text-amber-400"
                   }`}
                 >
@@ -503,21 +503,21 @@ export default function BasketballScoreboard({
             </div>
 
             {/* Away Score */}
-            <div className="text-7xl md:text-8xl font-mono font-black text-white tracking-tighter my-2 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+            <div className="text-7xl md:text-8xl font-digital text-secondary tracking-tighter my-2 drop-shadow-[0_0_20px_rgba(78,222,163,0.15)]">
               {scores.away}
             </div>
 
             {/* Away Fouls & Timeouts */}
             <div className="flex items-center gap-3 text-xs mt-2">
-              <span className={`px-2.5 py-1 rounded-lg border font-mono font-bold ${
+              <span className={`px-2.5 py-1 rounded-lg border font-bold ${
                 teamFouls.away >= 5
                   ? "bg-rose-500/20 text-rose-400 border-rose-500/40 animate-pulse"
                   : "bg-surface-container text-on-surface-variant border-white/5"
               }`}>
-                Faltas: {teamFouls.away} {teamFouls.away >= 5 && "(BÓNUS)"}
+                Faltas: <span className="font-digital text-sm">{teamFouls.away}</span> {teamFouls.away >= 5 && "(BÓNUS)"}
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant border border-white/5 font-mono">
-                Descontos: {timeouts.away}
+              <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant border border-white/5">
+                Descontos: <span className="font-digital text-sm">{timeouts.away}</span>
               </span>
             </div>
 
@@ -583,7 +583,7 @@ export default function BasketballScoreboard({
           Resumo por Período
         </h3>
         <div className="overflow-x-auto">
-          <table className="w-full text-center text-sm font-mono">
+          <table className="w-full text-center text-sm">
             <thead>
               <tr className="border-b border-white/5 text-on-surface-variant/70 text-xs uppercase font-label">
                 <th className="py-2 px-4 text-left font-bold">Equipa</th>
@@ -595,7 +595,7 @@ export default function BasketballScoreboard({
                 <th className="py-2 px-4 font-black text-secondary">Total</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-white/5 font-digital text-base">
               <tr>
                 <td className="py-3 px-4 text-left font-bold font-sans text-on-surface flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-primary" />
@@ -606,7 +606,7 @@ export default function BasketballScoreboard({
                 <td className="py-3 px-3">{quarters[2]?.home ?? 0}</td>
                 <td className="py-3 px-3">{quarters[3]?.home ?? 0}</td>
                 {quarters.length > 4 && <td className="py-3 px-3">{quarters[4]?.home ?? 0}</td>}
-                <td className="py-3 px-4 font-black text-secondary text-base">{scores.home}</td>
+                <td className="py-3 px-4 font-black text-primary text-xl">{scores.home}</td>
               </tr>
               <tr>
                 <td className="py-3 px-4 text-left font-bold font-sans text-on-surface flex items-center gap-2">
@@ -618,7 +618,7 @@ export default function BasketballScoreboard({
                 <td className="py-3 px-3">{quarters[2]?.away ?? 0}</td>
                 <td className="py-3 px-3">{quarters[3]?.away ?? 0}</td>
                 {quarters.length > 4 && <td className="py-3 px-3">{quarters[4]?.away ?? 0}</td>}
-                <td className="py-3 px-4 font-black text-secondary text-base">{scores.away}</td>
+                <td className="py-3 px-4 font-black text-secondary text-xl">{scores.away}</td>
               </tr>
             </tbody>
           </table>
