@@ -155,6 +155,9 @@ export interface Translations {
     startDate: string;
     dangerZone: string;
     dangerZoneDesc: string;
+    notFound: string;
+    registerTeam: string;
+    noScheduledMatches: string;
   };
   match: {
     startsIn: string;
@@ -217,6 +220,24 @@ export interface Translations {
     awaitingUmpire: string;
     searchUmpirePlaceholder: string;
     startScoreboard: string;
+    openScoreboard: string;
+    openScoreboardUpper: string;
+    startScoreboardUpper: string;
+    umpireConfirmed: string;
+    inviteSentPending: string;
+    accessGrantedMobile: string;
+    organizerDefaultReferee: string;
+    appointOtherReferee: string;
+    appointOtherRefereeUpper: string;
+    noName: string;
+    noPointsRecorded: string;
+    pointRecordedFor: string;
+    pointHistoryEvents: string;
+    officialDefault: string;
+    standardAdvantage: string;
+    notFound: string;
+    preparingConsole: string;
+    notDefined: string;
     matchCompleted: string;
     waitingUmpireStart: string;
     editRulesTitle: string;
@@ -236,5 +257,65 @@ export interface Translations {
     wonBy: string;
     inProgress: string;
     points: string;
+  };
+  scoreboard: {
+    refereeConsole: string;
+    screenActive: string;
+    mainCourt: string;
+    spectatorModeNotice: string;
+    preparingConsole: string;
+    serving: string;
+    point: string;
+    undo: string;
+    timeout: string;
+    timeoutShort: string;
+    setsShort: string;
+    gamesShort: string;
+    gamesUpper: string;
+    foulsShort: string;
+    endMatch: string;
+    endMatchTitle: string;
+    endMatchConfirm: string;
+    timeoutTitle: string;
+    noTimeoutsLeft: string;
+    timeoutRecorded: string;
+    courtSwitch: string;
+    volleyball: {
+      firstServePrompt: string;
+      setLimit: string;
+      toggleServe: string;
+      deuceAdv2: string;
+      setDecider: string;
+    };
+    tennis: {
+      selectFirstServer: string;
+      ace: string;
+      doubleFault: string;
+      toggleServer: string;
+      breakPoint: string;
+      deuce: string;
+      goldenPoint: string;
+      deuceGoldenPoint: string;
+      deuceAdvantage: string;
+      leftAdvantageSide: string;
+      rightDeuceSide: string;
+    };
+    basketball: {
+      possession: string;
+      plusFoul: string;
+      bonus: string;
+    };
+    football: {
+      plusGoal: string;
+      yellowCard: string;
+      redCard: string;
+      plusCorner: string;
+      plusFoul: string;
+      stoppageShort: string;
+      firstHalf: string;
+      secondHalf: string;
+      extraTime: string;
+      penalties: string;
+    };
   };
 }
