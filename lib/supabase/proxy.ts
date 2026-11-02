@@ -44,8 +44,12 @@ export async function updateSession(request: NextRequest) {
   }
 
   // Enforce private caching on cookie-authenticated requests to prevent edge KV / CDN cross-tenant caching
-  response.headers.set("Cache-Control", "private, no-cache, no-store, must-revalidate");
-  response.headers.set("Vary", "Cookie");
+  if (!response.headers.has("Cache-Control")) {
+    response.headers.set("Cache-Control", "private, no-cache, no-store, must-revalidate");
+  }
+  if (!response.headers.has("Vary")) {
+    response.headers.set("Vary", "Cookie");
+  }
 
   return response;
 }
