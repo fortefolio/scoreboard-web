@@ -302,13 +302,17 @@ export default function MatchDetailClient() {
         { event: 'score_update' },
         (response: any) => {
           const payload = response?.payload;
-          if (payload && payload.match_id === matchIdStr) {
-            setMatch((prev: any) => ({
-              ...prev,
-              scores: payload.scores ?? prev?.scores,
-              status: payload.status ?? prev?.status,
-            }));
-            if (payload.event_data) {
+          // Guard against unverified client broadcast spoofing
+          if (payload && payload.match_id === matchIdStr && typeof payload.scores === 'object') {
+            setMatch((prev: any) => {
+              if (prev?.status === 'completed') return prev;
+              return {
+                ...prev,
+                scores: payload.scores ?? prev?.scores,
+                status: payload.status !== 'completed' ? (payload.status ?? prev?.status) : prev?.status,
+              };
+            });
+            if (payload.event_data && typeof payload.event_data === 'object') {
               setMatchEvents((prev) => [
                 ...prev,
                 {

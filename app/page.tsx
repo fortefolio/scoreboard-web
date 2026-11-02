@@ -191,8 +191,20 @@ function HomeContent() {
         closeAuthModal();
 
         const next = searchParams.get("next");
-        if (next && next.startsWith("/") && !next.startsWith("//")) {
-          router.push(next);
+        if (next) {
+          try {
+            const parsed = new URL(next, window.location.origin);
+            if (
+              parsed.origin === window.location.origin &&
+              parsed.pathname.startsWith("/") &&
+              !next.startsWith("/\\") &&
+              !next.startsWith("\\")
+            ) {
+              router.push(parsed.pathname + parsed.search + parsed.hash);
+            }
+          } catch {
+            // Malformed URL, skip redirect
+          }
         }
       }
     } catch (err: any) {

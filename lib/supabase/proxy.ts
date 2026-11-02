@@ -38,8 +38,14 @@ export async function updateSession(request: NextRequest) {
     redirectUrl.pathname = "/";
     redirectUrl.searchParams.set("auth", "login");
     redirectUrl.searchParams.set("next", pathname);
-    return NextResponse.redirect(redirectUrl);
+    const redirectResponse = NextResponse.redirect(redirectUrl);
+    redirectResponse.headers.set("Cache-Control", "private, no-cache, no-store, must-revalidate");
+    return redirectResponse;
   }
+
+  // Enforce private caching on cookie-authenticated requests to prevent edge KV / CDN cross-tenant caching
+  response.headers.set("Cache-Control", "private, no-cache, no-store, must-revalidate");
+  response.headers.set("Vary", "Cookie");
 
   return response;
 }
