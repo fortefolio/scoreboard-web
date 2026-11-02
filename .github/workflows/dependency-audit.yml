@@ -1,0 +1,42 @@
+name: Weekly Dependency Security Audit
+
+on:
+  schedule:
+    # Runs every Monday at 08:00 UTC
+    - cron: '0 8 * * 1'
+  workflow_dispatch: # Allows manual trigger on-demand
+
+jobs:
+  audit:
+    name: NPM Dependency Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Generate Audit Report
+        run: |
+          echo "## Dependency Vulnerability Audit Report - $(date +'%Y-%m-%d')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          npm audit --json > audit-report.json || true
+          
+          node -e "
+            const report = require('./audit-report.json');
+            const meta = report.metadata?.vulnerabilities || {};
+            console.log('| Severity | Count |');
+            console.log('| :--- | :--- |');
+            console.log('| Critical | ' + (meta.critical || 0) + ' |');
+            console.log('| High | ' + (meta.high || 0) + ' |');
+            console.log('| Moderate | ' + (meta.moderate || 0) + ' |');
+            console.log('| Low | ' + (meta.low || 0) + ' |');
+            console.log('| Total Dependencies | ' + (report.metadata?.totalDependencies || 0) + ' |');
+          " >> $GITHUB_STEP_SUMMARY
+
+      - name: Enforce Zero High/Critical Vulnerabilities
+        run: npm audit --audit-level=high
