@@ -318,4 +318,68 @@ export interface Translations {
       penalties: string;
     };
   };
+  settings: {
+    title: string;
+    subtitle: string;
+    tabs: {
+      profile: string;
+      preferences: string;
+      security: string;
+      danger: string;
+    };
+    profile: {
+      username: string;
+      usernamePlaceholder: string;
+      displayName: string;
+      displayNamePlaceholder: string;
+      email: string;
+      emailNotice: string;
+      tier: string;
+      saveChanges: string;
+      saving: string;
+      success: string;
+      errorUsernameTaken: string;
+      errorEmptyUsername: string;
+    };
+    preferences: {
+      title: string;
+      description: string;
+      language: string;
+      selectLanguage: string;
+      defaultSport: string;
+      allSports: string;
+      hapticFeedback: string;
+      hapticDesc: string;
+      soundEffects: string;
+      soundDesc: string;
+      savePreferences: string;
+      saved: string;
+    };
+    security: {
+      title: string;
+      changePassword: string;
+      newPassword: string;
+      confirmPassword: string;
+      updatePassword: string;
+      passwordUpdated: string;
+      passwordMismatch: string;
+      passwordLength: string;
+      exportTitle: string;
+      exportDesc: string;
+      downloadData: string;
+      exporting: string;
+      exportSuccess: string;
+    };
+    danger: {
+      title: string;
+      deleteAccount: string;
+      deleteWarning: string;
+      deleteConsequence: string;
+      confirmPrompt: string;
+      typeToConfirm: string;
+      confirmButton: string;
+      deleting: string;
+      deleteSuccess: string;
+    };
+  };
 }
