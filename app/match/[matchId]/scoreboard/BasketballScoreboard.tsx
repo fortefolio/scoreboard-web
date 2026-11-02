@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import SportIcon from "@/components/SportIcon";
+import { recordMatchEventAtomic } from "@/lib/scoring/atomicScoring";
 
 interface QuarterScore {
   home: number;
@@ -134,43 +135,35 @@ export default function BasketballScoreboard({
     // Reset shot clock on made basket
     setShotClock(24);
 
-    // Save event
-    const { error } = await supabase.from("match_events").insert([
-      {
-        match_id: matchData.id,
-        event_data: {
-          type: "point_scored",
-          side,
-          points,
-          period: currentPeriod,
-        },
+    const updatedScores = {
+      ...matchData.scores,
+      current: { home: newHome, away: newAway },
+      basketball: {
+        period: currentPeriod,
+        quarters: updatedQuarters,
+        fouls: teamFouls,
+        timeouts,
+        quarter_seconds: quarterSeconds,
+        is_clock_running: isClockRunning,
       },
-    ]);
+    };
+
+    // Save event & score atomically
+    const { error } = await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      newScores: updatedScores,
+      eventData: {
+        type: "point_scored",
+        side,
+        points,
+        period: currentPeriod,
+      },
+    });
 
     if (error) {
       console.error("Error updating score:", error);
       toast.error("Erro ao gravar pontuação");
     }
-
-    // Persist basketball context in match scores
-    await supabase
-      .from("matches")
-      .update({
-        scores: {
-          ...matchData.scores,
-          current: { home: newHome, away: newAway },
-          basketball: {
-            period: currentPeriod,
-            quarters: updatedQuarters,
-            fouls: teamFouls,
-            timeouts,
-            quarter_seconds: quarterSeconds,
-            is_clock_running: isClockRunning,
-          },
-        },
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", matchData.id);
   };
 
   // Toggle clock
@@ -196,23 +189,26 @@ export default function BasketballScoreboard({
     setIsShotClockRunning(false);
     setTeamFouls({ home: 0, away: 0 }); // Team fouls reset each quarter
 
-    await supabase
-      .from("matches")
-      .update({
-        scores: {
-          ...matchData.scores,
-          basketball: {
-            period,
-            quarters,
-            fouls: { home: 0, away: 0 },
-            timeouts,
-            quarter_seconds: defaultQuarterMinutes * 60,
-            is_clock_running: false,
-          },
-        },
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", matchData.id);
+    const updatedScores = {
+      ...matchData.scores,
+      basketball: {
+        period,
+        quarters,
+        fouls: { home: 0, away: 0 },
+        timeouts,
+        quarter_seconds: defaultQuarterMinutes * 60,
+        is_clock_running: false,
+      },
+    };
+
+    await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      newScores: updatedScores,
+      eventData: {
+        type: "period_changed",
+        period,
+      },
+    });
 
     toast.info(`Início de ${period}`);
   };
@@ -223,23 +219,27 @@ export default function BasketballScoreboard({
     const newFouls = { ...teamFouls, [side]: teamFouls[side] + 1 };
     setTeamFouls(newFouls);
 
-    await supabase
-      .from("matches")
-      .update({
-        scores: {
-          ...matchData.scores,
-          basketball: {
-            period: currentPeriod,
-            quarters,
-            fouls: newFouls,
-            timeouts,
-            quarter_seconds: quarterSeconds,
-            is_clock_running: isClockRunning,
-          },
-        },
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", matchData.id);
+    const updatedScores = {
+      ...matchData.scores,
+      basketball: {
+        period: currentPeriod,
+        quarters,
+        fouls: newFouls,
+        timeouts,
+        quarter_seconds: quarterSeconds,
+        is_clock_running: isClockRunning,
+      },
+    };
+
+    await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      newScores: updatedScores,
+      eventData: {
+        type: "foul",
+        side,
+        fouls: newFouls,
+      },
+    });
 
     if (newFouls[side] >= 5) {
       toast.warning(`BÓNUS: Equipa de ${side === "home" ? teamHome : teamAway} atingiu 5 faltas!`);
@@ -253,23 +253,27 @@ export default function BasketballScoreboard({
     setTimeouts(newTimeouts);
     setIsClockRunning(false);
 
-    await supabase
-      .from("matches")
-      .update({
-        scores: {
-          ...matchData.scores,
-          basketball: {
-            period: currentPeriod,
-            quarters,
-            fouls: teamFouls,
-            timeouts: newTimeouts,
-            quarter_seconds: quarterSeconds,
-            is_clock_running: false,
-          },
-        },
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", matchData.id);
+    const updatedScores = {
+      ...matchData.scores,
+      basketball: {
+        period: currentPeriod,
+        quarters,
+        fouls: teamFouls,
+        timeouts: newTimeouts,
+        quarter_seconds: quarterSeconds,
+        is_clock_running: false,
+      },
+    };
+
+    await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      newScores: updatedScores,
+      eventData: {
+        type: "timeout",
+        side,
+        timeouts: newTimeouts,
+      },
+    });
 
     toast.info(`Desconto de tempo pedido por ${side === "home" ? teamHome : teamAway}`);
   };
@@ -278,13 +282,13 @@ export default function BasketballScoreboard({
   const handleFinalizeMatch = async () => {
     if (!canEdit) return;
     if (confirm("Tens a certeza que queres terminar este jogo de Basquetebol?")) {
-      const { error } = await supabase
-        .from("matches")
-        .update({
-          status: "completed",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", matchData.id);
+      const { error } = await recordMatchEventAtomic(supabase, {
+        matchId: matchData.id,
+        newStatus: "completed",
+        eventData: {
+          type: "match_finished",
+        },
+      });
 
       if (!error) {
         toast.success("Jogo terminado!");

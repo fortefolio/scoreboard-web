@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import SportIcon from "@/components/SportIcon";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
+import { recordMatchEventAtomic } from "@/lib/scoring/atomicScoring";
 import { extractSetsData } from "@/lib/scoring/sets";
 
 const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
@@ -138,15 +139,13 @@ export default function TennisScoreboard({
     newPoints[winnerIdx]++;
     setPoints(newPoints);
 
-    const { error } = await supabase.from("match_events").insert([
-      {
-        match_id: matchData.id,
-        event_data: {
-          type: "point_won",
-          side,
-        },
+    const { error } = await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      eventData: {
+        type: "point_won",
+        side,
       },
-    ]);
+    });
 
     if (error) {
       console.error("Error recording point:", error);
@@ -163,16 +162,14 @@ export default function TennisScoreboard({
     // Save ace stat & trigger point
     await handlePoint(idx);
 
-    await supabase.from("match_events").insert([
-      {
-        match_id: matchData.id,
-        event_data: {
-          type: "tennis_stat",
-          stat: "ace",
-          side,
-        },
+    await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      eventData: {
+        type: "tennis_stat",
+        stat: "ace",
+        side,
       },
-    ]);
+    });
     toast.success(`Ás de ${formatTeamOrPlayerName(idx === 0 ? teamHome : teamAway)}!`);
   };
 
@@ -186,16 +183,14 @@ export default function TennisScoreboard({
     // Double fault gives point to opponent
     await handlePoint(oppIdx);
 
-    await supabase.from("match_events").insert([
-      {
-        match_id: matchData.id,
-        event_data: {
-          type: "tennis_stat",
-          stat: "double_fault",
-          side,
-        },
+    await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      eventData: {
+        type: "tennis_stat",
+        stat: "double_fault",
+        side,
       },
-    ]);
+    });
     toast.error(`Dupla Falta de ${formatTeamOrPlayerName(serverPlayerIdx === 0 ? teamHome : teamAway)}.`);
   };
 
@@ -217,13 +212,15 @@ export default function TennisScoreboard({
       },
     };
 
-    const { error } = await supabase
-      .from("matches")
-      .update({
-        scores: updatedScores,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", matchData.id);
+    const { error } = await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      newScores: updatedScores,
+      eventData: {
+        type: "correct_point",
+        side: idx === 0 ? "home" : "away",
+        points: newPoints,
+      },
+    });
 
     if (error) {
       toast.error("Erro ao corrigir ponto.");
@@ -238,25 +235,26 @@ export default function TennisScoreboard({
     setServerIdx(newIdx);
 
     const currentScores = matchData?.scores || {};
-    await supabase
-      .from("matches")
-      .update({
-        scores: { ...currentScores, serving_index: newIdx },
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", matchData.id);
+    await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      newScores: { ...currentScores, serving_index: newIdx },
+      eventData: {
+        type: "server_changed",
+        serving_index: newIdx,
+      },
+    });
   };
 
   const handleFinalizeMatch = async () => {
     if (!canEdit) return;
     if (confirm(`Tens a certeza que queres terminar este jogo de ${isPadel ? "Padel" : "Ténis"}?`)) {
-      const { error } = await supabase
-        .from("matches")
-        .update({
-          status: "completed",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", matchData.id);
+      const { error } = await recordMatchEventAtomic(supabase, {
+        matchId: matchData.id,
+        newStatus: "completed",
+        eventData: {
+          type: "match_finished",
+        },
+      });
 
       if (!error) {
         toast.success("Jogo terminado com sucesso!");

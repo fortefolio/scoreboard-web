@@ -4,6 +4,8 @@ import { useEffect, useState, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import OfflineSyncBadge from "@/components/OfflineSyncBadge";
+import { initOfflineNetworkSync } from "@/lib/offline/offlineQueue";
 import TennisScoreboard from "./TennisScoreboard";
 import VolleyballScoreboard from "./VolleyballScoreboard";
 import FootballScoreboard from "./FootballScoreboard";
@@ -59,6 +61,8 @@ function ScoreboardContent() {
     };
     fetchAll();
 
+    const unsubSync = initOfflineNetworkSync(supabase);
+
     const channel = supabase
       .channel(`match-${matchIdStr}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, (payload: any) => {
@@ -68,7 +72,10 @@ function ScoreboardContent() {
       })
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      unsubSync();
+      supabase.removeChannel(channel);
+    };
   }, [matchIdStr]);
 
   useEffect(() => {
@@ -86,7 +93,7 @@ function ScoreboardContent() {
 
   return (
     <div className="min-h-screen bg-[#0c1324] text-on-background p-4 md:p-6 flex flex-col items-center">
-      <div className="w-full max-w-5xl mb-6">
+      <div className="w-full max-w-5xl mb-6 flex items-center justify-between">
         <button 
           onClick={() => router.push(`/match/${matchIdStr}`)}
           className="text-slate-500 hover:text-indigo-300 text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all cursor-pointer"
@@ -94,6 +101,7 @@ function ScoreboardContent() {
           <span className="material-symbols-outlined text-sm">arrow_back</span>
           Match Overview
         </button>
+        <OfflineSyncBadge matchId={matchIdStr} />
       </div>
 
       {match.sport_type === 'Basketball' && (
