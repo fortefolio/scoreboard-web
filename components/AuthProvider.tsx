@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState } from 
 import { useRouter } from "next/navigation";
 import type { AuthChangeEvent, Session, SupabaseClient, User } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { clearOfflineQueue } from "@/lib/offline/offlineQueue";
 
 type AuthContextValue = {
   user: User | null;
@@ -33,8 +34,12 @@ export function AuthProvider({
       lastSessionRef.current = session ?? null;
 
       if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+        if (event === "SIGNED_OUT") {
+          clearOfflineQueue();
+        }
         router.refresh();
       } else if (event === "TOKEN_REFRESHED" && hadSession && !session) {
+        clearOfflineQueue();
         router.refresh();
       }
     });
@@ -47,6 +52,7 @@ export function AuthProvider({
       user,
       supabase,
       signOut: async () => {
+        clearOfflineQueue();
         await supabase.auth.signOut();
       },
     }),
