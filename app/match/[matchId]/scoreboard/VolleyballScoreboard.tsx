@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import SportIcon from "@/components/SportIcon";
+import { recordMatchEventAtomic } from "@/lib/scoring/atomicScoring";
 
 export default function VolleyballScoreboard({ 
   matchData, 
@@ -67,14 +68,10 @@ export default function VolleyballScoreboard({
     setServerIdx(selectedIdx);
     setIsTossing(true);
     
-    const { error } = await supabase
-      .from("match_events")
-      .insert([
-        {
-          match_id: matchData.id,
-          event_data: { type: "start_scoreboard", initial_server_index: selectedIdx },
-        },
-      ]);
+    const { error } = await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      eventData: { type: "start_scoreboard", initial_server_index: selectedIdx },
+    });
     
     if (error) {
       console.error("Error setting server:", error);
@@ -99,17 +96,13 @@ export default function VolleyballScoreboard({
       [side]: prev[side] + 1,
     }));
 
-    const { error } = await supabase
-      .from("match_events")
-      .insert([
-        {
-          match_id: matchData.id,
-          event_data: { 
-            type: "point_won", 
-            side,
-          },
-        },
-      ]);
+    const { error } = await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      eventData: { 
+        type: "point_won", 
+        side,
+      },
+    });
 
     if (error) {
       console.error("Error recording point:", error);
@@ -126,16 +119,20 @@ export default function VolleyballScoreboard({
     };
     setCurrentPoints(newPoints);
 
-    await supabase
-      .from("matches")
-      .update({
-        scores: {
-          ...matchData.scores,
-          current: newPoints,
-        },
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", matchData.id);
+    const updatedScores = {
+      ...matchData.scores,
+      current: newPoints,
+    };
+
+    await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      newScores: updatedScores,
+      eventData: {
+        type: "correct_score",
+        side,
+        current: newPoints,
+      },
+    });
 
     toast.info("Ponto corrigido (-1)");
   };
@@ -145,19 +142,23 @@ export default function VolleyballScoreboard({
     const newTimeouts = { ...timeouts, [side]: timeouts[side] - 1 };
     setTimeouts(newTimeouts);
 
-    await supabase
-      .from("matches")
-      .update({
-        scores: {
-          ...matchData.scores,
-          volleyball: {
-            ...(matchData.scores?.volleyball || {}),
-            timeouts: newTimeouts,
-          },
-        },
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", matchData.id);
+    const updatedScores = {
+      ...matchData.scores,
+      volleyball: {
+        ...(matchData.scores?.volleyball || {}),
+        timeouts: newTimeouts,
+      },
+    };
+
+    await recordMatchEventAtomic(supabase, {
+      matchId: matchData.id,
+      newScores: updatedScores,
+      eventData: {
+        type: "timeout",
+        side,
+        timeouts: newTimeouts,
+      },
+    });
 
     toast.info(`Desconto de tempo pedido por ${side === "home" ? teamHome : teamAway}`);
   };
@@ -165,13 +166,13 @@ export default function VolleyballScoreboard({
   const handleFinalizeMatch = async () => {
     if (!canEdit) return;
     if (confirm("Tens a certeza que queres terminar este encontro de Voleibol?")) {
-      const { error } = await supabase
-        .from("matches")
-        .update({
-          status: "completed",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", matchData.id);
+      const { error } = await recordMatchEventAtomic(supabase, {
+        matchId: matchData.id,
+        newStatus: "completed",
+        eventData: {
+          type: "match_finished",
+        },
+      });
 
       if (!error) {
         toast.success("Encontro terminado!");

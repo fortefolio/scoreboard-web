@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import SportIcon from "@/components/SportIcon";
+import { recordMatchEventAtomic } from "@/lib/scoring/atomicScoring";
 
 export default function FootballScoreboard({ 
   matchData, 
@@ -70,7 +71,7 @@ export default function FootballScoreboard({
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const persistFootballState = async (updates: any) => {
+  const persistFootballState = async (updates: any, eventData?: Record<string, any>) => {
     const newGoals = updates.goals || goals;
     const newPeriod = updates.period || period;
     const newElapsed = typeof updates.elapsedSeconds === "number" ? updates.elapsedSeconds : elapsedSeconds;
@@ -81,28 +82,38 @@ export default function FootballScoreboard({
     const newCorners = updates.corners || corners;
     const newFouls = updates.fouls || fouls;
 
-    await supabase
-      .from("matches")
-      .update({
-        scores: {
-          ...matchData.scores,
-          current: { home: newGoals.home, away: newGoals.away },
-          goals: [newGoals.home, newGoals.away],
-          football: {
-            goals: [newGoals.home, newGoals.away],
-            period: newPeriod,
-            elapsed_seconds: newElapsed,
-            is_clock_running: newClockRunning,
-            stoppage_minutes: newStoppage,
-            yellow_cards: newYellow,
-            red_cards: newRed,
-            corners: newCorners,
-            fouls: newFouls,
-          },
-        },
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", matchData.id);
+    const newScores = {
+      ...matchData.scores,
+      current: { home: newGoals.home, away: newGoals.away },
+      goals: [newGoals.home, newGoals.away],
+      football: {
+        goals: [newGoals.home, newGoals.away],
+        period: newPeriod,
+        elapsed_seconds: newElapsed,
+        is_clock_running: newClockRunning,
+        stoppage_minutes: newStoppage,
+        yellow_cards: newYellow,
+        red_cards: newRed,
+        corners: newCorners,
+        fouls: newFouls,
+      },
+    };
+
+    if (eventData) {
+      await recordMatchEventAtomic(supabase, {
+        matchId: matchData.id,
+        newScores,
+        eventData,
+      });
+    } else {
+      await supabase
+        .from("matches")
+        .update({
+          scores: newScores,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", matchData.id);
+    }
   };
 
   const handleGoal = async (side: "home" | "away", delta: number = 1) => {
@@ -115,21 +126,17 @@ export default function FootballScoreboard({
     setGoals(newGoals);
 
     if (delta > 0) {
-      await supabase.from("match_events").insert([
-        {
-          match_id: matchData.id,
-          event_data: { 
-            type: "goal", 
-            side,
-            period,
-            minute: Math.floor(elapsedSeconds / 60) + 1,
-          },
-        },
-      ]);
+      const eventData = { 
+        type: "goal", 
+        side,
+        period,
+        minute: Math.floor(elapsedSeconds / 60) + 1,
+      };
       toast.success(`GOLO! ${side === "home" ? teamHome : teamAway}`);
+      await persistFootballState({ goals: newGoals }, eventData);
+    } else {
+      await persistFootballState({ goals: newGoals });
     }
-
-    await persistFootballState({ goals: newGoals });
   };
 
   const toggleClock = async () => {
@@ -231,13 +238,13 @@ export default function FootballScoreboard({
     if (confirm("Tens a certeza que queres terminar este jogo de Futebol?")) {
       setIsClockRunning(false);
       setPeriod("Fim do Jogo");
-      const { error } = await supabase
-        .from("matches")
-        .update({
-          status: "completed",
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", matchData.id);
+      const { error } = await recordMatchEventAtomic(supabase, {
+        matchId: matchData.id,
+        newStatus: "completed",
+        eventData: {
+          type: "match_finished",
+        },
+      });
 
       if (!error) {
         toast.success("Jogo terminado com sucesso!");

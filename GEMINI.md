@@ -29,3 +29,10 @@ This project uses `@supabase/ssr`. Do not regress to the patterns below.
 
 ## Sign-out
 - Use `useAuth().signOut()` — don't call `supabase.auth.signOut()` directly. The provider's listener handles router refresh; calling `router.push("/")` yourself causes a race.
+
+## Secret Management & Push Protection Guardrails
+- **NEVER hardcode Supabase Secret Keys or service role keys** (strings matching `sb_secret_*` or service tokens) in any repository files (code, tests, mocks, configs, docs).
+- GitHub Push Protection blocks any commit or push that contains strings starting with `sb_secret_`.
+- Always read keys strictly via environment variables:
+  `process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""`
+- All secret keys for local development and testing belong strictly in `.env.local` or `.env.test.local`, which are gitignored.

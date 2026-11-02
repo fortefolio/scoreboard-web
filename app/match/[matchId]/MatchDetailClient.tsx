@@ -294,9 +294,33 @@ export default function MatchDetailClient() {
     };
     fetchAll();
 
-    // Set up real-time subscription
+    // Set up real-time subscription (High-concurrency broadcast + table changes fallback)
     const channel = supabase
-      .channel(`match-detail-${matchIdStr}`)
+      .channel(`match:${matchIdStr}`)
+      .on(
+        'broadcast',
+        { event: 'score_update' },
+        (response: any) => {
+          const payload = response?.payload;
+          if (payload && payload.match_id === matchIdStr) {
+            setMatch((prev: any) => ({
+              ...prev,
+              scores: payload.scores ?? prev?.scores,
+              status: payload.status ?? prev?.status,
+            }));
+            if (payload.event_data) {
+              setMatchEvents((prev) => [
+                ...prev,
+                {
+                  match_id: payload.match_id,
+                  event_data: payload.event_data,
+                  created_at: new Date().toISOString(),
+                },
+              ]);
+            }
+          }
+        }
+      )
       .on(
         'postgres_changes',
         {
@@ -319,7 +343,13 @@ export default function MatchDetailClient() {
         },
         (payload: any) => {
           if (payload.new && payload.new.match_id === matchIdStr) {
-            setMatchEvents((prev) => [...prev, payload.new]);
+            setMatchEvents((prev) => {
+              const exists = prev.some(
+                (e) => e.id && payload.new.id && e.id === payload.new.id
+              );
+              if (exists) return prev;
+              return [...prev, payload.new];
+            });
           }
         }
       )
