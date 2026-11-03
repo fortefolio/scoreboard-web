@@ -70,6 +70,10 @@ export default function TopNavBar() {
   const isTournamentsActive = activeTab === "tournaments";
   const isFollowingActive = activeTab === "following";
 
+  if (pathname?.includes("/overlay")) {
+    return null;
+  }
+
   return (
     <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 transition-all duration-300 ease-out border-b border-white/5">
       <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto font-headline tracking-tight">

@@ -54,6 +54,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${manrope.variable} ${inter.variable} ${spaceGrotesk.variable} h-full antialiased dark`}
     >
       <head>
@@ -62,7 +63,7 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         />
       </head>
-      <body className="min-h-full flex flex-col bg-background text-on-background pt-20">
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-on-background pt-20">
         <LanguageProvider>
           <AuthProvider initialUser={null}>
             <Suspense fallback={<nav className="fixed top-0 w-full h-20 bg-slate-950/40 backdrop-blur-xl z-50 border-b border-white/5" />}>
