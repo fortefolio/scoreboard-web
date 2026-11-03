@@ -222,4 +222,29 @@ describe("NotificationBell — authenticated", () => {
       expect(screen.queryByText("1")).not.toBeInTheDocument();
     });
   });
+
+  it("zeroes the badge immediately when scoreboard:notifications-changed (CLEAR_ALL) event is received", async () => {
+    supabaseMock.__queueResponse("notifications", {
+      data: [
+        note({ id: "n1", read_at: null }),
+        note({ id: "n2", read_at: null }),
+      ],
+      error: null,
+    });
+
+    renderBell(testUser);
+    expect(await screen.findByText("2")).toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent("scoreboard:notifications-changed", {
+          detail: { type: "CLEAR_ALL" },
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByText("2")).not.toBeInTheDocument();
+    });
+  });
 });

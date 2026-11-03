@@ -5,8 +5,6 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
-import { useFollow } from "@/lib/hooks/useFollow";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import NotificationBell from "./NotificationBell";
 import LanguageSelector from "./LanguageSelector";
 
@@ -15,15 +13,10 @@ export default function TopNavBar() {
   const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
-  const [counts, setCounts] = useState<{ matches: number; tournaments: number; following?: number }>({
-    matches: 0,
-    tournaments: 0,
-  });
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const followHook = useFollow();
 
   useEffect(() => {
     setHasMounted(true);
@@ -36,46 +29,6 @@ export default function TopNavBar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    const fetchCounts = async () => {
-      try {
-        const supabase = getSupabaseBrowserClient();
-        const [mRes, tRes] = await Promise.all([
-          supabase.from("matches").select("id", { count: "exact" }),
-          supabase.from("tournaments").select("id", { count: "exact" }),
-        ]);
-        if (active) {
-          setCounts((prev) => ({
-            ...prev,
-            matches: mRes.count ?? (Array.isArray(mRes.data) ? mRes.data.length : prev.matches),
-            tournaments: tRes.count ?? (Array.isArray(tRes.data) ? tRes.data.length : prev.tournaments),
-          }));
-        }
-      } catch (err) {
-        console.error("Failed to load nav counts:", err);
-      }
-    };
-    fetchCounts();
-
-    const onCounts = (e: Event) => {
-      const detail = (e as CustomEvent).detail;
-      if (detail && active) {
-        setCounts((prev) => ({
-          matches: detail.matches ?? prev.matches,
-          tournaments: detail.tournaments ?? prev.tournaments,
-          following: detail.following ?? prev.following,
-        }));
-      }
-    };
-    window.addEventListener("scoreboard:counts", onCounts);
-
-    return () => {
-      active = false;
-      window.removeEventListener("scoreboard:counts", onCounts);
-    };
-  }, []);
-
   const handleSignOut = async () => {
     setIsMenuOpen(false);
     await signOut();
@@ -86,9 +39,6 @@ export default function TopNavBar() {
   const isMatchesActive = activeTab === "matches";
   const isTournamentsActive = activeTab === "tournaments";
   const isFollowingActive = activeTab === "following";
-
-  const totalFollowedCount =
-    counts.following ?? (followHook.followedMatchIds.size + followHook.followedTournamentIds.size);
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 transition-all duration-300 ease-out border-b border-white/5">
@@ -110,7 +60,7 @@ export default function TopNavBar() {
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                {t("home.matchesTab")} ({counts.matches})
+                {t("home.matchesTab")}
               </Link>
 
               <Link
@@ -122,7 +72,7 @@ export default function TopNavBar() {
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                {t("home.tournamentsTab")} ({counts.tournaments})
+                {t("home.tournamentsTab")}
               </Link>
 
               <Link
@@ -134,7 +84,7 @@ export default function TopNavBar() {
                     : "text-slate-400 hover:text-white"
                 }`}
               >
-                {t("home.followingTab")}{user ? ` (${totalFollowedCount})` : ""}
+                {t("home.followingTab")}
               </Link>
             </>
           )}

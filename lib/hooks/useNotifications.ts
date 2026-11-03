@@ -4,6 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 
+function notifySync(detail: { type: string; id?: string }) {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("scoreboard:notifications-changed", { detail }));
+  }
+}
+
 export function useNotifications() {
   const { user, supabase } = useAuth();
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -28,6 +34,49 @@ export function useNotifications() {
   useEffect(() => {
     if (user) fetchNotifications(user.id);
     else setLoading(false);
+  }, [user, fetchNotifications]);
+
+  // Synchronize across multiple hook instances on the page (e.g. NotificationBell and NotificationsPage)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleSync = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const detail = customEvent.detail;
+      if (!detail) return;
+
+      if (detail.type === "CLEAR_ALL") {
+        setNotifications([]);
+        setUnreadCount(0);
+      } else if (detail.type === "MARK_ALL_READ") {
+        setNotifications((prev) =>
+          prev.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() }))
+        );
+        setUnreadCount(0);
+      } else if (detail.type === "DELETE_ONE" && detail.id) {
+        setNotifications((prev) => {
+          const deleted = prev.find((n) => n.id === detail.id);
+          if (deleted && !deleted.read_at) {
+            setUnreadCount((c) => Math.max(0, c - 1));
+          }
+          return prev.filter((n) => n.id !== detail.id);
+        });
+      } else if (detail.type === "MARK_READ" && detail.id) {
+        setNotifications((prev) =>
+          prev.map((n) =>
+            n.id === detail.id ? { ...n, read_at: n.read_at || new Date().toISOString() } : n
+          )
+        );
+        setUnreadCount((c) => Math.max(0, c - 1));
+      } else if (detail.type === "REFRESH" && user) {
+        fetchNotifications(user.id);
+      }
+    };
+
+    window.addEventListener("scoreboard:notifications-changed", handleSync);
+    return () => {
+      window.removeEventListener("scoreboard:notifications-changed", handleSync);
+    };
   }, [user, fetchNotifications]);
 
   useEffect(() => {
@@ -86,6 +135,7 @@ export function useNotifications() {
       prev.map(n => (n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n))
     );
     setUnreadCount(c => Math.max(0, c - 1));
+    notifySync({ type: "MARK_READ", id: notificationId });
 
     const { error } = await supabase
       .from("notifications")
@@ -96,6 +146,7 @@ export function useNotifications() {
     if (error) {
       console.error("Error marking notification as read:", error);
       toast.error("Failed to update notification");
+      notifySync({ type: "REFRESH" });
     }
   };
 
@@ -103,6 +154,7 @@ export function useNotifications() {
     if (!user) return;
     setNotifications(prev => prev.map(n => ({ ...n, read_at: new Date().toISOString() })));
     setUnreadCount(0);
+    notifySync({ type: "MARK_ALL_READ" });
 
     const { error } = await supabase
       .from("notifications")
@@ -113,6 +165,7 @@ export function useNotifications() {
     if (error) {
       console.error("Error marking all notifications as read:", error);
       toast.error("Failed to update notifications");
+      notifySync({ type: "REFRESH" });
     }
   };
 
@@ -126,6 +179,7 @@ export function useNotifications() {
     if (deleted && !deleted.read_at) {
       setUnreadCount(c => Math.max(0, c - 1));
     }
+    notifySync({ type: "DELETE_ONE", id });
 
     const { error } = await supabase
       .from("notifications")
@@ -138,6 +192,7 @@ export function useNotifications() {
       toast.error("Failed to delete notification");
       setNotifications(prevNotifications);
       setUnreadCount(prevUnread);
+      notifySync({ type: "REFRESH" });
     } else {
       toast.success("Notification removed");
     }
@@ -150,6 +205,7 @@ export function useNotifications() {
 
     setNotifications([]);
     setUnreadCount(0);
+    notifySync({ type: "CLEAR_ALL" });
 
     const { error } = await supabase
       .from("notifications")
@@ -161,6 +217,7 @@ export function useNotifications() {
       toast.error("Failed to clear notifications");
       setNotifications(prevNotifications);
       setUnreadCount(prevUnread);
+      notifySync({ type: "REFRESH" });
     } else {
       toast.success("All notifications cleared");
     }
