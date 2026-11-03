@@ -82,7 +82,7 @@ export const pt: Translations = {
     favoritesCount: "Favoritos",
     matchesTab: "Jogos",
     tournamentsTab: "Torneios",
-    followingTab: "Favoritos / A Seguir",
+    followingTab: "Favoritos",
     noMatchesFound: "Nenhum jogo encontrado",
     noMatchesFilterDesc: "Não existem jogos correspondentes aos filtros selecionados.",
     noTournamentsFound: "Nenhum torneio encontrado",

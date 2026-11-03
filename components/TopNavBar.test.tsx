@@ -72,11 +72,11 @@ describe("TopNavBar — guest", () => {
     expect(screen.queryByTestId("notification-bell")).not.toBeInTheDocument();
   });
 
-  it("renders the navigation tabs (Matches, Tournaments, Following)", () => {
+  it("renders the navigation tabs (Matches, Tournaments, Favorites)", () => {
     renderNav(null);
     expect(screen.getByRole("link", { name: /matches/i })).toHaveAttribute("href", "/?tab=matches");
     expect(screen.getByRole("link", { name: /tournaments/i })).toHaveAttribute("href", "/?tab=tournaments");
-    expect(screen.getByRole("link", { name: /following/i })).toHaveAttribute("href", "/?tab=following");
+    expect(screen.getByRole("link", { name: /favorites/i })).toHaveAttribute("href", "/?tab=following");
   });
 });
 
@@ -104,7 +104,7 @@ describe("TopNavBar — authenticated", () => {
     expect(screen.getByTestId("notification-bell")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /matches/i })).toHaveAttribute("href", "/?tab=matches");
     expect(screen.getByRole("link", { name: /tournaments/i })).toHaveAttribute("href", "/?tab=tournaments");
-    expect(screen.getByRole("link", { name: /following/i })).toHaveAttribute("href", "/?tab=following");
+    expect(screen.getByRole("link", { name: /favorites/i })).toHaveAttribute("href", "/?tab=following");
   });
 
   it('does not show the "Get Started" link', () => {

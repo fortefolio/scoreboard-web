@@ -82,7 +82,7 @@ export const en: Translations = {
     favoritesCount: "Favorites",
     matchesTab: "Matches",
     tournamentsTab: "Tournaments",
-    followingTab: "Favorites / Following",
+    followingTab: "Favorites",
     noMatchesFound: "No matches found",
     noMatchesFilterDesc: "There are no matches matching the selected filters.",
     noTournamentsFound: "No tournaments found",
