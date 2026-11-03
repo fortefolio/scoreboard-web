@@ -73,6 +73,11 @@ function HomeContent() {
     if (auth === "login") setAuthModal("login");
     else if (auth === "signup") setAuthModal("signup");
     else setAuthModal(null);
+
+    const tab = searchParams.get("tab");
+    if (tab === "matches" || tab === "tournaments" || tab === "following") {
+      setActiveTab(tab);
+    }
   }, [searchParams]);
 
   // Load matches and tournaments
@@ -110,6 +115,12 @@ function HomeContent() {
   const handleTabChange = (tab: "matches" | "tournaments" | "following") => {
     setActiveTab(tab);
     setCurrentPage(1);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", tab);
+    router.replace(
+      window.location.pathname + (params.toString() ? "?" + params.toString() : ""),
+      { scroll: false }
+    );
   };
 
   const clearFilters = () => {
@@ -344,6 +355,19 @@ function HomeContent() {
   const totalPages = Math.max(1, Math.ceil(currentItemsTotal / itemsPerPage));
   const safePage = Math.min(currentPage, totalPages);
 
+  // Sync counts to TopNavBar
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("scoreboard:counts", {
+        detail: {
+          matches: totalMatchesCount,
+          tournaments: totalTournamentsCount,
+          following: totalFollowedCount,
+        },
+      })
+    );
+  }, [totalMatchesCount, totalTournamentsCount, totalFollowedCount]);
+
   const paginatedMatches = useMemo(() => {
     const start = (safePage - 1) * MATCHES_PER_PAGE;
     return filteredMatches.slice(start, start + MATCHES_PER_PAGE);
@@ -355,105 +379,7 @@ function HomeContent() {
   }, [filteredTournaments, safePage]);
 
   return (
-    <div className="w-full min-h-screen bg-background text-on-surface py-8 px-4 sm:px-8 max-w-7xl mx-auto">
-      {/* Hero Header */}
-      <div className="bg-surface-container-low rounded-[2.5rem] p-6 sm:p-10 border border-white/5 relative overflow-hidden mb-8 shadow-2xl">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 blur-3xl pointer-events-none rounded-full" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-secondary/10 blur-3xl pointer-events-none rounded-full" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-label text-[10px] font-black uppercase tracking-widest mb-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              {t("home.liveBadge")}
-            </div>
-            <h1 className="font-headline font-black text-3xl sm:text-5xl text-on-surface tracking-tight mb-2">
-              {t("home.heroTitle")}
-            </h1>
-            <p className="text-on-surface-variant text-sm max-w-xl">
-              {t("home.heroSubtitle")}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4 bg-surface-container/60 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/5 shrink-0 self-start md:self-auto">
-            <div className="text-center">
-              <div className="font-mono text-2xl font-black text-primary">
-                {totalMatchesCount}
-              </div>
-              <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                {t("home.matchesCount")}
-              </div>
-            </div>
-            <div className="w-px h-8 bg-white/10" />
-            <div className="text-center">
-              <div className="font-mono text-2xl font-black text-secondary">
-                {totalTournamentsCount}
-              </div>
-              <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                {t("home.tournamentsCount")}
-              </div>
-            </div>
-            {user && (
-              <>
-                <div className="w-px h-8 bg-white/10" />
-                <div className="text-center">
-                  <div className="font-mono text-2xl font-black text-amber-400">
-                    {totalFollowedCount}
-                  </div>
-                  <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                    {t("home.favoritesCount")}
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Tabs (Consistent with Profile Page + Favoritos Tab) */}
-      <div className="flex items-center gap-2 mb-6 border-b border-white/5 pb-4 overflow-x-auto">
-        <button
-          onClick={() => handleTabChange("matches")}
-          className={`px-5 py-2.5 rounded-full font-label text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-            activeTab === "matches"
-              ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
-              : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
-          }`}
-        >
-          <span className="material-symbols-outlined text-[16px]">sports</span>
-          {t("home.matchesTab")} ({matches.length})
-        </button>
-
-        <button
-          onClick={() => handleTabChange("tournaments")}
-          className={`px-5 py-2.5 rounded-full font-label text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-            activeTab === "tournaments"
-              ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
-              : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
-          }`}
-        >
-          <span className="material-symbols-outlined text-[16px]">emoji_events</span>
-          {t("home.tournamentsTab")} ({tournaments.length})
-        </button>
-
-        <button
-          onClick={() => handleTabChange("following")}
-          className={`px-5 py-2.5 rounded-full font-label text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-            activeTab === "following"
-              ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-lg shadow-amber-500/10"
-              : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
-          }`}
-        >
-          <span
-            className="material-symbols-outlined text-[16px] text-amber-400"
-            style={{ fontVariationSettings: activeTab === "following" ? "'FILL' 1" : undefined }}
-          >
-            star
-          </span>
-          {t("home.followingTab")} {user ? `(${totalFollowedCount})` : ""}
-        </button>
-      </div>
-
+    <div className="w-full min-h-screen bg-background text-on-surface py-6 px-4 sm:px-8 max-w-7xl mx-auto">
       {/* Filter, Search & View Controls Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8 bg-surface-container-low p-4 rounded-2xl border border-white/5 shadow-lg">
         {/* Search & Filters */}

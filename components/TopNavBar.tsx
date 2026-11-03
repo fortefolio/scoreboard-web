@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
+import { useFollow } from "@/lib/hooks/useFollow";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import NotificationBell from "./NotificationBell";
 import LanguageSelector from "./LanguageSelector";
 
@@ -13,8 +15,15 @@ export default function TopNavBar() {
   const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
+  const [counts, setCounts] = useState<{ matches: number; tournaments: number; following?: number }>({
+    matches: 0,
+    tournaments: 0,
+  });
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const followHook = useFollow();
 
   useEffect(() => {
     setHasMounted(true);
@@ -27,36 +36,125 @@ export default function TopNavBar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    const fetchCounts = async () => {
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const [mRes, tRes] = await Promise.all([
+          supabase.from("matches").select("id", { count: "exact" }),
+          supabase.from("tournaments").select("id", { count: "exact" }),
+        ]);
+        if (active) {
+          setCounts((prev) => ({
+            ...prev,
+            matches: mRes.count ?? (Array.isArray(mRes.data) ? mRes.data.length : prev.matches),
+            tournaments: tRes.count ?? (Array.isArray(tRes.data) ? tRes.data.length : prev.tournaments),
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to load nav counts:", err);
+      }
+    };
+    fetchCounts();
+
+    const onCounts = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (detail && active) {
+        setCounts((prev) => ({
+          matches: detail.matches ?? prev.matches,
+          tournaments: detail.tournaments ?? prev.tournaments,
+          following: detail.following ?? prev.following,
+        }));
+      }
+    };
+    window.addEventListener("scoreboard:counts", onCounts);
+
+    return () => {
+      active = false;
+      window.removeEventListener("scoreboard:counts", onCounts);
+    };
+  }, []);
+
   const handleSignOut = async () => {
     setIsMenuOpen(false);
     await signOut();
   };
 
-  const navLinks = user ? [
-    { name: t("nav.matches"), href: "/#matches" },
-    { name: t("nav.tournaments"), href: "/#tournaments" },
-  ] : [];
+  const isHome = pathname === "/";
+  const activeTab = isHome ? (searchParams.get("tab") || "matches") : null;
+  const isMatchesActive = activeTab === "matches";
+  const isTournamentsActive = activeTab === "tournaments";
+  const isFollowingActive = activeTab === "following";
+
+  const totalFollowedCount =
+    counts.following ?? (followHook.followedMatchIds.size + followHook.followedTournamentIds.size);
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 transition-all duration-300 ease-out border-b border-white/5">
-      <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto font-headline tracking-tight">
-        <Link href="/" className="text-4xl font-digital text-white tracking-tighter hover:scale-105 transition-transform">
+      <div className="flex justify-between items-center px-4 sm:px-8 py-3.5 max-w-7xl mx-auto font-headline tracking-tight gap-4">
+        <Link href="/" className="text-3xl sm:text-4xl font-digital text-white tracking-tighter hover:scale-105 transition-transform shrink-0">
           SCORE:BOARD
         </Link>
 
-        <div className="flex gap-4 md:gap-8 items-center">
-          {hasMounted && navLinks.map((link) => (
-            <Link
-              key={link.name}
-              href={link.href}
-              className="text-slate-400 hover:text-indigo-300 transition-colors transition-all duration-300 ease-out active:scale-95 text-[10px] md:text-sm font-black uppercase tracking-widest"
-            >
-              {link.name}
-            </Link>
-          ))}
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1">
+          {hasMounted && (
+            <>
+              <Link
+                href="/?tab=matches"
+                scroll={false}
+                className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full font-label text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+                  isMatchesActive
+                    ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
+                    : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border border-white/5"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]">sports</span>
+                <span>
+                  {t("home.matchesTab")} ({counts.matches})
+                </span>
+              </Link>
+
+              <Link
+                href="/?tab=tournaments"
+                scroll={false}
+                className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full font-label text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+                  isTournamentsActive
+                    ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
+                    : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border border-white/5"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px]">emoji_events</span>
+                <span>
+                  {t("home.tournamentsTab")} ({counts.tournaments})
+                </span>
+              </Link>
+
+              <Link
+                href="/?tab=following"
+                scroll={false}
+                className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full font-label text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+                  isFollowingActive
+                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-lg shadow-amber-500/10"
+                    : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border border-white/5"
+                }`}
+              >
+                <span
+                  className="material-symbols-outlined text-[16px] text-amber-400"
+                  style={{ fontVariationSettings: isFollowingActive ? "'FILL' 1" : undefined }}
+                >
+                  star
+                </span>
+                <span>
+                  {t("home.followingTab")} {user ? `(${totalFollowedCount})` : ""}
+                </span>
+              </Link>
+            </>
+          )}
         </div>
 
-        <div className="flex gap-4 md:gap-6 items-center">
+        <div className="flex gap-4 md:gap-6 items-center shrink-0">
           {hasMounted && <LanguageSelector />}
 
           {hasMounted && user && <NotificationBell />}

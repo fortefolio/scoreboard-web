@@ -72,10 +72,11 @@ describe("TopNavBar — guest", () => {
     expect(screen.queryByTestId("notification-bell")).not.toBeInTheDocument();
   });
 
-  it("does not render the authed nav links", () => {
+  it("renders the navigation tabs (Matches, Tournaments, Following)", () => {
     renderNav(null);
-    expect(screen.queryByRole("link", { name: /matches/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /tournaments/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /matches/i })).toHaveAttribute("href", "/?tab=matches");
+    expect(screen.getByRole("link", { name: /tournaments/i })).toHaveAttribute("href", "/?tab=tournaments");
+    expect(screen.getByRole("link", { name: /following/i })).toHaveAttribute("href", "/?tab=following");
   });
 });
 
@@ -98,11 +99,12 @@ describe("TopNavBar — authenticated", () => {
     expect(img).toHaveAttribute("src", "https://example.com/avatar.png");
   });
 
-  it("renders NotificationBell and the authed nav links", () => {
+  it("renders NotificationBell and the navigation tabs", () => {
     renderNav(userWithEmail);
     expect(screen.getByTestId("notification-bell")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /matches/i })).toHaveAttribute("href", "/#matches");
-    expect(screen.getByRole("link", { name: /tournaments/i })).toHaveAttribute("href", "/#tournaments");
+    expect(screen.getByRole("link", { name: /matches/i })).toHaveAttribute("href", "/?tab=matches");
+    expect(screen.getByRole("link", { name: /tournaments/i })).toHaveAttribute("href", "/?tab=tournaments");
+    expect(screen.getByRole("link", { name: /following/i })).toHaveAttribute("href", "/?tab=following");
   });
 
   it('does not show the "Get Started" link', () => {

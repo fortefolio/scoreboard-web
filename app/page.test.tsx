@@ -323,13 +323,9 @@ describe("Home — tabs & tournaments sorting", () => {
       error: null,
     });
 
+    searchParams = new URLSearchParams({ tab: "tournaments" });
     const user = userEvent.setup();
     await renderHome();
-
-    // Switch to tournaments tab
-    const tournamentsBtn = screen.getByRole("button", { name: /(Torneios|Tournaments)/i });
-    expect(tournamentsBtn).toBeInTheDocument();
-    await user.click(tournamentsBtn);
 
     // Tournaments should render in the list
     await waitFor(() => {
