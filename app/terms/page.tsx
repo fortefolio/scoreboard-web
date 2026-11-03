@@ -92,8 +92,8 @@ export default function TermsPage() {
               <li>
                 <strong>{isPt ? "Plano Pro Organizador:" : "Pro Organizer Plan:"}</strong>{" "}
                 {isPt
-                  ? "Criação ilimitada de torneios (fase de grupos, eliminatórias simples e duplas), atribuição oficial de árbitros, personalização de patrocinadores e logótipos, exportação de resultados em PDF/CSV e marcador limpo para transmissões em direto (OBS / vMix)."
-                  : "Unlimited tournament creation (Group stages, single/double knockout brackets), referee delegation, sponsor branding, PDF/CSV standings exports, and clean broadcast overlays for live streaming."}
+                  ? "Criação ilimitada de torneios (fase de grupos, eliminatórias simples e duplas), atribuição oficial de árbitros, personalização de patrocinadores e logótipos e exportação de resultados em PDF/CSV."
+                  : "Unlimited tournament creation (Group stages, single/double knockout brackets), referee delegation, sponsor branding, and PDF/CSV standings exports."}
               </li>
             </ul>
           </section>
@@ -186,13 +186,31 @@ export default function TermsPage() {
           {/* Section 5 */}
           <section>
             <h2 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-              <span className="text-indigo-400">5.</span> {isPt ? "Conduta, Fair Play e Integridade Desportiva" : "Conduct, Fair Play & Sports Integrity"}
-            </h2>
-            <p>
+              <span className="text-indigo-400">5.</span>{" "}
               {isPt
-                ? "Os utilizadores e árbitros comprometem-se a registar os resultados e ocorrências das partidas de forma fidedigna. É expressamente proibida a manipulação fraudulenta de resultados, a adulteração de escalões ou a usurpação de identidade de clubes ou federações desportivas."
-                : "Users and match officials agree to record scores, fouls, and match incidents in good faith. Fraudulent tampering with match outcomes, deliberate tournament bracket manipulation, and impersonation of sporting clubs or federations are strictly prohibited."}
-            </p>
+                ? "Responsabilidade pelos Dados Inseridos, Integridade e Denúncia de Ocorrências"
+                : "Responsibility for Inserted Data, Integrity & Incident Reporting"}
+            </h2>
+            <div className="space-y-3">
+              <p>
+                <strong>{isPt ? "Responsabilidade Exclusiva do Utilizador:" : "Sole User Responsibility:"}</strong>{" "}
+                {isPt
+                  ? "Todos os resultados, pontuações, nomes de participantes, equipas, horários e quaisquer outras informações introduzidas na plataforma são da inteira e exclusiva responsabilidade do utilizador, organizador ou árbitro que efetuou a inserção."
+                  : "All match results, scores, player/team names, schedules, and any other data entered onto the platform are the sole and exclusive responsibility of the user, organizer, or match official who submitted them."}
+              </p>
+              <p>
+                <strong>{isPt ? "Inexistência de Validação Prévia pela Plataforma:" : "No Prior Verification by the Platform:"}</strong>{" "}
+                {isPt
+                  ? "O ScoreBoard funciona como um meio tecnológico de suporte e agregação desportiva e não dispõe de qualquer forma, meio ou obrigação de validar, auditar ou certificar previamente a autenticidade, fidedignidade ou veracidade dos dados inseridos."
+                  : "ScoreBoard operates strictly as a digital technology tool and does not possess any means, mechanism, or obligation to verify, audit, or certify the accuracy, authenticity, or truthfulness of any submitted data."}
+              </p>
+              <p>
+                <strong>{isPt ? "Obrigação de Reporte de Ocorrências Não Fidedignas:" : "Reporting Inaccurate or Fraudulent Occurrences:"}</strong>{" "}
+                {isPt
+                  ? "Se algum utilizador, participante ou terceiro detetar alguma ocorrência não fidedigna, pontuação fraudulenta, usurpação de identidade ou manipulação de resultados, deve reportar de imediato a ocorrência à plataforma através do email support@scoreboard.app. A plataforma reserva-se o direito de investigar, retificar, ocultar ou remover os dados contestados, bem como suspender ou cancelar as contas infratoras."
+                  : "If any user, player, or third party detects an inaccurate record, fraudulent score, identity impersonation, or match manipulation, they must promptly report the incident to support@scoreboard.app. ScoreBoard reserves the right to investigate, correct, hide, or remove contested entries and suspend offending accounts."}
+              </p>
+            </div>
           </section>
 
           {/* Section 6 */}
