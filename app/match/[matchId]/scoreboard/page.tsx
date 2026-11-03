@@ -10,6 +10,7 @@ import TennisScoreboard from "./TennisScoreboard";
 import VolleyballScoreboard from "./VolleyballScoreboard";
 import FootballScoreboard from "./FootballScoreboard";
 import BasketballScoreboard from "./BasketballScoreboard";
+import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
 
 function ScoreboardContent() {
   const { matchId } = useParams();
@@ -92,8 +93,12 @@ function ScoreboardContent() {
   if (!match || !rules) return <div className="p-10 text-white bg-gray-950 min-h-screen text-center">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-[#0c1324] text-on-background p-4 md:p-6 flex flex-col items-center">
-      <div className="w-full max-w-5xl mb-6 flex items-center justify-between">
+    <div className="min-h-screen bg-transparent text-on-background p-4 md:p-6 flex flex-col items-center relative">
+      <MatchAtmosphereBackground
+        sportType={match.sport_type}
+        mode={canEdit ? "umpire" : "spectator"}
+      />
+      <div className="w-full max-w-5xl mb-6 flex items-center justify-between relative z-10">
         <button 
           onClick={() => router.push(`/match/${matchIdStr}`)}
           className="text-slate-500 hover:text-indigo-300 text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all cursor-pointer"
@@ -104,39 +109,41 @@ function ScoreboardContent() {
         <OfflineSyncBadge matchId={matchIdStr} />
       </div>
 
-      {match.sport_type === 'Basketball' && (
-        <BasketballScoreboard 
-          matchData={match} 
-          canEdit={canEdit} 
-          rules={rules} 
-        />
-      )}
+      <div className="w-full max-w-5xl relative z-10 flex flex-col items-center">
+        {match.sport_type === 'Basketball' && (
+          <BasketballScoreboard 
+            matchData={match} 
+            canEdit={canEdit} 
+            rules={rules} 
+          />
+        )}
 
-      {match.sport_type === 'Football' && (
-        <FootballScoreboard 
-          matchData={match} 
-          canEdit={canEdit} 
-        />
-      )}
+        {match.sport_type === 'Football' && (
+          <FootballScoreboard 
+            matchData={match} 
+            canEdit={canEdit} 
+          />
+        )}
 
-      {(match.sport_type === 'Tennis' || match.sport_type === 'Padel') && (
-        <TennisScoreboard 
-          matchData={match} 
-          rules={rules}
-          canEdit={canEdit} 
-        />
-      )}
+        {(match.sport_type === 'Tennis' || match.sport_type === 'Padel') && (
+          <TennisScoreboard 
+            matchData={match} 
+            rules={rules}
+            canEdit={canEdit} 
+          />
+        )}
 
-      {match.sport_type !== 'Basketball' && 
-       match.sport_type !== 'Football' && 
-       match.sport_type !== 'Tennis' && 
-       match.sport_type !== 'Padel' && (
-        <VolleyballScoreboard 
-          matchData={match} 
-          rules={rules} 
-          canEdit={canEdit} 
-        />
-      )}
+        {match.sport_type !== 'Basketball' && 
+         match.sport_type !== 'Football' && 
+         match.sport_type !== 'Tennis' && 
+         match.sport_type !== 'Padel' && (
+          <VolleyballScoreboard 
+            matchData={match} 
+            rules={rules} 
+            canEdit={canEdit} 
+          />
+        )}
+      </div>
     </div>
   );
 }

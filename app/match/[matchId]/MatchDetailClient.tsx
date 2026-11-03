@@ -13,6 +13,7 @@ import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import { FollowButton } from "@/components/FollowButton";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
+import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
 
 const getStatusTranslation = (status: string, t: (key: string, p?: any) => string) => {
   switch (status) {
@@ -520,8 +521,9 @@ export default function MatchDetailClient() {
   const backTab = match.group_label ? 'group_matches' : 'bracket';
 
   return (
-    <div className="min-h-screen bg-surface text-on-surface px-4 sm:px-6 py-8 flex flex-col items-center">
-      <div className="w-full max-w-4xl">
+    <div className="min-h-screen bg-transparent text-on-surface px-4 sm:px-6 py-8 flex flex-col items-center relative">
+      <MatchAtmosphereBackground sportType={match.sport_type} mode="spectator" />
+      <div className="w-full max-w-4xl relative z-10">
         <div className="mb-6">
           <Link
             href={match.tournament_id ? `/tournament/${match.tournament_id}?tab=${backTab}` : "/my-matches"}
