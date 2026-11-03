@@ -166,6 +166,14 @@ export interface Translations {
     options: string;
     shareLink: string;
     linkCopied: string;
+    streamOverlay: string;
+    streamOverlayCopied: string;
+    streamOverlayTitle: string;
+    streamOverlayDesc: string;
+    streamOverlayInstructions: string;
+    streamOverlayResolutionHint: string;
+    streamOverlayCopyBtn: string;
+    streamOverlayPreview: string;
     deleteMatch: string;
     deleteMatchConfirm: string;
     lockedTournamentMatch: string;

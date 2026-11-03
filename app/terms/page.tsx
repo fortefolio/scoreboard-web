@@ -92,8 +92,8 @@ export default function TermsPage() {
               <li>
                 <strong>{isPt ? "Plano Pro Organizador:" : "Pro Organizer Plan:"}</strong>{" "}
                 {isPt
-                  ? "Criação ilimitada de torneios (fase de grupos, eliminatórias simples e duplas), atribuição oficial de árbitros, personalização de patrocinadores e logótipos e exportação de resultados em PDF/CSV."
-                  : "Unlimited tournament creation (Group stages, single/double knockout brackets), referee delegation, sponsor branding, and PDF/CSV standings exports."}
+                  ? "Criação ilimitada de torneios (fase de grupos, eliminatórias simples e duplas), atribuição oficial de árbitros, personalização de patrocinadores e logótipos, marcador limpo em tempo real para transmissões em direto (OBS / vMix) e exportação de resultados em PDF/CSV."
+                  : "Unlimited tournament creation (Group stages, single/double knockout brackets), referee delegation, sponsor branding, real-time clean broadcast scoreboard overlay for live streams (OBS / vMix), and PDF/CSV standings exports."}
               </li>
             </ul>
           </section>

@@ -14,6 +14,8 @@ import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import { FollowButton } from "@/components/FollowButton";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
+import StreamOverlayModal from "@/components/match/StreamOverlayModal";
+import UpgradeModal from "@/components/subscription/UpgradeModal";
 
 const getStatusTranslation = (status: string, t: (key: string, p?: any) => string) => {
   switch (status) {
@@ -135,6 +137,9 @@ export default function MatchDetailClient() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDetailTab, setActiveDetailTab] = useState<"progress" | "rules" | "official">("progress");
   const [isChangingUmpire, setIsChangingUmpire] = useState(false);
+  const [isStreamModalOpen, setIsStreamModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
   const menuRef = useRef<HTMLDivElement>(null);
 
   const isOrganizer = Boolean(
@@ -168,6 +173,14 @@ export default function MatchDetailClient() {
     }));
   };
 
+  const handleOpenStreamOverlay = () => {
+    if (canManageOfficial || subscriptionTier === "pro") {
+      setIsStreamModalOpen(true);
+    } else {
+      setIsUpgradeModalOpen(true);
+    }
+  };
+
   // Search state
   const [userSearch, setUserSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -188,6 +201,17 @@ export default function MatchDetailClient() {
       console.log("Fetching match for ID:", matchIdStr);
       const { data: { user: currUser } } = await supabase.auth.getUser();
       setUser(currUser);
+
+      if (currUser) {
+        const { data: uTierData } = await supabase
+          .from("users")
+          .select("subscription_tier")
+          .eq("id", currUser.id)
+          .maybeSingle();
+        if (uTierData?.subscription_tier) {
+          setSubscriptionTier(uTierData.subscription_tier);
+        }
+      }
 
       // Fetch match and tournament first
       const { data: mData, error: mError } = await supabase
@@ -620,6 +644,22 @@ export default function MatchDetailClient() {
                   >
                     <span className="material-symbols-outlined text-[18px] text-primary">share</span>
                     {t("match.shareLink")}
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      handleOpenStreamOverlay();
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-xs font-bold text-on-surface hover:bg-white/10 flex items-center gap-2.5 transition-colors cursor-pointer border-t border-white/5"
+                  >
+                    <span className="material-symbols-outlined text-[18px] text-indigo-400">podcasts</span>
+                    <span className="flex-1">{t("match.streamOverlay")}</span>
+                    {subscriptionTier !== "pro" && !canManageOfficial && (
+                      <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">
+                        PRO
+                      </span>
+                    )}
                   </button>
 
                   {isOrganizer && (
@@ -1880,6 +1920,19 @@ export default function MatchDetailClient() {
         message={t("match.deleteMatchConfirm")}
         confirmText={t("match.deleteMatch")}
         isDanger={true}
+      />
+
+      <StreamOverlayModal
+        isOpen={isStreamModalOpen}
+        onClose={() => setIsStreamModalOpen(false)}
+        matchId={matchIdStr}
+      />
+
+      <UpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        isAlreadyPro={subscriptionTier === "pro"}
+        source="stream_overlay"
       />
     </div>
   );

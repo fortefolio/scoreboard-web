@@ -10,9 +10,10 @@ interface UpgradeModalProps {
   onClose: () => void;
   onSuccess?: () => void;
   isAlreadyPro?: boolean;
+  source?: string;
 }
 
-export default function UpgradeModal({ isOpen, onClose, onSuccess, isAlreadyPro = false }: UpgradeModalProps) {
+export default function UpgradeModal({ isOpen, onClose, onSuccess, isAlreadyPro = false, source }: UpgradeModalProps) {
   const { t, locale } = useTranslation();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("annual");
   const [loadingCheckout, setLoadingCheckout] = useState(false);
@@ -214,7 +215,7 @@ export default function UpgradeModal({ isOpen, onClose, onSuccess, isAlreadyPro 
             isPt ? "Fases de grupos + fases a eliminar automatizadas" : "Group stages + knockout brackets support",
             isPt ? "Atribuição e nomeação de árbitros oficiais" : "Official referee & umpire assignments",
             isPt ? "Exportação de resultados e classificações (PDF / CSV)" : "Export fixtures & standings (PDF / CSV)",
-            isPt ? "Acompanhamento e notificações em tempo real" : "Real-time match tracking & instant score updates",
+            isPt ? "Marcador limpo para transmissões em direto (OBS / vMix)" : "Clean broadcast scoreboard overlay for live streams (OBS / vMix)",
           ].map((feature, i) => (
             <div key={i} className="flex items-center gap-2.5 text-xs text-slate-300">
               <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 font-bold text-[10px]">

@@ -11,6 +11,7 @@ import VolleyballScoreboard from "./VolleyballScoreboard";
 import FootballScoreboard from "./FootballScoreboard";
 import BasketballScoreboard from "./BasketballScoreboard";
 import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
+import StreamOverlayModal from "@/components/match/StreamOverlayModal";
 
 function ScoreboardContent() {
   const { matchId } = useParams();
@@ -19,8 +20,9 @@ function ScoreboardContent() {
   const [rules, setRules] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
   const [canEdit, setCanEdit] = useState(false);
+  const [isStreamModalOpen, setIsStreamModalOpen] = useState(false);
 
-  const matchIdStr = Array.isArray(matchId) ? matchId[0] : matchId;
+  const matchIdStr = (Array.isArray(matchId) ? matchId[0] : matchId) || "";
 
   useEffect(() => {
     const fetchAll = async () => {
@@ -106,7 +108,17 @@ function ScoreboardContent() {
           <span className="material-symbols-outlined text-sm">arrow_back</span>
           Match Overview
         </button>
-        <OfflineSyncBadge matchId={matchIdStr} />
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setIsStreamModalOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+            title="OBS / vMix Overlay"
+          >
+            <span className="material-symbols-outlined text-[16px]">podcasts</span>
+            <span>OBS Overlay</span>
+          </button>
+          <OfflineSyncBadge matchId={matchIdStr} />
+        </div>
       </div>
 
       <div className="w-full max-w-5xl relative z-10 flex flex-col items-center">
@@ -144,6 +156,12 @@ function ScoreboardContent() {
           />
         )}
       </div>
+
+      <StreamOverlayModal
+        isOpen={isStreamModalOpen}
+        onClose={() => setIsStreamModalOpen(false)}
+        matchId={matchIdStr}
+      />
     </div>
   );
 }
