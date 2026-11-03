@@ -92,63 +92,49 @@ export default function TopNavBar() {
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 transition-all duration-300 ease-out border-b border-white/5">
-      <div className="flex justify-between items-center px-4 sm:px-8 py-3.5 max-w-7xl mx-auto font-headline tracking-tight gap-4">
-        <Link href="/" className="text-3xl sm:text-4xl font-digital text-white tracking-tighter hover:scale-105 transition-transform shrink-0">
+      <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto font-headline tracking-tight">
+        <Link href="/" className="text-4xl font-digital text-white tracking-tighter hover:scale-105 transition-transform">
           SCORE:BOARD
         </Link>
 
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto py-1">
+        {/* Navigation Links */}
+        <div className="flex gap-4 md:gap-8 items-center">
           {hasMounted && (
             <>
               <Link
                 href="/?tab=matches"
                 scroll={false}
-                className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full font-label text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+                className={`transition-colors transition-all duration-300 ease-out active:scale-95 text-[10px] md:text-sm font-black uppercase tracking-widest ${
                   isMatchesActive
-                    ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
-                    : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border border-white/5"
+                    ? "text-white"
+                    : "text-slate-400 hover:text-white"
                 }`}
               >
-                <span className="material-symbols-outlined text-[16px]">sports</span>
-                <span>
-                  {t("home.matchesTab")} ({counts.matches})
-                </span>
+                {t("home.matchesTab")} ({counts.matches})
               </Link>
 
               <Link
                 href="/?tab=tournaments"
                 scroll={false}
-                className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full font-label text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+                className={`transition-colors transition-all duration-300 ease-out active:scale-95 text-[10px] md:text-sm font-black uppercase tracking-widest ${
                   isTournamentsActive
-                    ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
-                    : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border border-white/5"
+                    ? "text-white"
+                    : "text-slate-400 hover:text-white"
                 }`}
               >
-                <span className="material-symbols-outlined text-[16px]">emoji_events</span>
-                <span>
-                  {t("home.tournamentsTab")} ({counts.tournaments})
-                </span>
+                {t("home.tournamentsTab")} ({counts.tournaments})
               </Link>
 
               <Link
                 href="/?tab=following"
                 scroll={false}
-                className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full font-label text-[11px] sm:text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+                className={`transition-colors transition-all duration-300 ease-out active:scale-95 text-[10px] md:text-sm font-black uppercase tracking-widest ${
                   isFollowingActive
-                    ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-lg shadow-amber-500/10"
-                    : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container border border-white/5"
+                    ? "text-white"
+                    : "text-slate-400 hover:text-white"
                 }`}
               >
-                <span
-                  className="material-symbols-outlined text-[16px] text-amber-400"
-                  style={{ fontVariationSettings: isFollowingActive ? "'FILL' 1" : undefined }}
-                >
-                  star
-                </span>
-                <span>
-                  {t("home.followingTab")} {user ? `(${totalFollowedCount})` : ""}
-                </span>
+                {t("home.followingTab")}{user ? ` (${totalFollowedCount})` : ""}
               </Link>
             </>
           )}
