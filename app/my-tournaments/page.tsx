@@ -5,6 +5,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
+import UpgradeModal from "@/components/subscription/UpgradeModal";
 
 export default function MyTournamentsPage() {
   const { user, supabase } = useAuth();
@@ -13,6 +14,8 @@ export default function MyTournamentsPage() {
   const [loading, setLoading] = useState(true);
 
   const [showModal, setShowModal] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
   const [newName, setNewName] = useState("");
   const [newSport, setNewSport] = useState("Tennis");
   const [stage1Type, setStage1Type] = useState<'bracket' | 'groups' | 'double_elimination'>('bracket');
@@ -23,12 +26,21 @@ export default function MyTournamentsPage() {
 
   const fetchTournaments = useCallback(async (userId: string) => {
     setLoading(true);
-    const { data } = await supabase
-      .from("tournaments")
-      .select("*")
-      .eq("organizer_id", userId)
-      .order("created_at", { ascending: false });
-    if (data) setTournaments(data);
+    const [tRes, uRes] = await Promise.all([
+      supabase
+        .from("tournaments")
+        .select("*")
+        .eq("organizer_id", userId)
+        .order("created_at", { ascending: false }),
+      supabase
+        .from("users")
+        .select("subscription_tier")
+        .eq("id", userId)
+        .maybeSingle()
+    ]);
+
+    if (tRes.data) setTournaments(tRes.data);
+    if (uRes.data?.subscription_tier) setSubscriptionTier(uRes.data.subscription_tier);
     setLoading(false);
   }, [supabase]);
 
@@ -40,9 +52,26 @@ export default function MyTournamentsPage() {
     fetchTournaments(user.id);
   }, [user, fetchTournaments]);
 
+  const handleOpenCreate = () => {
+    if (!user) {
+      toast.error("Please log in to create an event.");
+      return;
+    }
+    if (subscriptionTier !== "pro") {
+      setShowUpgradeModal(true);
+    } else {
+      setShowModal(true);
+    }
+  };
+
   const handleCreate = async () => {
     if (!user) {
       toast.error("Authentication required. Please wait for the page to finish loading.");
+      return;
+    }
+    if (subscriptionTier !== "pro") {
+      setShowModal(false);
+      setShowUpgradeModal(true);
       return;
     }
     if (!newName) {
@@ -132,8 +161,8 @@ export default function MyTournamentsPage() {
           <p className="text-on-surface-variant text-xl max-w-xl">Manage your active events and create new competitions.</p>
         </div>
         <button 
-          onClick={() => setShowModal(true)}
-          className="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-2"
+          onClick={handleOpenCreate}
+          className="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-2 cursor-pointer"
         >
           <span className="material-symbols-outlined">add</span>
           New Tournament
@@ -178,7 +207,7 @@ export default function MyTournamentsPage() {
           
           {tournaments.length === 0 && (
             <div 
-              onClick={() => setShowModal(true)}
+              onClick={handleOpenCreate}
               className="border-2 border-dashed border-outline-variant/20 rounded-[2.5rem] p-12 flex flex-col items-center justify-center text-on-surface-variant hover:border-primary/40 hover:text-primary transition-all bg-surface-container-low/30 cursor-pointer h-full min-h-[300px]"
             >
               <span className="material-symbols-outlined text-4xl mb-4">add_circle</span>
@@ -188,6 +217,16 @@ export default function MyTournamentsPage() {
           )}
         </div>
       )}
+
+      {/* UPGRADE / PAYWALL MODAL */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onSuccess={() => {
+          setSubscriptionTier("pro");
+          setShowModal(true);
+        }}
+      />
 
       {/* CREATE MODAL */}
       {showModal && (

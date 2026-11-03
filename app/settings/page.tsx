@@ -7,6 +7,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 import { Locale } from "@/lib/i18n/types";
 import { toast } from "sonner";
+import UpgradeModal from "@/components/subscription/UpgradeModal";
 
 type TabType = "profile" | "preferences" | "security" | "danger";
 
@@ -30,6 +31,9 @@ export default function SettingsPage() {
   const [displayName, setDisplayName] = useState("");
   const [initialDisplayName, setInitialDisplayName] = useState("");
   const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
+  const [subDetails, setSubDetails] = useState<any>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [openingPortal, setOpeningPortal] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
 
   // Preferences Tab State
@@ -81,6 +85,14 @@ export default function SettingsPage() {
           setDefaultSport(prefs.default_sport || "all");
           setSoundEnabled(prefs.sound_enabled !== false);
         }
+
+        const { data: subData } = await supabase.rpc("get_my_subscription");
+        if (subData) {
+          setSubDetails(subData);
+          if (subData.tier) {
+            setSubscriptionTier(subData.tier);
+          }
+        }
       } catch (e) {
         console.error("Error fetching settings:", e);
       } finally {
@@ -89,7 +101,54 @@ export default function SettingsPage() {
     };
 
     fetchUserProfile();
-  }, [user?.id, supabase]);
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("checkout") === "success") {
+        toast.success(
+          locale === "pt"
+            ? "Bem-vindo ao ScoreBoard Pro Organizer!"
+            : "Welcome to ScoreBoard Pro Organizer!"
+        );
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    }
+  }, [user?.id, supabase, locale]);
+
+  const handleOpenBillingPortal = async () => {
+    try {
+      setOpeningPortal(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error(locale === "pt" ? "Inicie sessão primeiro" : "Please log in first");
+        return;
+      }
+
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+      const res = await fetch(`${supabaseUrl}/functions/v1/create-portal-session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          returnUrl: window.location.origin,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data?.url) {
+        throw new Error(data?.error || "Failed to load billing portal");
+      }
+
+      window.location.href = data.url;
+    } catch (err: any) {
+      console.error("Portal error:", err);
+      toast.error(err.message || (locale === "pt" ? "Erro ao abrir portal de pagamentos" : "Error opening billing portal"));
+    } finally {
+      setOpeningPortal(false);
+    }
+  };
 
   // Tab 1: Handle Profile Save
   const handleSaveProfile = async (e: React.FormEvent) => {
@@ -440,15 +499,67 @@ export default function SettingsPage() {
                 <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
                   {t("settings.profile.tier")}
                 </label>
-                <div className="inline-flex items-center gap-3 px-5 py-3 bg-surface-container rounded-2xl border border-outline-variant/10">
-                  <span
-                    className={`w-2.5 h-2.5 rounded-full ${
-                      subscriptionTier === "pro" ? "bg-emerald-400" : "bg-indigo-400"
-                    }`}
-                  />
-                  <span className="text-xs font-black uppercase tracking-widest text-on-surface">
-                    {subscriptionTier.toUpperCase()} PLAN
-                  </span>
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="inline-flex items-center gap-3 px-5 py-3 bg-surface-container rounded-2xl border border-outline-variant/10">
+                    <span
+                      className={`w-2.5 h-2.5 rounded-full ${
+                        subscriptionTier === "pro" ? "bg-emerald-400" : "bg-indigo-400"
+                      }`}
+                    />
+                    <span className="text-xs font-black uppercase tracking-widest text-on-surface">
+                      {subscriptionTier.toUpperCase()} PLAN
+                    </span>
+                  </div>
+
+                  {subscriptionTier === "free" ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowUpgradeModal(true)}
+                      className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase tracking-widest px-5 py-3 rounded-2xl shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                    >
+                      ⭐ {locale === "pt" ? "Aderir ao Pro Organizer (€3.99/mês)" : "Upgrade to Pro (€3.99/mo)"}
+                    </button>
+                  ) : subDetails?.provider === "stripe" ? (
+                    <button
+                      type="button"
+                      onClick={handleOpenBillingPortal}
+                      disabled={openingPortal}
+                      className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-2xl border border-slate-700 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 active:scale-95"
+                    >
+                      {openingPortal ? (
+                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <span>💳 {locale === "pt" ? "Gerir Faturação / Cancelar" : "Manage Billing & Cards"}</span>
+                      )}
+                    </button>
+                  ) : subDetails?.provider === "voucher" ? (
+                    <div className="flex items-center gap-3 bg-surface-container/60 px-4 py-2.5 rounded-2xl border border-emerald-500/20">
+                      <div className="text-xs">
+                        <span className="text-emerald-400 font-bold">🎟️ {locale === "pt" ? "Ativo via Voucher" : "Active via Club Voucher"}</span>
+                        {subDetails.current_period_end && (
+                          <span className="block text-[10px] text-slate-400">
+                            {locale === "pt" ? "Válido até: " : "Valid until: "}
+                            {new Date(subDetails.current_period_end).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowUpgradeModal(true)}
+                        className="text-[11px] text-indigo-400 hover:text-indigo-300 underline font-medium cursor-pointer ml-2"
+                      >
+                        {locale === "pt" ? "Ativar outro" : "Redeem another"}
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setShowUpgradeModal(true)}
+                      className="text-xs text-indigo-400 hover:text-indigo-300 underline font-medium cursor-pointer"
+                    >
+                      {locale === "pt" ? "Ativar voucher ou gerir" : "Redeem voucher or manage"}
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -677,6 +788,15 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+
+      {/* UPGRADE / PAYWALL MODAL */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onSuccess={() => {
+          setSubscriptionTier("pro");
+        }}
+      />
     </div>
   );
 }
