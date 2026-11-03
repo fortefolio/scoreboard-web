@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/AuthProvider";
 import { toast } from "sonner";
 import RuleModal from "@/components/RuleModal";
 import ConfirmationModal from "@/components/ConfirmationModal";
@@ -119,11 +120,12 @@ export default function MatchDetailClient() {
   const { matchId } = useParams();
   const matchIdStr = (Array.isArray(matchId) ? matchId[0] : matchId) || "";
   const router = useRouter();
+  const { user: authUser, supabase: authSupabase } = useAuth();
+  const activeSupabase = authSupabase || supabase;
   const [match, setMatch] = useState<any>(null);
   const [rules, setRules] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
-  const [canStart, setCanStart] = useState(false);
-  const [isOrganizer, setIsOrganizer] = useState(false);
+  const currentUser = authUser || user;
   const [loading, setLoading] = useState(true);
   const [isRuleModalOpen, setIsRuleModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -131,7 +133,18 @@ export default function MatchDetailClient() {
   const [matchEvents, setMatchEvents] = useState<any[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDetailTab, setActiveDetailTab] = useState<"progress" | "rules" | "official">("progress");
+  const [isChangingUmpire, setIsChangingUmpire] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  const isOrganizer = Boolean(
+    currentUser && (
+      currentUser.id === match?.organizer_id ||
+      currentUser.id === match?.tournaments?.organizer_id
+    )
+  );
+  const isUmpire = Boolean(currentUser && match?.umpire_id === currentUser.id);
+  const canManageOfficial = Boolean(isOrganizer || isUmpire);
+  const canStart = Boolean(isOrganizer || isUmpire);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -279,16 +292,6 @@ export default function MatchDetailClient() {
 
         setRules(resolvedRules);
         
-        // Only the invited umpire can start the scoreboard
-        const isUmpire = currUser?.id === mData.umpire_id;
-        setCanStart(isUmpire);
-        const isMatchOrganizer = Boolean(
-          currUser && (
-            currUser.id === mData.organizer_id ||
-            currUser.id === mData.tournaments?.organizer_id
-          )
-        );
-        setIsOrganizer(isMatchOrganizer);
       }
       setLoading(false);
     };
@@ -386,19 +389,35 @@ export default function MatchDetailClient() {
     return () => clearTimeout(debounceTimer);
   }, [userSearch]);
 
-  const appointUmpire = async (selectedUser: any) => {
-    const { error } = await supabase
-      .from("matches")
-      .update({ umpire_id: selectedUser.id })
-      .eq("id", matchIdStr);
+  const appointUmpire = async (selectedUser: any | null) => {
+    const newUmpireId = selectedUser ? selectedUser.id : null;
+    try {
+      const { error } = await activeSupabase.rpc("appoint_match_umpire", {
+        p_match_id: matchIdStr,
+        p_new_umpire_id: newUmpireId,
+      });
 
-    if (error) {
-      toast.error("Failed to appoint umpire: " + error.message);
-    } else {
-      setMatch({ ...match, umpire_id: selectedUser.id, umpire: selectedUser });
-      setUserSearch("");
-      setSearchResults([]);
-      toast.success(`${selectedUser.username} appointed as umpire!`);
+      if (error) {
+        toast.error("Failed to update referee: " + error.message);
+      } else {
+        setMatch((prev: any) => ({
+          ...prev,
+          umpire_id: newUmpireId,
+          umpire: selectedUser,
+          umpire_invite_status: newUmpireId && newUmpireId === currentUser?.id ? "accepted" : "pending",
+        }));
+        setIsChangingUmpire(false);
+        setUserSearch("");
+        setSearchResults([]);
+        if (selectedUser) {
+          const name = selectedUser.username || selectedUser.display_name || "Official";
+          toast.success(`${name} ${locale === "pt" ? "designado como árbitro!" : "appointed as referee!"}`);
+        } else {
+          toast.success(t("match.umpireUnassigned"));
+        }
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to update referee");
     }
   };
   const handleSaveRules = async (
@@ -1651,11 +1670,24 @@ export default function MatchDetailClient() {
         {/* TAB 3: MATCH OFFICIAL */}
         {activeDetailTab === "official" && (
           <div className="w-full bg-surface-container-low rounded-3xl p-6 sm:p-8 border border-white/5 shadow-xl">
-            <div className="flex items-center gap-2 mb-5">
-              <span className="material-symbols-outlined text-primary text-[20px]">gavel</span>
-              <h3 className="font-headline font-bold text-sm">{t("match.matchOfficial")}</h3>
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary text-[20px]">gavel</span>
+                <h3 className="font-headline font-bold text-sm">{t("match.matchOfficial")}</h3>
+              </div>
+              {canManageOfficial && !isChangingUmpire && (
+                <button
+                  type="button"
+                  onClick={() => setIsChangingUmpire(true)}
+                  className="px-3.5 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-label text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                >
+                  <span className="material-symbols-outlined text-[16px]">swap_horiz</span>
+                  {t("match.changeReferee")}
+                </button>
+              )}
             </div>
 
+            {/* Current Umpire Card */}
             {match.umpire ? (
               <div className="bg-surface-container rounded-2xl p-4 flex items-center gap-3">
                 <div className="w-11 h-11 rounded-full bg-primary-container/30 flex items-center justify-center shrink-0">
@@ -1663,39 +1695,87 @@ export default function MatchDetailClient() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-headline font-bold text-sm text-on-surface truncate">
-                    {match.umpire.username || "Unknown"}
+                    {match.umpire.username || match.umpire.display_name || "Official"}
                   </p>
                   <p className="font-label text-[9px] font-black uppercase tracking-[0.18em] text-on-surface-variant/60">
                     {t("match.officialUmpire")}
+                    {currentUser?.id === match.umpire.id && ` (${locale === "pt" ? "Você" : "You"})`}
                   </p>
                 </div>
                 <span className="material-symbols-outlined text-secondary text-[20px]" aria-hidden>check_circle</span>
-                {isOrganizer && (
+                {canManageOfficial && (
                   <button
-                    onClick={async () => {
-                      const { error } = await supabase.from("matches").update({ umpire_id: null }).eq("id", matchIdStr);
-                      if (!error) {
-                        setMatch({ ...match, umpire_id: null, umpire: null });
-                        toast.success(t("match.umpireUnassigned"));
-                      } else {
-                        toast.error("Error unassigning: " + error.message);
-                      }
-                    }}
-                    className="p-1.5 -mr-1 rounded-lg text-on-surface-variant/40 hover:text-error hover:bg-error-container/20 transition-all cursor-pointer"
-                    title={t("match.unassignUmpire")}
+                    type="button"
+                    onClick={() => setIsChangingUmpire(!isChangingUmpire)}
+                    className="p-2 ml-1 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-all cursor-pointer"
+                    title={t("match.changeReferee")}
                   >
-                    <span className="material-symbols-outlined text-[18px]">person_remove</span>
+                    <span className="material-symbols-outlined text-[18px]">edit</span>
                   </button>
                 )}
               </div>
-            ) : isOrganizer ? (
-              <div className="space-y-3">
+            ) : (
+              <div className="bg-surface-container rounded-2xl p-5 text-center">
+                <p className="font-label text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/60 mb-2">
+                  {t("match.noUmpireAssigned")}
+                </p>
+                {canManageOfficial && !isChangingUmpire && (
+                  <button
+                    type="button"
+                    onClick={() => setIsChangingUmpire(true)}
+                    className="mt-2 px-4 py-2 rounded-full bg-primary-container text-on-primary-container text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all inline-flex items-center gap-1.5 cursor-pointer shadow-md shadow-primary/20"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">person_add</span>
+                    {t("match.appointOtherReferee")}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* CHANGE / APPOINT REFEREE PANEL */}
+            {(isChangingUmpire || (!match.umpire && canManageOfficial)) && (
+              <div className="mt-4 p-5 rounded-2xl bg-surface-container/70 border border-outline-variant/10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="font-label text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+                    {t("match.appointOtherRefereeUpper")}
+                  </span>
+                  {match.umpire && (
+                    <button
+                      type="button"
+                      onClick={() => setIsChangingUmpire(false)}
+                      className="text-xs text-on-surface-variant/60 hover:text-on-surface font-bold uppercase tracking-wider cursor-pointer"
+                    >
+                      {locale === "pt" ? "Cancelar" : "Cancel"}
+                    </button>
+                  )}
+                </div>
+
+                {/* Quick Action: Assign Myself as Referee */}
+                {currentUser && match.umpire_id !== currentUser.id && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      appointUmpire({
+                        id: currentUser.id,
+                        username: currentUser.user_metadata?.username || currentUser.email?.split("@")[0] || "Me",
+                      })
+                    }
+                    className="w-full py-2.5 px-4 rounded-xl bg-primary-container/20 hover:bg-primary-container/30 border border-primary/30 text-primary font-headline font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99]"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
+                    {t("match.assignMyselfAsReferee")}
+                  </button>
+                )}
+
+                {/* Search Umpires Input */}
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 text-[18px]">person_search</span>
+                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 text-[18px]">
+                    person_search
+                  </span>
                   <input
                     type="text"
                     placeholder={t("match.searchUmpirePlaceholder")}
-                    className="w-full pl-11 pr-10 py-3 bg-surface-container rounded-2xl text-sm font-body text-on-surface outline-none placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary-container/50 transition-all"
+                    className="w-full pl-11 pr-10 py-3 bg-surface-container rounded-2xl text-sm font-body text-on-surface outline-none placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary-container/50 transition-all border border-white/5"
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
                   />
@@ -1704,28 +1784,46 @@ export default function MatchDetailClient() {
                       <div className="w-3 h-3 border-2 border-primary-container border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
+
                   {searchResults.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-surface-container-high rounded-2xl shadow-2xl shadow-black/40 z-50 overflow-hidden">
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-surface-container-high rounded-2xl shadow-2xl shadow-black/50 border border-white/10 z-50 overflow-hidden divide-y divide-white/5">
                       {searchResults.map((u) => (
                         <button
                           key={u.id}
+                          type="button"
                           onClick={() => appointUmpire(u)}
-                          className="w-full px-4 py-3 text-left hover:bg-primary-container/20 transition-colors flex flex-col cursor-pointer"
+                          className="w-full px-4 py-3 text-left hover:bg-primary-container/20 transition-colors flex items-center justify-between cursor-pointer"
                         >
-                          <span className="font-headline font-bold text-sm text-on-surface">{u.username || "No Name"}</span>
-                          <span className="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60 truncate">{u.email}</span>
+                          <div className="flex flex-col">
+                            <span className="font-headline font-bold text-sm text-on-surface">
+                              {u.username || "No Name"}
+                            </span>
+                            <span className="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60 truncate">
+                              {u.email}
+                            </span>
+                          </div>
+                          <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                            Select
+                          </span>
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
-                <p className="font-label text-[10px] font-black uppercase tracking-[0.18em] text-tertiary">{t("match.noUmpireAssigned")}</p>
-              </div>
-            ) : (
-              <div className="bg-surface-container rounded-2xl p-5 text-center">
-                <p className="font-label text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/60">
-                  {t("match.awaitingUmpire")}
-                </p>
+
+                {/* Unassign Option */}
+                {match.umpire && (
+                  <div className="pt-2 border-t border-white/5 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => appointUmpire(null)}
+                      className="text-xs text-error hover:text-error/80 font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer py-1"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">person_remove</span>
+                      {t("match.unassignUmpire")}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

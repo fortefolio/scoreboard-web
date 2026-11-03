@@ -229,6 +229,9 @@ export interface Translations {
     organizerDefaultReferee: string;
     appointOtherReferee: string;
     appointOtherRefereeUpper: string;
+    changeReferee: string;
+    assignMyselfAsReferee: string;
+    stepDownAsReferee: string;
     noName: string;
     noPointsRecorded: string;
     pointRecordedFor: string;
