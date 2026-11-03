@@ -32,11 +32,7 @@ export default function MatchOverlayClient() {
     const fetchMatch = async () => {
       const { data, error } = await supabase
         .from("matches")
-        .select(`
-          *,
-          tournaments (name),
-          participants:match_participants (id, name, is_team)
-        `)
+        .select("*, tournaments(*)")
         .eq("id", matchIdStr)
         .maybeSingle();
 

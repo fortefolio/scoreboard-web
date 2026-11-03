@@ -11,10 +11,10 @@ const nextConfig: NextConfig = {
    */
   cacheComponents: true,
 
-  /* * Allow 127.0.0.1 as a dev origin so Playwright (which uses 127.0.0.1)
+  /* * Allow 127.0.0.1 and localhost as dev origins so Playwright and local browser
    * can load HMR / RSC chunks without being blocked. No effect in prod.
    */
-  allowedDevOrigins: ["127.0.0.1"],
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
 
   images: {
     /* * Cloudflare Pages does not support the default Node.js image resizer.
