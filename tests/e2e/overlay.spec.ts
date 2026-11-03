@@ -56,4 +56,26 @@ test.describe("Broadcast Scoreboard Overlay E2E", () => {
     await expect(page.getByText(/Padel/i)).toBeVisible();
     expect(pageErrors).toEqual([]);
   });
+
+  test("renders scoreboard page with Material Symbols icons properly loaded", async ({ page }) => {
+    const pageErrors: Error[] = [];
+    page.on("pageerror", (error) => pageErrors.push(error));
+
+    const matchId = "71d69be5-7caa-4684-80dc-203681925047";
+    await page.goto(`/match/${matchId}/scoreboard`, {
+      waitUntil: "networkidle",
+    });
+
+    // Wait for the scoreboard and action elements
+    await expect(page.getByText(/A\. COELLO \/ A\. TAPIA/i).first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/A\. GALÁN \/ F\. CHINGOTTO/i).first()).toBeVisible({ timeout: 10_000 });
+
+    // Verify Material Symbols font is loaded and icons have class material-symbols-outlined
+    const iconElements = page.locator(".material-symbols-outlined");
+    await expect(iconElements.first()).toBeVisible();
+
+    expect(pageErrors).toEqual([]);
+
+    await page.screenshot({ path: "test-results/scoreboard-icons-verification.png" });
+  });
 });
