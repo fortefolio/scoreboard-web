@@ -9,14 +9,44 @@ import NotificationBell from "./NotificationBell";
 import LanguageSelector from "./LanguageSelector";
 
 export default function TopNavBar() {
-  const { user, signOut } = useAuth();
+  const { user, supabase, signOut } = useAuth();
   const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
+  const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (!user) {
+      setSubscriptionTier("free");
+      return;
+    }
+    let isMounted = true;
+    const fetchTier = async () => {
+      try {
+        const { data } = await supabase
+          .from("users")
+          .select("subscription_tier")
+          .eq("id", user.id)
+          .maybeSingle();
+
+        if (isMounted && data?.subscription_tier) {
+          setSubscriptionTier(data.subscription_tier);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    fetchTier();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user, supabase]);
 
   useEffect(() => {
     setHasMounted(true);
@@ -102,11 +132,18 @@ export default function TopNavBar() {
                 aria-label="User menu"
                 className="flex items-center gap-2 group focus:outline-none"
               >
-                <div className="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-black group-hover:border-indigo-400/50 transition-all overflow-hidden">
+                <div className={`relative w-10 h-10 rounded-full bg-indigo-500/20 border flex items-center justify-center text-indigo-300 font-black group-hover:border-indigo-400/50 transition-all ${
+                  subscriptionTier === "pro" ? "border-amber-400/70 shadow-sm shadow-amber-400/20" : "border-indigo-500/30"
+                }`}>
                   {user.user_metadata?.avatar_url ? (
-                    <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover rounded-full" />
                   ) : (
                     user.email?.charAt(0).toUpperCase()
+                  )}
+                  {subscriptionTier === "pro" && (
+                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center text-[8px] font-black shadow-md border border-slate-900" title="Pro Organizer">
+                      ★
+                    </span>
                   )}
                 </div>
                 <span className="material-symbols-outlined text-slate-400 group-hover:text-white transition-colors">
@@ -115,10 +152,27 @@ export default function TopNavBar() {
               </button>
 
               {isMenuOpen && (
-                <div className="absolute right-0 mt-3 w-48 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-[110] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 mt-3 w-52 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-[110] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                   <div className="p-4 border-b border-slate-800 bg-slate-900/50">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">{t("nav.signedInAs")}</p>
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t("nav.signedInAs")}</p>
+                      {subscriptionTier === "pro" ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                          PRO
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700">
+                          FREE
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs font-bold text-white truncate">{user.email}</p>
+                    {subscriptionTier === "pro" && (
+                      <p className="text-[10px] font-bold text-amber-400/90 mt-1 flex items-center gap-1">
+                        <span>⭐</span> Pro Organizer
+                      </p>
+                    )}
                   </div>
                   <div className="p-2">
                     <button

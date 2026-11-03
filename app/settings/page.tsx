@@ -552,13 +552,21 @@ export default function SettingsPage() {
                       </button>
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => setShowUpgradeModal(true)}
-                      className="text-xs text-indigo-400 hover:text-indigo-300 underline font-medium cursor-pointer"
-                    >
-                      {locale === "pt" ? "Ativar voucher ou gerir" : "Redeem voucher or manage"}
-                    </button>
+                    <div className="flex items-center gap-3 bg-surface-container/60 px-4 py-2.5 rounded-2xl border border-indigo-500/20">
+                      <div className="text-xs">
+                        <span className="text-indigo-300 font-bold">⭐ {locale === "pt" ? "Acesso Pro Ativo" : "Active Pro Organizer"}</span>
+                        <span className="block text-[10px] text-slate-400">
+                          {locale === "pt" ? "Todas as ferramentas de torneios desbloqueadas" : "Full tournament & referee tools unlocked"}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowUpgradeModal(true)}
+                        className="text-[11px] text-indigo-400 hover:text-indigo-300 underline font-medium cursor-pointer ml-2"
+                      >
+                        {locale === "pt" ? "Resgatar voucher" : "Redeem voucher"}
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -787,12 +795,21 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
+
+        {/* Footer Legal Link */}
+        <div className="mt-8 pt-4 border-t border-outline-variant/10 flex justify-between items-center text-xs text-secondary">
+          <span>ScoreBoard</span>
+          <Link href="/terms" target="_blank" className="hover:text-primary transition-colors underline">
+            {locale === "pt" ? "Termos & Condições / Política RGPD" : "Terms & Conditions / GDPR Policy"}
+          </Link>
+        </div>
       </div>
 
       {/* UPGRADE / PAYWALL MODAL */}
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
+        isAlreadyPro={subscriptionTier === "pro"}
         onSuccess={() => {
           setSubscriptionTier("pro");
         }}

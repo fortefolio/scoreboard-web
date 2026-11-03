@@ -101,6 +101,17 @@ describe("UpgradeModal Component", () => {
     window.location.reload = originalReload;
   });
 
+  it("renders active pro status and direct voucher form when isAlreadyPro is true", () => {
+    render(<UpgradeModal isOpen={true} onClose={vi.fn()} isAlreadyPro={true} />);
+
+    expect(screen.getByText(/You Are On The Pro Plan/i)).toBeInTheDocument();
+    expect(screen.getByText(/Active Pro Subscription/i)).toBeInTheDocument();
+    // Does NOT render subscribe button or pricing
+    expect(screen.queryByRole("button", { name: /Subscribe with Stripe/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("€34.99")).not.toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/e\.g\. BETA-CLUB-60D/i)).toBeInTheDocument();
+  });
+
   it("calls onClose when close button is clicked", () => {
     const handleClose = vi.fn();
     render(<UpgradeModal isOpen={true} onClose={handleClose} />);
