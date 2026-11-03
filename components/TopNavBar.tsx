@@ -132,18 +132,11 @@ export default function TopNavBar() {
                 aria-label="User menu"
                 className="flex items-center gap-2 group focus:outline-none"
               >
-                <div className={`relative w-10 h-10 rounded-full bg-indigo-500/20 border flex items-center justify-center text-indigo-300 font-black group-hover:border-indigo-400/50 transition-all ${
-                  subscriptionTier === "pro" ? "border-amber-400/70 shadow-sm shadow-amber-400/20" : "border-indigo-500/30"
-                }`}>
+                <div className="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-black group-hover:border-indigo-400/50 transition-all overflow-hidden">
                   {user.user_metadata?.avatar_url ? (
-                    <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover rounded-full" />
+                    <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
                     user.email?.charAt(0).toUpperCase()
-                  )}
-                  {subscriptionTier === "pro" && (
-                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center text-[8px] font-black shadow-md border border-slate-900" title="Pro Organizer">
-                      ★
-                    </span>
                   )}
                 </div>
                 <span className="material-symbols-outlined text-slate-400 group-hover:text-white transition-colors">
@@ -168,11 +161,6 @@ export default function TopNavBar() {
                       )}
                     </div>
                     <p className="text-xs font-bold text-white truncate">{user.email}</p>
-                    {subscriptionTier === "pro" && (
-                      <p className="text-[10px] font-bold text-amber-400/90 mt-1 flex items-center gap-1">
-                        <span>⭐</span> Pro Organizer
-                      </p>
-                    )}
                   </div>
                   <div className="p-2">
                     <button
