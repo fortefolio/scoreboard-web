@@ -44,9 +44,29 @@ export default function MatchOverlayClient() {
 
     fetchMatch();
 
-    // Subscribe to live score updates
+    // Subscribe to live score updates via in-database Realtime Broadcast (sub-100ms, zero DB fetch)
     channel = supabase
-      .channel(`broadcast_overlay_${matchIdStr}`)
+      .channel(`match:${matchIdStr}`)
+      .on("broadcast", { event: "score_update" }, (response: any) => {
+        const payload = response?.payload;
+        if (payload?.match_id === matchIdStr && payload.scores) {
+          setMatch((prev: any) => ({
+            ...prev,
+            scores: payload.scores ?? prev?.scores,
+            status: payload.status ?? prev?.status,
+          }));
+        }
+      })
+      .on("broadcast", { event: "SCORE_UPDATED" }, (response: any) => {
+        const payload = response?.payload;
+        if (payload?.match_id === matchIdStr && payload.scores) {
+          setMatch((prev: any) => ({
+            ...prev,
+            scores: payload.scores ?? prev?.scores,
+            status: payload.status ?? prev?.status,
+          }));
+        }
+      })
       .on(
         "postgres_changes",
         {
@@ -55,8 +75,10 @@ export default function MatchOverlayClient() {
           table: "matches",
           filter: `id=eq.${matchIdStr}`,
         },
-        async () => {
-          fetchMatch();
+        (payload: any) => {
+          if (payload.new) {
+            setMatch((prev: any) => ({ ...prev, ...payload.new }));
+          }
         }
       )
       .subscribe();

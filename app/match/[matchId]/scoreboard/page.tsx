@@ -67,7 +67,27 @@ function ScoreboardContent() {
     const unsubSync = initOfflineNetworkSync(supabase);
 
     const channel = supabase
-      .channel(`match-${matchIdStr}`)
+      .channel(`match:${matchIdStr}`)
+      .on("broadcast", { event: "score_update" }, (response: any) => {
+        const payload = response?.payload;
+        if (payload?.match_id === matchIdStr && payload.scores) {
+          setMatch((prev: any) => ({
+            ...prev,
+            scores: payload.scores ?? prev?.scores,
+            status: payload.status ?? prev?.status,
+          }));
+        }
+      })
+      .on("broadcast", { event: "SCORE_UPDATED" }, (response: any) => {
+        const payload = response?.payload;
+        if (payload?.match_id === matchIdStr && payload.scores) {
+          setMatch((prev: any) => ({
+            ...prev,
+            scores: payload.scores ?? prev?.scores,
+            status: payload.status ?? prev?.status,
+          }));
+        }
+      })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, (payload: any) => {
         if (payload.new && payload.new.id === matchIdStr) {
           setMatch((prev: any) => ({ ...prev, ...payload.new }));
