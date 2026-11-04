@@ -14,7 +14,7 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.en
  * Based on Premier Padel Madrid P1 / Qatar Major (Coello / Tapia vs Galán / Chingotto)
  * Reference: ferranfg/padelapi & Joao-M-Silva/padel_analytics dataset
  */
-describe("Premier Padel Game Mechanics & Ponto de Ouro (Golden Point)", () => {
+describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Premier Padel Game Mechanics & Ponto de Ouro (Golden Point)", () => {
   let supabaseAdmin: SupabaseClient;
   let matchId: string;
   let organizerId: string;

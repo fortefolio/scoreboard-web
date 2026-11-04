@@ -5,7 +5,7 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:5
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
-describe("Match Lifecycle RLS Enforcement", () => {
+describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Match Lifecycle RLS Enforcement", () => {
   let userClient: SupabaseClient;
   let adminClient: SupabaseClient;
   let testUserId: string;

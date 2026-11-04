@@ -9,7 +9,7 @@ const SUPABASE_SERVICE_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   "";
 
-describe("Atomic & Idempotent Scoring RPC (record_match_event_atomic)", () => {
+describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Atomic & Idempotent Scoring RPC (record_match_event_atomic)", () => {
   let adminClient: SupabaseClient;
   let organizerClient: SupabaseClient;
   let unauthorizedClient: SupabaseClient;
