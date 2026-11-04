@@ -106,7 +106,7 @@ describe("Final Madrid Premier Padel P1 (Coello/Tapia vs Galán/Chingotto) — M
   });
 });
 
-describe("Final Madrid Premier Padel P1 — End-to-End no Supabase (Triggers & Tempo Real)", () => {
+describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Final Madrid Premier Padel P1 — End-to-End no Supabase (Triggers & Tempo Real)", () => {
   let supabaseAdmin: SupabaseClient;
   let organizerId: string;
   let matchId: string;

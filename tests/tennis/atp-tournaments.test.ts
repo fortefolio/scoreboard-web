@@ -239,7 +239,7 @@ describe("Tennis Game & Point Mechanics (JeffSackmann/tennis_MatchChartingProjec
   });
 });
 
-describe("ATP Tournament Suite — Creation, Bracket Progression & Match Mechanics (Kadantte/tennis_atp & MCP)", () => {
+describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("ATP Tournament Suite — Creation, Bracket Progression & Match Mechanics (Kadantte/tennis_atp & MCP)", () => {
   let supabaseAdmin: SupabaseClient;
   let organizerId: string;
   const createdTournamentIds: string[] = [];

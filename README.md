@@ -138,6 +138,15 @@ Validação da UX através de simulação de cliques reais de arbitragem em part
 - [tests/ui/volleyball-liga-una.ui.test.tsx](tests/ui/volleyball-liga-una.ui.test.tsx): Ficha Oficial FPV Jogo nº 136 (Clube Kairós vs VC Viana) — sorteio de serviço (*toss*), ralis com rotação de serviço em *side-out* (`Marcar Serviço`), anulação de ponto (`-1 Corrigir`), timeouts (`Desconto`) e 5º set decisivo a 15 pontos (`Set Decisivo (Negra)`).
 - [tests/ui/football-official-match.ui.test.tsx](tests/ui/football-official-match.ui.test.tsx): Jogo oficial Taça de Portugal (Sporting CP vs AC Viseu) — `+1 Golo`, anulação por VAR (`-1 Corrigir`), cartões amarelos e vermelhos, cantos, faltas, compensação (`+1m`) e gestão de partes (`Intervalo` e `2ª Parte`).
 
+### ⚠️ Testes de Integração com Base de Dados (RLS, Load, E2E) e CI/CD
+
+Alguns testes de integração (`tests/rls/`, `tests/load/`, `tests/follows/`, etc.) e verificações cruzadas de segurança com outros repositórios (`tests/security/`) exigem credenciais com privilégios de administração (`SUPABASE_SERVICE_ROLE_KEY`) e/ou a presença de repositórios adjacentes (`scoreboard-backend`, `scoreboard-mobile`):
+- **Ambiente de CI/CD (GitHub Actions)**: Para manter a pipeline rápida e independente da infraestrutura de backend ao construir e implantar a aplicação Web, estes testes são automaticamente ignorados (`skipIf`) na ausência de `SUPABASE_SERVICE_ROLE_KEY` ou quando as pastas de repositórios adjacentes não existem no runner.
+- **Como reativar no futuro**:
+  1. Adicionar `SUPABASE_SERVICE_ROLE_KEY` aos **Repository Secrets** do GitHub e mapear no workflow `.github/workflows/deploy.yml`.
+  2. Para as verificações de contratos de segurança entre repositórios (`security-regression.test.ts`), utilizar `actions/checkout` multi-repositório no GitHub Actions para clonar também `scoreboard-backend` e `scoreboard-mobile`.
+  3. Localmente, definir `SUPABASE_SERVICE_ROLE_KEY` no ficheiro `.env.local` e executar `npm run test:run` com o ambiente Supabase ativo (`supabase start`).
+
 ---
 
 ## 📄 Licença

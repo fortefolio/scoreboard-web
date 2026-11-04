@@ -10,15 +10,16 @@ const ANON_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   "";
 
-const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_KEY, {
-  auth: { autoRefreshToken: false, persistSession: false },
-});
+let supabaseAdmin: any;
 
-describe("Phase 4: Concurrency, Load Resilience & Idempotency", () => {
+describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Phase 4: Concurrency, Load Resilience & Idempotency", () => {
   let organizerUser: any;
   let testMatchId: string;
 
   beforeAll(async () => {
+    supabaseAdmin = createClient(SUPABASE_URL, SERVICE_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
     // 1. Get or create organizer user
     const { data: users } = await supabaseAdmin.from("users").select("id, email").limit(1);
     if (users && users.length > 0) {

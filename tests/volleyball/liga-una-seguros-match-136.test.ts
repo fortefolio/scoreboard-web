@@ -147,7 +147,7 @@ describe("Ficha de Jogo Oficial nº 136 (Liga UNA Seguros) — Mecânicas de Vol
   });
 });
 
-describe("Ficha de Jogo Oficial nº 136 — End-to-End no Supabase (Triggers, Realtime & Base de Dados)", () => {
+describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Ficha de Jogo Oficial nº 136 — End-to-End no Supabase (Triggers, Realtime & Base de Dados)", () => {
   let supabaseAdmin: SupabaseClient;
   let organizerId: string;
   let matchId: string;

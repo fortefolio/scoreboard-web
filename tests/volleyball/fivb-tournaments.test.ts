@@ -203,7 +203,7 @@ describe("Volleyball & Beach Volleyball Engine Mechanics (BigTimeStats/beach-vol
   });
 });
 
-describe("FIVB Beach Volleyball & Indoor Volleyball Tournament Suite — Supabase E2E", () => {
+describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("FIVB Beach Volleyball & Indoor Volleyball Tournament Suite — Supabase E2E", () => {
   let supabaseAdmin: SupabaseClient;
   let organizerId: string;
   const createdTournamentIds: string[] = [];

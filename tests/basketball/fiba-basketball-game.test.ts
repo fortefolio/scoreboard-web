@@ -4,7 +4,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "http://127.0.0.1:54321";
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 
-describe("FIBA Basketball Game — Supabase Scoring Trigger & Mechanics", () => {
+describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("FIBA Basketball Game — Supabase Scoring Trigger & Mechanics", () => {
   let supabaseAdmin: SupabaseClient;
   let matchId: string;
   let organizerId: string;
