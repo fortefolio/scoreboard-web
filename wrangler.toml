@@ -10,12 +10,6 @@ main = ".open-next/worker.js"
 [assets]
 directory = ".open-next/assets"
 
-[vars]
-# Values here are used as defaults. 
-# GitHub Secrets will override these during production builds.
-NEXT_PUBLIC_SUPABASE_URL = ""
-NEXT_PUBLIC_SUPABASE_ANON_KEY = ""
-
 [[kv_namespaces]]
 binding = "NEXT_INC_CACHE_KV"
 id = "8714a068f13740d2a2aa5135c14c0f2b"
