@@ -6,13 +6,19 @@ This document outlines how `scoreboard-web` interfaces with Supabase services, R
 
 ## 1. Supabase Client Strategy
 
-The web application uses `@supabase/ssr` to maintain authenticated session cookies seamlessly across Next.js Server Components, Server Actions, and Client Components:
+The web application uses `@supabase/ssr` for authenticated cookie sessions and provides high-concurrency client routing via `server-scalable.ts`:
+
+- **`supabasePrimary`**: Connects to the Primary Supavisor pooler (Port 6543, Transaction Mode) for live officiating mutations, atomic scoring RPCs, and authenticated state updates.
+- **`supabaseReplica`**: Connects to Read Replicas (or falls back to Primary) with `NEXT_PUBLIC_ANON_KEY` for read-heavy public feeds, completed tournament brackets, archives, and search.
+- **`getScalableClient(intent)`**: Dynamic selector helper.
 
 ```mermaid
 flowchart TD
-    Request["Incoming Browser Request"] --> Middleware["middleware.ts<br/>Refreshes Auth Session"]
-    Middleware --> ServerComp["Server Component (App Router)<br/>createClient() via cookies"]
-    Middleware --> ClientComp["Client Component ('use client')<br/>createBrowserClient()"]
+    Request["Incoming Browser Request"] --> Router{"Read or Write?"}
+    Router -->|Live Mutations / Umpire| Primary["supabasePrimary<br/>Port 6543 Pooler"]
+    Router -->|Public Feeds / Archives| Replica["supabaseReplica<br/>Read Replica Pooler"]
+    Primary --> DB[("Primary PostgreSQL")]
+    Replica --> DBReplica[("Read Replica")]
 ```
 
 ---
