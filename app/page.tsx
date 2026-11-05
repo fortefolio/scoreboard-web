@@ -13,6 +13,7 @@ import { FollowButton } from "@/components/FollowButton";
 import Pagination from "@/components/Pagination";
 import { useFollow } from "@/lib/hooks/useFollow";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
+import { validatePassword } from "@/lib/auth/passwordValidation";
 
 const MATCHES_PER_PAGE = 12;
 const TOURNAMENTS_PER_PAGE = 9;
@@ -140,6 +141,13 @@ function HomeContent() {
       if (authModal === "signup") {
         if (!username.trim()) {
           toast.error(t("auth.usernameRequired"));
+          setIsSubmitting(false);
+          return;
+        }
+
+        const passwordValidation = validatePassword(password);
+        if (!passwordValidation.isValid) {
+          toast.error(t("auth.passwordRequirements"));
           setIsSubmitting(false);
           return;
         }
@@ -1155,6 +1163,11 @@ function HomeContent() {
                   required
                   className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
                 />
+                {authModal === "signup" && (
+                  <p className="text-[11px] text-on-surface-variant/70 mt-1 leading-snug">
+                    {t("auth.passwordRequirements")}
+                  </p>
+                )}
               </div>
 
               {authModal === "signup" && (

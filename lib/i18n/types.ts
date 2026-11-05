@@ -136,6 +136,7 @@ export interface Translations {
     alreadyHaveAccount: string;
     dontHaveAccount: string;
     usernameRequired: string;
+    passwordRequirements: string;
     passwordsDoNotMatch: string;
     usernameTaken: string;
     userAlreadyRegistered: string;

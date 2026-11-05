@@ -8,6 +8,7 @@ import { useTranslation } from "@/lib/i18n/LanguageContext";
 import { Locale } from "@/lib/i18n/types";
 import { toast } from "sonner";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
+import { validatePassword } from "@/lib/auth/passwordValidation";
 
 type TabType = "profile" | "preferences" | "security" | "danger";
 
@@ -256,7 +257,8 @@ export default function SettingsPage() {
     e.preventDefault();
     if (!user) return;
 
-    if (newPassword.length < 6) {
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
       toast.error(t("settings.security.passwordLength"));
       return;
     }

@@ -104,11 +104,28 @@ describe("Home — signup validation", () => {
     await renderHome();
 
     await user.type(screen.getByPlaceholderText(/enter your email/i), "alice@example.com");
-    await user.type(screen.getByPlaceholderText(/enter your password/i), "password123");
-    await user.type(screen.getByPlaceholderText(/confirm your password/i), "password123");
+    await user.type(screen.getByPlaceholderText(/enter your password/i), "Password123!");
+    await user.type(screen.getByPlaceholderText(/confirm your password/i), "Password123!");
     await user.click(screen.getByRole("button", { name: /^sign up$/i }));
 
     expect(toastError).toHaveBeenCalledWith("Username is required");
+    expect(supabaseMock.auth.signUp).not.toHaveBeenCalled();
+  });
+
+  it("rejects weak passwords with a toast and no API call", async () => {
+    searchParams = new URLSearchParams({ auth: "signup" });
+    const user = userEvent.setup();
+    await renderHome();
+
+    await user.type(screen.getByPlaceholderText(/choose a username/i), "alice");
+    await user.type(screen.getByPlaceholderText(/enter your email/i), "alice@example.com");
+    await user.type(screen.getByPlaceholderText(/enter your password/i), "weakpass");
+    await user.type(screen.getByPlaceholderText(/confirm your password/i), "weakpass");
+    await user.click(screen.getByRole("button", { name: /^sign up$/i }));
+
+    expect(toastError).toHaveBeenCalledWith(
+      "Password must be at least 8 characters long and include uppercase, lowercase, numbers, and symbols."
+    );
     expect(supabaseMock.auth.signUp).not.toHaveBeenCalled();
   });
 
@@ -119,8 +136,8 @@ describe("Home — signup validation", () => {
 
     await user.type(screen.getByPlaceholderText(/choose a username/i), "alice");
     await user.type(screen.getByPlaceholderText(/enter your email/i), "alice@example.com");
-    await user.type(screen.getByPlaceholderText(/enter your password/i), "password123");
-    await user.type(screen.getByPlaceholderText(/confirm your password/i), "different456");
+    await user.type(screen.getByPlaceholderText(/enter your password/i), "Password123!");
+    await user.type(screen.getByPlaceholderText(/confirm your password/i), "Different456!");
     await user.click(screen.getByRole("button", { name: /^sign up$/i }));
 
     expect(toastError).toHaveBeenCalledWith("Passwords do not match");
@@ -136,8 +153,8 @@ describe("Home — signup validation", () => {
 
     await user.type(screen.getByPlaceholderText(/choose a username/i), "alice");
     await user.type(screen.getByPlaceholderText(/enter your email/i), "alice@example.com");
-    await user.type(screen.getByPlaceholderText(/enter your password/i), "password123");
-    await user.type(screen.getByPlaceholderText(/confirm your password/i), "password123");
+    await user.type(screen.getByPlaceholderText(/enter your password/i), "Password123!");
+    await user.type(screen.getByPlaceholderText(/confirm your password/i), "Password123!");
     await user.click(screen.getByRole("button", { name: /^sign up$/i }));
 
     await waitFor(() =>
@@ -159,14 +176,14 @@ describe("Home — happy paths", () => {
 
     await user.type(screen.getByPlaceholderText(/choose a username/i), "  alice  ");
     await user.type(screen.getByPlaceholderText(/enter your email/i), "alice@example.com");
-    await user.type(screen.getByPlaceholderText(/enter your password/i), "password123");
-    await user.type(screen.getByPlaceholderText(/confirm your password/i), "password123");
+    await user.type(screen.getByPlaceholderText(/enter your password/i), "Password123!");
+    await user.type(screen.getByPlaceholderText(/confirm your password/i), "Password123!");
     await user.click(screen.getByRole("button", { name: /^sign up$/i }));
 
     await waitFor(() => expect(supabaseMock.auth.signUp).toHaveBeenCalled());
     expect(supabaseMock.auth.signUp).toHaveBeenCalledWith({
       email: "alice@example.com",
-      password: "password123",
+      password: "Password123!",
       options: { data: { display_name: "alice" } },
     });
     await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
@@ -252,8 +269,8 @@ describe("Home — auth errors", () => {
 
     await user.type(screen.getByPlaceholderText(/choose a username/i), "alice");
     await user.type(screen.getByPlaceholderText(/enter your email/i), "alice@example.com");
-    await user.type(screen.getByPlaceholderText(/enter your password/i), "password123");
-    await user.type(screen.getByPlaceholderText(/confirm your password/i), "password123");
+    await user.type(screen.getByPlaceholderText(/enter your password/i), "Password123!");
+    await user.type(screen.getByPlaceholderText(/confirm your password/i), "Password123!");
     await user.click(screen.getByRole("button", { name: /^sign up$/i }));
 
     await waitFor(() =>
@@ -276,8 +293,8 @@ describe("Home — auth errors", () => {
 
     await user.type(screen.getByPlaceholderText(/choose a username/i), "alice");
     await user.type(screen.getByPlaceholderText(/enter your email/i), "alice@example.com");
-    await user.type(screen.getByPlaceholderText(/enter your password/i), "password123");
-    await user.type(screen.getByPlaceholderText(/confirm your password/i), "password123");
+    await user.type(screen.getByPlaceholderText(/enter your password/i), "Password123!");
+    await user.type(screen.getByPlaceholderText(/confirm your password/i), "Password123!");
     await user.click(screen.getByRole("button", { name: /^sign up$/i }));
 
     await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
