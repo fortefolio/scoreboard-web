@@ -145,6 +145,12 @@ export const en: Translations = {
     userAlreadyRegistered: "An account with this email already exists.",
     welcomeBackToast: "Welcome back!",
     accountCreatedToast: "Account created successfully!",
+    name: "Name",
+    namePlaceholder: "Your name or nickname",
+    fillAllFields: "Please fill in all fields.",
+    checkEmailTitle: "Check Your Email",
+    checkEmailMessage: "We sent a confirmation link to {email}. Please check your inbox and click the link to activate your account.",
+    gotIt: "Got It",
   },
   tournament: {
     officialTournament: "Official Tournament",

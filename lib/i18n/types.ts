@@ -142,6 +142,12 @@ export interface Translations {
     userAlreadyRegistered: string;
     welcomeBackToast: string;
     accountCreatedToast: string;
+    name: string;
+    namePlaceholder: string;
+    fillAllFields: string;
+    checkEmailTitle: string;
+    checkEmailMessage: string;
+    gotIt: string;
   };
   tournament: {
     officialTournament: string;
