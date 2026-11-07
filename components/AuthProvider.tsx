@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { AuthChangeEvent, Session, SupabaseClient, User } from "@supabase/supabase-js";
+import type { AuthChangeEvent, Session, SupabaseClient, User, UserResponse } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { clearOfflineQueue } from "@/lib/offline/offlineQueue";
 
@@ -45,7 +45,8 @@ export function AuthProvider({
     });
 
     // Validate stored token against current Supabase environment; clear if invalid or signature mismatched
-    supabase.auth.getUser().then(({ error }) => {
+    supabase.auth.getUser().then((res: UserResponse) => {
+      const error = res.error;
       if (error && error.name !== "AuthSessionMissingError") {
         console.warn("Invalid or mismatched session detected, clearing auth state:", error.message);
         supabase.auth.signOut();
