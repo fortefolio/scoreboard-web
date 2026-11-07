@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
 
 export default function MyTournamentsPage() {
+  const router = useRouter();
   const { user, supabase } = useAuth();
   const { t: tr } = useTranslation();
   const [tournaments, setTournaments] = useState<any[]>([]);
@@ -23,6 +25,16 @@ export default function MyTournamentsPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [visibility, setVisibility] = useState<'public' | 'unlisted' | 'private'>('public');
+
+  const resetForm = () => {
+    setNewName("");
+    setNewSport("Tennis");
+    setStage1Type("bracket");
+    setMaxTeams("");
+    setStartDate("");
+    setEndDate("");
+    setVisibility("public");
+  };
 
   const fetchTournaments = useCallback(async (userId: string) => {
     setLoading(true);
@@ -118,7 +130,7 @@ export default function MyTournamentsPage() {
       }
     };
 
-    const { error } = await supabase.from("tournaments").insert({
+    const { data, error } = await supabase.from("tournaments").insert({
       name: newName,
       sport_type: newSport,
       organizer_id: user.id,
@@ -127,14 +139,15 @@ export default function MyTournamentsPage() {
       start_date: startDate || null,
       end_date: endDate || null,
       visibility: visibility
-    });
+    }).select("id").single();
 
-    if (!error) {
+    if (!error && data?.id) {
       toast.success("Tournament created successfully!");
+      resetForm();
       setShowModal(false);
-      fetchTournaments(user.id);
+      router.push(`/tournament/${data.id}`);
     } else {
-      toast.error(`Error creating tournament: ${error.message}`);
+      toast.error(`Error creating tournament: ${error?.message || "Unknown error"}`);
     }
   };
 
@@ -350,7 +363,10 @@ export default function MyTournamentsPage() {
 
               <div className="flex gap-4 pt-6">
                 <button 
-                  onClick={() => setShowModal(false)} 
+                  onClick={() => {
+                    resetForm();
+                    setShowModal(false);
+                  }} 
                   className="flex-1 py-4 text-on-surface-variant font-black uppercase tracking-widest text-xs hover:text-on-surface transition-colors"
                 >
                   Cancel
