@@ -47,7 +47,9 @@ const nextConfig: NextConfig = {
       process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("127.0.0.1");
 
     const connectSrc =
-      isDev || isLocalDb
+      isDev
+        ? "connect-src 'self' https: wss: http: ws:;"
+        : isLocalDb
         ? "connect-src 'self' https: wss: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*;"
         : "connect-src 'self' https: wss:;";
 

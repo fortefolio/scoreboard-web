@@ -4,6 +4,8 @@ export interface Translations {
   nav: {
     matches: string;
     tournaments: string;
+    following: string;
+    notifications: string;
     dashboard: string;
     settings: string;
     myMatches: string;

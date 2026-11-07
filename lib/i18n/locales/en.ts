@@ -4,6 +4,8 @@ export const en: Translations = {
   nav: {
     matches: "Matches",
     tournaments: "Tournaments",
+    following: "Following",
+    notifications: "Notifications",
     dashboard: "Dashboard",
     settings: "Settings",
     myMatches: "My Matches",

@@ -43,7 +43,7 @@ export default function BottomTabBar() {
         >
           <span className="material-symbols-outlined text-[22px]">sports_tennis</span>
           <span className="text-[10px] font-bold tracking-tight mt-0.5">
-            {t("home.matchesTab") || "Jogos"}
+            {t("nav.matches")}
           </span>
           {isMatchesActive && (
             <span className="w-1 h-1 rounded-full bg-emerald-400 mt-0.5" />
@@ -62,7 +62,7 @@ export default function BottomTabBar() {
         >
           <span className="material-symbols-outlined text-[22px]">emoji_events</span>
           <span className="text-[10px] font-bold tracking-tight mt-0.5">
-            {t("home.tournamentsTab") || "Torneios"}
+            {t("nav.tournaments")}
           </span>
           {isTournamentsActive && (
             <span className="w-1 h-1 rounded-full bg-emerald-400 mt-0.5" />
@@ -81,7 +81,7 @@ export default function BottomTabBar() {
         >
           <span className="material-symbols-outlined text-[22px]">star</span>
           <span className="text-[10px] font-bold tracking-tight mt-0.5">
-            {t("home.followingTab") || "A Seguir"}
+            {t("nav.following")}
           </span>
           {isFollowingActive && (
             <span className="w-1 h-1 rounded-full bg-emerald-400 mt-0.5" />
@@ -107,7 +107,7 @@ export default function BottomTabBar() {
             )}
           </div>
           <span className="text-[10px] font-bold tracking-tight mt-0.5">
-            {t("nav.notifications") || "Alertas"}
+            {t("nav.notifications")}
           </span>
           {isNotificationsActive && (
             <span className="w-1 h-1 rounded-full bg-emerald-400 mt-0.5" />

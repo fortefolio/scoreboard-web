@@ -4,6 +4,8 @@ export const pt: Translations = {
   nav: {
     matches: "Jogos",
     tournaments: "Torneios",
+    following: "A Seguir",
+    notifications: "Notificações",
     dashboard: "Painel",
     settings: "Definições",
     myMatches: "Os Meus Jogos",
