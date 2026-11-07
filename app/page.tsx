@@ -9,6 +9,8 @@ import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import MatchCard from "@/components/MatchCard";
 import SportIcon from "@/components/SportIcon";
+import SportFilterBar from "@/components/SportFilterBar";
+import MatchListItem from "@/components/MatchListItem";
 import { FollowButton } from "@/components/FollowButton";
 import Pagination from "@/components/Pagination";
 import { useFollow } from "@/lib/hooks/useFollow";
@@ -387,13 +389,24 @@ function HomeContent() {
   }, [filteredTournaments, safePage]);
 
   return (
-    <div className="w-full min-h-screen bg-background text-on-surface py-6 px-4 sm:px-8 max-w-7xl mx-auto">
+    <div className="w-full min-h-screen bg-background text-on-surface py-4 sm:py-6 px-3 sm:px-8 max-w-7xl mx-auto">
+      {/* Horizontal Sport Filter Bar (mirrors scoreboard-mobile) */}
+      <div className="mb-3 sm:mb-4">
+        <SportFilterBar
+          selectedSport={sportFilter}
+          onSelectSport={(sport) => {
+            setSportFilter(sport);
+            setCurrentPage(1);
+          }}
+        />
+      </div>
+
       {/* Filter, Search & View Controls Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8 bg-surface-container-low p-4 rounded-2xl border border-white/5 shadow-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8 bg-surface-container-low p-3 sm:p-4 rounded-2xl border border-white/5 shadow-lg">
         {/* Search & Filters */}
-        <div className="flex flex-wrap items-center gap-3 sm:gap-4 flex-1">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 flex-1">
           {/* Search Box */}
-          <div className="relative min-w-[200px] flex-1 max-w-xs">
+          <div className="relative w-full sm:w-auto sm:min-w-[200px] flex-1 max-w-full sm:max-w-xs">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant/50">
               search
             </span>
@@ -409,8 +422,8 @@ function HomeContent() {
             />
           </div>
 
-          {/* Sport Filter */}
-          <div className="flex items-center gap-2">
+          {/* Sport Filter Dropdown (Hidden on mobile where SportFilterBar is present; visible on desktop) */}
+          <div className="hidden lg:flex items-center gap-2">
             <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
               {t("common.sport")}:
             </span>
@@ -482,8 +495,8 @@ function HomeContent() {
           )}
         </div>
 
-        {/* View Mode Toggle: List on Left, Grid on Right */}
-        <div className="flex items-center gap-1 bg-surface-container p-1 rounded-xl border border-white/10 self-start lg:self-auto shrink-0">
+        {/* View Mode Toggle */}
+        <div className="flex items-center gap-1 bg-surface-container p-1 rounded-xl border border-white/10 self-start sm:self-auto shrink-0">
           <button
             type="button"
             onClick={() => setViewMode("list")}
@@ -552,10 +565,18 @@ function HomeContent() {
                   ))}
                 </div>
               ) : (
-                /* List / Table View */
-                <div className="w-full bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
-                  <div className="w-full overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                <>
+                  {/* Mobile Compact Match List View */}
+                  <div className="md:hidden space-y-2.5">
+                    {paginatedMatches.map((m) => (
+                      <MatchListItem key={m.id} match={m} />
+                    ))}
+                  </div>
+
+                  {/* Desktop Data Table View */}
+                  <div className="hidden md:block w-full bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
+                    <div className="w-full overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
                       <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         <tr>
                           <th className="py-3.5 px-6">{t("common.teamsOrPlayers")}</th>
@@ -707,6 +728,7 @@ function HomeContent() {
                     </table>
                   </div>
                 </div>
+              </>
               )}
             </div>
           )}
@@ -815,10 +837,51 @@ function HomeContent() {
                   ))}
                 </div>
               ) : (
-                /* List / Table View */
-                <div className="w-full bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
-                  <div className="w-full overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                <>
+                  {/* Mobile Compact Tournament List View */}
+                  <div className="md:hidden space-y-2.5">
+                    {paginatedTournaments.map((tItem) => (
+                      <Link
+                        key={tItem.id}
+                        href={`/tournament/${tItem.id}`}
+                        className="w-full bg-[#151b2d]/80 backdrop-blur-md rounded-2xl border border-white/5 p-3.5 flex items-center justify-between gap-3 hover:border-primary/30 transition-all shadow-md block"
+                      >
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="w-10 h-10 rounded-xl bg-surface-container-high/40 border border-white/5 flex items-center justify-center shrink-0">
+                            <SportIcon sport={tItem.sport_type} className="text-primary text-[18px]" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="text-xs font-bold text-on-surface truncate">{tItem.name}</h4>
+                            <p className="text-[10px] text-on-surface-variant/60 uppercase font-mono tracking-wider">
+                              {getSportTranslation(tItem.sport_type, t)} • {tItem.settings?.stage_1?.type === "groups" ? t("tournament.groupStage") : tItem.settings?.stage_1?.type === "double_elimination" ? t("tournament.doubleElimination") : t("tournament.singleElimination")}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                              tItem.status === "completed"
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                : tItem.status === "ongoing"
+                                ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
+                                : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                            }`}
+                          >
+                            {tItem.status === "completed"
+                              ? t("status.completed")
+                              : tItem.status === "ongoing"
+                              ? t("status.live")
+                              : t("status.scheduled")}
+                          </span>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Desktop Data Table View */}
+                  <div className="hidden md:block w-full bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
+                    <div className="w-full overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
                       <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
                         <tr>
                           <th className="py-3.5 px-6">{t("common.event")}</th>
@@ -907,6 +970,7 @@ function HomeContent() {
                     </table>
                   </div>
                 </div>
+              </>
               )}
             </div>
           )}

@@ -109,7 +109,7 @@ export default function UpgradeModal({ isOpen, onClose, onSuccess, isAlreadyPro 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
       <div 
-        className="relative w-full max-w-lg bg-[#0c1324] border border-indigo-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-on-surface overflow-hidden"
+        className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-[#0c1324] border border-indigo-500/30 rounded-3xl p-5 sm:p-8 shadow-2xl text-on-surface"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Glow Background Accent */}

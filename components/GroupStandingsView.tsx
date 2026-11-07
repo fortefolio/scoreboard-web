@@ -88,37 +88,39 @@ export default function GroupStandingsView({ tournamentId }: { tournamentId: str
             <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Standings</span>
           </div>
           
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-gray-500 text-[10px] uppercase">
-                <th className="px-4 py-2 text-left">Team</th>
-                <th className="px-2 py-2">P</th>
-                <th className="px-2 py-2">W</th>
-                <th className="px-2 py-2">L</th>
-                <th className="px-2 py-2">Sets</th>
-                <th className="px-2 py-2 text-right pr-4">+/-</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-800">
-              {teams.map((team, idx) => (
-                <tr key={team.team_name} className={idx < 2 ? "bg-indigo-500/5" : ""}>
-                  <td className="px-4 py-3 font-medium flex items-center gap-2">
-                    {idx < 2 && <div className="w-1.5 h-1.5 rounded-full bg-green-500" title="In Qualification Zone" />}
-                    {team.team_name}
-                  </td>
-                  <td className="px-2 py-3 text-center text-gray-400">{team.played}</td>
-                  <td className="px-2 py-3 text-center font-bold text-green-400">{team.wins}</td>
-                  <td className="px-2 py-3 text-center text-red-400">{team.losses}</td>
-                  <td className="px-2 py-3 text-center text-xs text-gray-500">
-                    {team.total_sets_won}-{team.total_sets_lost}
-                  </td>
-                  <td className="px-2 py-3 text-right pr-4 font-mono text-xs">
-                    {team.point_diff > 0 ? `+${team.point_diff}` : team.point_diff}
-                  </td>
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-gray-500 text-[10px] uppercase">
+                  <th className="px-4 py-2 text-left">Team</th>
+                  <th className="px-2 py-2">P</th>
+                  <th className="px-2 py-2">W</th>
+                  <th className="px-2 py-2">L</th>
+                  <th className="px-2 py-2">Sets</th>
+                  <th className="px-2 py-2 text-right pr-4">+/-</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-800">
+                {teams.map((team, idx) => (
+                  <tr key={team.team_name} className={idx < 2 ? "bg-indigo-500/5" : ""}>
+                    <td className="px-4 py-3 font-medium flex items-center gap-2">
+                      {idx < 2 && <div className="w-1.5 h-1.5 rounded-full bg-green-500" title="In Qualification Zone" />}
+                      {team.team_name}
+                    </td>
+                    <td className="px-2 py-3 text-center text-gray-400">{team.played}</td>
+                    <td className="px-2 py-3 text-center font-bold text-green-400">{team.wins}</td>
+                    <td className="px-2 py-3 text-center text-red-400">{team.losses}</td>
+                    <td className="px-2 py-3 text-center text-xs text-gray-500">
+                      {team.total_sets_won}-{team.total_sets_lost}
+                    </td>
+                    <td className="px-2 py-3 text-right pr-4 font-mono text-xs">
+                      {team.point_diff > 0 ? `+${team.point_diff}` : team.point_diff}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           
           <div className="p-3 bg-gray-950/50 text-[10px] text-gray-600 italic">
             * Top teams advance to Knockout Stage

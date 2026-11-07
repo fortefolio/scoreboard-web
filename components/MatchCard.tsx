@@ -93,7 +93,7 @@ export default function MatchCard({ match }: { match: any }) {
   };
 
   return (
-    <Link href={`/match/${match.id}`} className="w-full max-w-[288px] group shrink-0">
+    <Link href={`/match/${match.id}`} className="w-full sm:max-w-[288px] group shrink-0">
       <div className="bg-[#151b2d]/80 backdrop-blur-xl p-5 rounded-2xl border border-white/5 hover:border-primary/30 transition-all duration-500 shadow-2xl relative overflow-hidden flex flex-col h-full group-hover:scale-[1.01]">
         {/* Header */}
         <div className="flex justify-between items-center gap-2 mb-6 relative z-10 min-w-0">

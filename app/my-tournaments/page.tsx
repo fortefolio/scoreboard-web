@@ -165,17 +165,17 @@ export default function MyTournamentsPage() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background text-on-background p-8 pt-24 max-w-7xl mx-auto">
-      <div className="flex justify-between items-end mb-12">
+    <div className="min-h-screen bg-background text-on-background p-4 sm:p-8 pt-20 sm:pt-24 max-w-7xl mx-auto">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-8 sm:mb-12">
         <div>
-          <h1 className="font-headline text-5xl md:text-6xl font-black tracking-tighter leading-none mb-4">
+          <h1 className="font-headline text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter leading-none mb-2 sm:mb-4">
             My <span className="text-primary">Tournaments</span>
           </h1>
-          <p className="text-on-surface-variant text-xl max-w-xl">Manage your active events and create new competitions.</p>
+          <p className="text-on-surface-variant text-sm sm:text-xl max-w-xl">Manage your active events and create new competitions.</p>
         </div>
         <button 
           onClick={handleOpenCreate}
-          className="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-2 cursor-pointer"
+          className="bg-primary-container text-on-primary-container px-6 sm:px-8 py-3 sm:py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-2 cursor-pointer self-stretch sm:self-auto justify-center"
         >
           <span className="material-symbols-outlined">add</span>
           New Tournament
@@ -244,8 +244,8 @@ export default function MyTournamentsPage() {
       {/* CREATE MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
-          <div className="bg-surface-container-high rounded-[2.5rem] p-10 max-w-xl w-full shadow-2xl border border-outline-variant/20 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-3xl font-headline font-black mb-8 italic tracking-tighter">NEW TOURNAMENT</h2>
+          <div className="bg-surface-container-high rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 max-w-xl w-full shadow-2xl border border-outline-variant/20 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl sm:text-3xl font-headline font-black mb-6 sm:mb-8 italic tracking-tighter">NEW TOURNAMENT</h2>
             <div className="space-y-6">
               <div>
                 <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Tournament Name</label>

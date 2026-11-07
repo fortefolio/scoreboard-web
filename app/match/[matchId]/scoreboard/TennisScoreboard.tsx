@@ -360,7 +360,7 @@ export default function TennisScoreboard({
       </div>
 
       {/* Main 3-Column Command Center Scoreboard */}
-      <div className="w-full bg-[#0d1424] rounded-3xl border border-white/10 p-6 md:p-8 shadow-2xl relative overflow-hidden mb-6">
+      <div className="w-full bg-[#0d1424] rounded-2xl sm:rounded-3xl border border-white/10 p-4 sm:p-6 md:p-8 shadow-2xl relative overflow-hidden mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           {/* Left Column: Home Player / Team */}
           <div className="flex flex-col items-center md:items-start text-center md:text-left order-2 md:order-1">

@@ -25,11 +25,11 @@ export default function ConfirmationModal({
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-300">
-      <div className="bg-surface-container-high rounded-[2.5rem] p-10 max-w-md w-full shadow-3xl border border-outline-variant/20 animate-in zoom-in-95 duration-300">
-        <h2 className={`text-2xl font-headline font-black mb-4 uppercase tracking-tight ${isDanger ? 'text-error' : 'text-on-surface'}`}>
+      <div className="bg-surface-container-high rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-3xl border border-outline-variant/20 animate-in zoom-in-95 duration-300">
+        <h2 className={`text-xl sm:text-2xl font-headline font-black mb-3 sm:mb-4 uppercase tracking-tight ${isDanger ? 'text-error' : 'text-on-surface'}`}>
           {title}
         </h2>
-        <p className="text-on-surface-variant text-sm mb-10 leading-relaxed font-medium">
+        <p className="text-on-surface-variant text-xs sm:text-sm mb-6 sm:mb-10 leading-relaxed font-medium">
           {message}
         </p>
         

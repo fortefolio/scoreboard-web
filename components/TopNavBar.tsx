@@ -76,19 +76,19 @@ export default function TopNavBar() {
 
   return (
     <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 transition-all duration-300 ease-out border-b border-white/5">
-      <div className="flex justify-between items-center px-8 py-4 max-w-7xl mx-auto font-headline tracking-tight">
-        <Link href="/" className="text-4xl font-digital text-white tracking-tighter hover:scale-105 transition-transform">
+      <div className="flex justify-between items-center px-4 sm:px-8 py-3 sm:py-4 max-w-7xl mx-auto font-headline tracking-tight">
+        <Link href="/" className="text-2xl sm:text-3xl md:text-4xl font-digital text-white tracking-tighter hover:scale-105 transition-transform shrink-0">
           SCORE:BOARD
         </Link>
 
-        {/* Navigation Links */}
-        <div className="flex gap-4 md:gap-8 items-center">
+        {/* Navigation Links (Desktop only, hidden on mobile in favor of bottom tab bar) */}
+        <div className="hidden md:flex gap-8 items-center">
           {hasMounted && (
             <>
               <Link
                 href="/?tab=matches"
                 scroll={false}
-                className={`transition-colors transition-all duration-300 ease-out active:scale-95 text-[10px] md:text-sm font-black uppercase tracking-widest ${
+                className={`transition-colors transition-all duration-300 ease-out active:scale-95 text-sm font-black uppercase tracking-widest ${
                   isMatchesActive
                     ? "text-white"
                     : "text-slate-400 hover:text-white"
@@ -100,7 +100,7 @@ export default function TopNavBar() {
               <Link
                 href="/?tab=tournaments"
                 scroll={false}
-                className={`transition-colors transition-all duration-300 ease-out active:scale-95 text-[10px] md:text-sm font-black uppercase tracking-widest ${
+                className={`transition-colors transition-all duration-300 ease-out active:scale-95 text-sm font-black uppercase tracking-widest ${
                   isTournamentsActive
                     ? "text-white"
                     : "text-slate-400 hover:text-white"
@@ -112,7 +112,7 @@ export default function TopNavBar() {
               <Link
                 href="/?tab=following"
                 scroll={false}
-                className={`transition-colors transition-all duration-300 ease-out active:scale-95 text-[10px] md:text-sm font-black uppercase tracking-widest ${
+                className={`transition-colors transition-all duration-300 ease-out active:scale-95 text-sm font-black uppercase tracking-widest ${
                   isFollowingActive
                     ? "text-white"
                     : "text-slate-400 hover:text-white"
@@ -124,26 +124,31 @@ export default function TopNavBar() {
           )}
         </div>
 
-        <div className="flex gap-4 md:gap-6 items-center shrink-0">
+        <div className="flex gap-2 sm:gap-4 md:gap-6 items-center shrink-0">
           {hasMounted && <LanguageSelector />}
 
-          {hasMounted && user && <NotificationBell />}
+          {/* Notification bell on desktop (on mobile, it lives on the bottom tab bar) */}
+          {hasMounted && user && (
+            <div className="hidden md:block">
+              <NotificationBell />
+            </div>
+          )}
 
           {hasMounted && user ? (
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 aria-label="User menu"
-                className="flex items-center gap-2 group focus:outline-none"
+                className="flex items-center gap-1.5 sm:gap-2 group focus:outline-none"
               >
-                <div className="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-black group-hover:border-indigo-400/50 transition-all overflow-hidden">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-black group-hover:border-indigo-400/50 transition-all overflow-hidden text-xs sm:text-sm">
                   {user.user_metadata?.avatar_url ? (
                     <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
                     user.email?.charAt(0).toUpperCase()
                   )}
                 </div>
-                <span className="material-symbols-outlined text-slate-400 group-hover:text-white transition-colors">
+                <span className="material-symbols-outlined text-slate-400 group-hover:text-white transition-colors text-lg sm:text-2xl">
                   {isMenuOpen ? 'expand_less' : 'expand_more'}
                 </span>
               </button>
@@ -200,16 +205,16 @@ export default function TopNavBar() {
               )}
             </div>
           ) : (
-            <div className="flex gap-4 items-center">
+            <div className="flex gap-2 sm:gap-4 items-center">
                <Link
                  href="/?auth=login"
-                 className="text-slate-400 hover:text-white px-4 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all duration-300 ease-out active:scale-95"
+                 className="text-slate-400 hover:text-white px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all duration-300 ease-out active:scale-95 border border-white/5 sm:border-transparent"
                >
                  {t("nav.signIn")}
                </Link>
                <Link
                  href="/?auth=signup"
-                 className="bg-primary-container text-on-primary-container px-6 py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-500/10 hover:text-indigo-300 transition-all duration-300 ease-out active:scale-95 shadow-lg shadow-indigo-500/20"
+                 className="hidden sm:inline-flex bg-primary-container text-on-primary-container px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-500/10 hover:text-indigo-300 transition-all duration-300 ease-out active:scale-95 shadow-lg shadow-indigo-500/20"
                >
                  {t("nav.getStarted")}
                </Link>

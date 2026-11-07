@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "@/components/AuthProvider";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import TopNavBar from "@/components/TopNavBar";
+import BottomTabBar from "@/components/BottomTabBar";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -63,13 +64,16 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         />
       </head>
-      <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-on-background pt-20">
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-background text-on-background pt-16 sm:pt-20 pb-20 md:pb-0">
         <LanguageProvider>
           <AuthProvider initialUser={null}>
-            <Suspense fallback={<nav className="fixed top-0 w-full h-20 bg-slate-950/40 backdrop-blur-xl z-50 border-b border-white/5" />}>
+            <Suspense fallback={<nav className="fixed top-0 w-full h-16 sm:h-20 bg-slate-950/40 backdrop-blur-xl z-50 border-b border-white/5" />}>
               <TopNavBar />
             </Suspense>
             {children}
+            <Suspense fallback={null}>
+              <BottomTabBar />
+            </Suspense>
             <Toaster richColors position="bottom-right" closeButton />
           </AuthProvider>
         </LanguageProvider>

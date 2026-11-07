@@ -94,12 +94,12 @@ const CountdownTimer = ({ scheduledAt }: { scheduledAt?: string }) => {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="font-label text-[12px] sm:text-[14px] font-black uppercase tracking-[0.4em] text-on-surface-variant/20 mb-3">vs</div>
-      <div className="bg-[#1a2035]/60 backdrop-blur-xl w-32 sm:w-56 py-3 sm:py-4 rounded-[1.25rem] border border-white/5 flex flex-col items-center shadow-[0_0_40px_-12px_rgba(0,0,0,0.5)]">
-        <div className="font-label text-[8px] font-black uppercase tracking-[0.3em] text-on-surface-variant/30 mb-1">
+      <div className="font-label text-[10px] sm:text-[12px] md:text-[14px] font-black uppercase tracking-[0.4em] text-on-surface-variant/20 mb-1.5 sm:mb-3">vs</div>
+      <div className="bg-[#1a2035]/60 backdrop-blur-xl w-24 sm:w-44 md:w-56 py-2 sm:py-3 md:py-4 rounded-xl sm:rounded-[1.25rem] border border-white/5 flex flex-col items-center shadow-[0_0_40px_-12px_rgba(0,0,0,0.5)]">
+        <div className="font-label text-[7px] sm:text-[8px] font-black uppercase tracking-[0.3em] text-on-surface-variant/30 mb-0.5 sm:mb-1">
           {timeLeft === "STARTING" ? t("match.soon") : t("match.startsIn")}
         </div>
-        <div className={`font-headline font-black tracking-tight text-on-surface ${timeLeft === "STARTING" ? "text-lg sm:text-xl pb-1" : "text-2xl sm:text-4xl"}`}>
+        <div className={`font-headline font-black tracking-tight text-on-surface ${timeLeft === "STARTING" ? "text-sm sm:text-xl pb-1" : "text-base sm:text-2xl md:text-4xl"}`}>
           {timeLeft}
         </div>
       </div>
@@ -567,7 +567,7 @@ export default function MatchDetailClient() {
         </div>
 
         {/* HERO */}
-        <div className="relative bg-[#0c1324] rounded-[2.5rem] p-6 sm:p-12 overflow-hidden border border-white/5">
+        <div className="relative bg-[#0c1324] rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 md:p-12 overflow-hidden border border-white/5">
           <div
             aria-hidden
             className="absolute inset-0 pointer-events-none"
@@ -729,36 +729,36 @@ export default function MatchDetailClient() {
           )}
 
           <div className="relative flex flex-col items-center">
-            <div className="w-full max-w-xl sm:max-w-2xl grid grid-cols-[1fr_auto_1fr] gap-4 sm:gap-8 items-center mb-4">
+            <div className="w-full max-w-xl sm:max-w-2xl grid grid-cols-[1fr_auto_1fr] gap-2 sm:gap-6 md:gap-8 items-center mb-4">
               {/* Left Team Box */}
-              <div className="flex flex-col items-center gap-6">
-                <div className="w-24 h-24 sm:w-44 sm:h-44 rounded-full bg-[#1a2035]/80 border-[4px] border-[#c3c0ff]/20 flex items-center justify-center shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] transition-transform hover:scale-[1.02]">
+              <div className="flex flex-col items-center gap-2.5 sm:gap-6">
+                <div className="w-16 h-16 sm:w-32 sm:h-32 md:w-44 md:h-44 rounded-full bg-[#1a2035]/80 border-[3px] sm:border-[4px] border-[#c3c0ff]/20 flex items-center justify-center shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] transition-transform hover:scale-[1.02]">
                   {match.status === "scheduled" ? (
-                    <span className="font-headline font-black text-4xl sm:text-7xl text-on-surface-variant/70 tracking-tight">
+                    <span className="font-headline font-black text-xl sm:text-4xl md:text-7xl text-on-surface-variant/70 tracking-tight">
                       {getInitials(match.participants?.[0]?.name)}
                     </span>
                   ) : (
-                    <span className="font-label font-black text-5xl sm:text-8xl text-primary score-shadow-indigo">
+                    <span className="font-label font-black text-3xl sm:text-6xl md:text-8xl text-primary score-shadow-indigo">
                       {sets[0]}
                     </span>
                   )}
                 </div>
-                <h2 className="font-headline font-black uppercase text-xl sm:text-3xl text-center text-on-surface max-w-[160px] sm:max-w-[280px] leading-[1.1] tracking-tight">
+                <h2 className="font-headline font-black uppercase text-xs sm:text-2xl md:text-3xl text-center text-on-surface max-w-[100px] sm:max-w-[200px] md:max-w-[280px] leading-[1.1] tracking-tight">
                   {formatTeamOrPlayerName(match.participants?.[0]?.name) || "TBD"}
                 </h2>
               </div>
 
               {/* Center - Countdown or VS */}
-              <div className="flex flex-col items-center justify-center min-w-[60px] sm:min-w-[100px]">
+              <div className="flex flex-col items-center justify-center min-w-[44px] sm:min-w-[80px] md:min-w-[100px]">
                 {match.status !== "ongoing" && match.status !== "completed" ? (
                   <CountdownTimer scheduledAt={match.scheduled_at} />
                 ) : (
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="font-label text-[11px] font-bold lowercase tracking-[0.3em] text-on-surface-variant/30">vs</div>
+                  <div className="flex flex-col items-center gap-2 sm:gap-4">
+                    <div className="font-label text-[10px] sm:text-[11px] font-bold lowercase tracking-[0.3em] text-on-surface-variant/30">vs</div>
                     {match.status === "ongoing" && (
-                      <div className="px-4 py-2 rounded-full bg-primary-container/20 border border-primary/20 backdrop-blur-md flex items-center gap-2.5">
-                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                        <span className="font-label text-[10px] font-black uppercase tracking-[0.25em] text-primary">LIVE</span>
+                      <div className="px-2.5 sm:px-4 py-1 sm:py-2 rounded-full bg-primary-container/20 border border-primary/20 backdrop-blur-md flex items-center gap-1.5 sm:gap-2.5">
+                        <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-primary animate-pulse" />
+                        <span className="font-label text-[8px] sm:text-[10px] font-black uppercase tracking-[0.25em] text-primary">LIVE</span>
                       </div>
                     )}
                   </div>
@@ -766,19 +766,19 @@ export default function MatchDetailClient() {
               </div>
 
               {/* Right Team Box */}
-              <div className="flex flex-col items-center gap-6">
-                <div className="w-24 h-24 sm:w-44 sm:h-44 rounded-full bg-[#1a2035]/80 border-[4px] border-[#4edea3]/20 flex items-center justify-center shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] transition-transform hover:scale-[1.02]">
+              <div className="flex flex-col items-center gap-2.5 sm:gap-6">
+                <div className="w-16 h-16 sm:w-32 sm:h-32 md:w-44 md:h-44 rounded-full bg-[#1a2035]/80 border-[3px] sm:border-[4px] border-[#4edea3]/20 flex items-center justify-center shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] transition-transform hover:scale-[1.02]">
                   {match.status === "scheduled" ? (
-                    <span className="font-headline font-black text-4xl sm:text-7xl text-secondary tracking-tight">
+                    <span className="font-headline font-black text-xl sm:text-4xl md:text-7xl text-secondary tracking-tight">
                       {getInitials(match.participants?.[1]?.name)}
                     </span>
                   ) : (
-                    <span className="font-label font-black text-5xl sm:text-8xl text-primary score-shadow-indigo">
+                    <span className="font-label font-black text-3xl sm:text-6xl md:text-8xl text-primary score-shadow-indigo">
                       {sets[1]}
                     </span>
                   )}
                 </div>
-                <h2 className="font-headline font-black uppercase text-xl sm:text-3xl text-center text-on-surface max-w-[160px] sm:max-w-[280px] leading-[1.1] tracking-tight">
+                <h2 className="font-headline font-black uppercase text-xs sm:text-2xl md:text-3xl text-center text-on-surface max-w-[100px] sm:max-w-[200px] md:max-w-[280px] leading-[1.1] tracking-tight">
                   {formatTeamOrPlayerName(match.participants?.[1]?.name) || "TBD"}
                 </h2>
               </div>

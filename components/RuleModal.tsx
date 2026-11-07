@@ -79,7 +79,7 @@ export default function RuleModal({
 
   return (
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-300">
-      <div className="bg-surface-container-high rounded-[2.5rem] p-8 md:p-10 max-w-md w-full shadow-3xl border border-outline-variant/20 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface-container-high rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-8 md:p-10 max-w-md w-full shadow-3xl border border-outline-variant/20 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-headline font-black mb-2 uppercase tracking-tight">{t("match.editRulesTitle")}</h2>
         <p className="text-on-surface-variant text-xs mb-8 font-label tracking-widest uppercase opacity-60">
           {t("match.roundConfiguration", { sport: getSportTranslation(sportType, t) || "Sport", round: roundNum })}

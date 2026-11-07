@@ -448,7 +448,10 @@ export default function TournamentBracket({
   const isDoubleElimination = enrichedMatches.some(m => m.bracket_type === 'winners' || m.bracket_type === 'losers' || m.bracket_type === 'grand_final');
 
   return (
-    <div className="max-w-full overflow-x-auto pb-8 space-y-12">
+    <div
+      className="max-w-full overflow-x-auto pb-8 space-y-8 sm:space-y-12 no-scrollbar"
+      style={{ WebkitOverflowScrolling: "touch" }}
+    >
       {round1Complete && enrichedMatches.some(m => m.is_virtual) && (
         <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4">
           <div className="bg-primary-container/10 border border-primary/20 p-8 rounded-[2rem] flex items-center justify-between shadow-2xl">

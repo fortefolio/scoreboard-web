@@ -453,19 +453,19 @@ function TournamentContent() {
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
           {activeTab === 'teams' ? (
             <div className="max-w-4xl mx-auto">
-              <div className="bg-surface-container-low rounded-[3rem] p-10 border border-outline-variant/10 shadow-3xl relative overflow-hidden">
+              <div className="bg-surface-container-low rounded-2xl sm:rounded-[3rem] p-4 sm:p-8 md:p-10 border border-outline-variant/10 shadow-3xl relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-50"></div>
                 
                 <div className="relative z-10">
-                  <div className="flex justify-between items-center mb-10">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-10">
                     <div>
-                      <h2 className="text-3xl font-headline font-black tracking-tight mb-2">Tournament Roster</h2>
-                      <p className="text-on-surface-variant text-sm">Manage participating teams and players ({teamNames.length} / {maxTeams}).</p>
+                      <h2 className="text-2xl sm:text-3xl font-headline font-black tracking-tight mb-1 sm:mb-2">Tournament Roster</h2>
+                      <p className="text-on-surface-variant text-xs sm:text-sm">Manage participating teams and players ({teamNames.length} / {maxTeams}).</p>
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
                       <button 
                         onClick={copySignupLink}
-                        className="bg-surface-container-high text-on-surface px-6 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-indigo-500/10 hover:text-indigo-400 transition-all border border-outline-variant/10 flex items-center gap-2"
+                        className="flex-1 sm:flex-initial justify-center bg-surface-container-high text-on-surface px-4 sm:px-6 py-2.5 sm:py-4 rounded-xl sm:rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs hover:bg-indigo-500/10 hover:text-indigo-400 transition-all border border-outline-variant/10 flex items-center gap-2"
                       >
                         <span className="material-symbols-outlined text-sm">share</span>
                         Share Signup Link
@@ -473,7 +473,7 @@ function TournamentContent() {
                       <button 
                         onClick={addTeam}
                         disabled={teamNames.length >= maxTeams}
-                        className="bg-surface-container-high text-on-surface px-6 py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-surface-bright transition-all border border-outline-variant/10 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 sm:flex-initial justify-center bg-surface-container-high text-on-surface px-4 sm:px-6 py-2.5 sm:py-4 rounded-xl sm:rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs hover:bg-surface-bright transition-all border border-outline-variant/10 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <span className="material-symbols-outlined text-sm">add</span>
                         {teamNames.length >= maxTeams ? 'Limit Reached' : 'Add Team'}
@@ -528,19 +528,19 @@ function TournamentContent() {
               </div>
             </div>
           ) : activeTab === 'standings' && tournament?.settings?.stage_1?.type === 'groups' ? (
-            <div className="bg-surface-container-low/50 rounded-[3rem] p-12 border border-outline-variant/10 shadow-3xl">
+            <div className="bg-surface-container-low/50 rounded-2xl sm:rounded-[3rem] p-4 sm:p-8 md:p-12 border border-outline-variant/10 shadow-3xl">
                <GroupStandingsView tournamentId={tournamentId} />
             </div>
           ) : activeTab === 'group_matches' && tournament?.settings?.stage_1?.type === 'groups' ? (
-            <div className="bg-surface-container-low/50 rounded-[3rem] p-12 border border-outline-variant/10 shadow-3xl">
+            <div className="bg-surface-container-low/50 rounded-2xl sm:rounded-[3rem] p-4 sm:p-8 md:p-12 border border-outline-variant/10 shadow-3xl">
                <GroupMatchesView tournamentId={tournamentId} tournament={tournament} onSaveOverride={saveOverride} onSaveScheduledDate={saveRoundDate} />
             </div>
           ) : activeTab === 'bracket' ? (
             <TournamentBracket tournamentId={tournamentId} tournamentFromParent={tournament} onSaveOverrideFromParent={saveOverride} onSaveScheduledDate={saveRoundDate} />
           ) : (
             <div className="w-full mx-auto">
-              <div className="bg-surface-container-low rounded-[3rem] p-12 border border-outline-variant/10 shadow-3xl">
-                <h2 className="text-3xl font-headline font-black tracking-tight mb-8">Tournament Settings</h2>
+              <div className="bg-surface-container-low rounded-2xl sm:rounded-[3rem] p-4 sm:p-8 md:p-12 border border-outline-variant/10 shadow-3xl">
+                <h2 className="text-2xl sm:text-3xl font-headline font-black tracking-tight mb-6 sm:mb-8">Tournament Settings</h2>
                 <div className="space-y-8">
                   <div className="p-8 rounded-[2rem] bg-surface-container border border-outline-variant/10">
                     <h3 className="text-xl font-bold text-on-surface mb-6">General Configuration</h3>

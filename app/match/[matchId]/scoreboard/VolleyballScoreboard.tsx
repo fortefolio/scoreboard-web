@@ -308,7 +308,7 @@ export default function VolleyballScoreboard({
       )}
 
       {/* Main Scoreboard Display (3 Columns) */}
-      <div className="w-full bg-[#0d1424] rounded-3xl border border-white/10 p-6 md:p-8 shadow-2xl relative overflow-hidden mb-6">
+      <div className="w-full bg-[#0d1424] rounded-2xl sm:rounded-3xl border border-white/10 p-4 sm:p-6 md:p-8 shadow-2xl relative overflow-hidden mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           
           {/* HOME TEAM */}
