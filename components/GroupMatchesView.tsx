@@ -58,14 +58,24 @@ export default function GroupMatchesView({
 
     fetchMatches();
 
-    const channel = supabase
-      .channel('group-matches-updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
-        fetchMatches();
-      })
-      .subscribe();
+    let channel: any = null;
+    try {
+      channel = supabase
+        .channel('group-matches-updates')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
+          fetchMatches();
+        });
 
-    return () => { supabase.removeChannel(channel); };
+      channel.subscribe();
+    } catch (err) {
+      console.warn('[GroupMatches] Realtime unavailable:', err);
+    }
+
+    return () => { 
+      if (channel) {
+        try { supabase.removeChannel(channel); } catch {}
+      }
+    };
   }, [tournamentId]);
 
   if (loading) return (

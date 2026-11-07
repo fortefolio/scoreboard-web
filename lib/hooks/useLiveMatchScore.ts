@@ -59,37 +59,45 @@ export function useLiveMatchScore(
     const supabase = getSupabaseBrowserClient();
     const channelTopic = `match:${matchId}`;
 
-    const channel = supabase
-      .channel(channelTopic)
-      // 1. Primary: High-throughput in-database broadcast from record_match_event_atomic
-      .on("broadcast", { event: "score_update" }, (res: any) => {
-        handleBroadcastPayload(res?.payload);
-      })
-      .on("broadcast", { event: "SCORE_UPDATED" }, (res: any) => {
-        handleBroadcastPayload(res?.payload);
-      })
-      // 2. Fallback: Standard Postgres CDC changes
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "matches",
-          filter: `id=eq.${matchId}`,
-        },
-        (payload: any) => {
-          if (payload.new) {
-            if (payload.new.scores) setScores(payload.new.scores);
-            if (payload.new.status) setStatus(payload.new.status);
+    let channel: any = null;
+    try {
+      channel = supabase
+        .channel(channelTopic)
+        // 1. Primary: High-throughput in-database broadcast from record_match_event_atomic
+        .on("broadcast", { event: "score_update" }, (res: any) => {
+          handleBroadcastPayload(res?.payload);
+        })
+        .on("broadcast", { event: "SCORE_UPDATED" }, (res: any) => {
+          handleBroadcastPayload(res?.payload);
+        })
+        // 2. Fallback: Standard Postgres CDC changes
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "matches",
+            filter: `id=eq.${matchId}`,
+          },
+          (payload: any) => {
+            if (payload.new) {
+              if (payload.new.scores) setScores(payload.new.scores);
+              if (payload.new.status) setStatus(payload.new.status);
+            }
           }
-        }
-      )
-      .subscribe((statusStr: string) => {
+        );
+
+      channel.subscribe((statusStr: string) => {
         setConnected(statusStr === "SUBSCRIBED");
       });
+    } catch (err) {
+      console.warn('[useLiveMatchScore] Realtime unavailable:', err);
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        try { supabase.removeChannel(channel); } catch {}
+      }
     };
   }, [matchId, handleBroadcastPayload]);
 

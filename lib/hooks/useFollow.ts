@@ -32,7 +32,7 @@ export function useFollow() {
         .eq("user_id", user.id);
 
       if (error) {
-        console.error("Error fetching follows:", error);
+        console.warn("Error fetching follows:", error?.message || error);
         return;
       }
 

@@ -65,23 +65,31 @@ function TournamentContent() {
       loadTournament();
 
       // Real-time listener for signups
-      const channel = supabase
-        .channel(`tournament-participants-${tournamentId}`)
-        .on('postgres_changes', 
-          { 
-            event: '*', 
-            schema: 'public', 
-            table: 'tournament_participants',
-            filter: `tournament_id=eq.${tournamentId}`
-          }, 
-          () => {
-            loadParticipants();
-          }
-        )
-        .subscribe();
+      let channel: any = null;
+      try {
+        channel = supabase
+          .channel(`tournament-participants-${tournamentId}`)
+          .on('postgres_changes', 
+            { 
+              event: '*', 
+              schema: 'public', 
+              table: 'tournament_participants',
+              filter: `tournament_id=eq.${tournamentId}`
+            }, 
+            () => {
+              loadParticipants();
+            }
+          );
+
+        channel.subscribe();
+      } catch (err) {
+        console.warn('[TournamentPage] Realtime unavailable:', err);
+      }
 
       return () => {
-        supabase.removeChannel(channel);
+        if (channel) {
+          try { supabase.removeChannel(channel); } catch {}
+        }
       };
     }
   }, [tournamentId]);

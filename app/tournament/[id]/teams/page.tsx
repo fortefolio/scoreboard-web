@@ -39,15 +39,25 @@ function ParticipantsContent() {
 
     fetchData();
 
-    const channel = supabase
-      .channel(`public-participants-${tournamentId}`)
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'tournament_participants', filter: `tournament_id=eq.${tournamentId}` }, 
-        () => fetchData()
-      )
-      .subscribe();
+    let channel: any = null;
+    try {
+      channel = supabase
+        .channel(`public-participants-${tournamentId}`)
+        .on('postgres_changes', 
+          { event: '*', schema: 'public', table: 'tournament_participants', filter: `tournament_id=eq.${tournamentId}` }, 
+          () => fetchData()
+        );
 
-    return () => { supabase.removeChannel(channel); };
+      channel.subscribe();
+    } catch (err) {
+      console.warn('[TournamentTeams] Realtime unavailable:', err);
+    }
+
+    return () => { 
+      if (channel) {
+        try { supabase.removeChannel(channel); } catch {}
+      }
+    };
   }, [tournamentId]);
 
   if (loading) {

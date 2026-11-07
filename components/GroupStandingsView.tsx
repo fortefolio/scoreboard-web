@@ -53,14 +53,24 @@ export default function GroupStandingsView({ tournamentId }: { tournamentId: str
 
     fetchAllData();
     
-    const channel = supabase
-      .channel('standings-updates')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
-        fetchAllData();
-      })
-      .subscribe();
+    let channel: any = null;
+    try {
+      channel = supabase
+        .channel('standings-updates')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, () => {
+          fetchAllData();
+        });
 
-    return () => { supabase.removeChannel(channel); };
+      channel.subscribe();
+    } catch (err) {
+      console.warn('[GroupStandings] Realtime unavailable:', err);
+    }
+
+    return () => { 
+      if (channel) {
+        try { supabase.removeChannel(channel); } catch {}
+      }
+    };
   }, [tournamentId]);
 
   if (loading) return <div className="text-gray-500 animate-pulse p-8">Calculating Standings...</div>;
