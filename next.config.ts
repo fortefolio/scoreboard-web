@@ -41,14 +41,40 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
+    const isDev = process.env.NODE_ENV !== "production";
+    const isLocalDb =
+      process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("localhost") ||
+      process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("127.0.0.1");
+
+    const connectSrc =
+      isDev || isLocalDb
+        ? "connect-src 'self' https: wss: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*;"
+        : "connect-src 'self' https: wss:;";
+
+    const cspDirectives = [
+      "default-src 'self';",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval';",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;",
+      "font-src 'self' data: https://fonts.gstatic.com;",
+      "img-src 'self' data: blob: https:;",
+      connectSrc,
+      "frame-ancestors 'none';",
+      "object-src 'none';",
+      "base-uri 'self';",
+    ].join(" ");
+
     return [
       {
         source: "/:path*",
         headers: [
-          {
-            key: "Strict-Transport-Security",
-            value: "max-age=31536000; includeSubDomains; preload",
-          },
+          ...(isDev
+            ? []
+            : [
+                {
+                  key: "Strict-Transport-Security",
+                  value: "max-age=31536000; includeSubDomains; preload",
+                },
+              ]),
           {
             key: "X-Content-Type-Options",
             value: "nosniff",
@@ -71,8 +97,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https: wss:; frame-ancestors 'none'; object-src 'none'; base-uri 'self';",
+            value: cspDirectives,
           },
         ],
       },
