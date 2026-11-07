@@ -287,20 +287,28 @@ export default function TournamentBracket({
 
     if (tournamentId) loadData();
 
-    const channel = supabase
-      .channel(`bracket-updates-${tournamentId}`)
-      .on('postgres_changes', { 
-        event: '*', 
-        schema: 'public', 
-        table: 'matches',
-        filter: `tournament_id=eq.${tournamentId}`
-      }, () => {
-        loadData();
-      })
-      .subscribe();
+    let channel: any = null;
+    try {
+      channel = supabase
+        .channel(`bracket-updates-${tournamentId}`)
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'matches',
+          filter: `tournament_id=eq.${tournamentId}`
+        }, () => {
+          loadData();
+        });
+
+      channel.subscribe();
+    } catch (err) {
+      console.warn('[TournamentBracket] Realtime unavailable:', err);
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        try { supabase.removeChannel(channel); } catch {}
+      }
     };
   }, [tournamentId]);
 

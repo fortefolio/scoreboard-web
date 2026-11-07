@@ -55,17 +55,31 @@ function MyMatchesContent() {
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
-      .channel(`my-matches-${user.id}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'matches' },
-        () => { fetchMyMatches(user.id); }
-      )
-      .subscribe();
+    let channel: any = null;
+    try {
+      channel = supabase
+        .channel(`my-matches-${user.id}`)
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'matches' },
+          () => { fetchMyMatches(user.id); }
+        );
+
+      channel.subscribe((status: string, err?: Error) => {
+        if (status === 'CHANNEL_ERROR' || err) {
+          console.warn('[MyMatches] Realtime error:', err || status);
+        }
+      });
+    } catch (err) {
+      console.warn('[MyMatches] Realtime unavailable:', err);
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        try {
+          supabase.removeChannel(channel);
+        } catch {}
+      }
     };
   }, [user, supabase, fetchMyMatches]);
 

@@ -44,6 +44,14 @@ export function AuthProvider({
       }
     });
 
+    // Validate stored token against current Supabase environment; clear if invalid or signature mismatched
+    supabase.auth.getUser().then(({ error }) => {
+      if (error && error.name !== "AuthSessionMissingError") {
+        console.warn("Invalid or mismatched session detected, clearing auth state:", error.message);
+        supabase.auth.signOut();
+      }
+    });
+
     return () => listener.subscription.unsubscribe();
   }, [supabase, router]);
 

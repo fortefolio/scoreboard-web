@@ -323,72 +323,80 @@ export default function MatchDetailClient() {
     fetchAll();
 
     // Set up real-time subscription (High-concurrency broadcast + table changes fallback)
-    const channel = supabase
-      .channel(`match:${matchIdStr}`)
-      .on(
-        'broadcast',
-        { event: 'score_update' },
-        (response: any) => {
-          const payload = response?.payload;
-          // Guard against unverified client broadcast spoofing
-          if (payload && payload.match_id === matchIdStr && typeof payload.scores === 'object') {
-            setMatch((prev: any) => {
-              if (prev?.status === 'completed') return prev;
-              return {
-                ...prev,
-                scores: payload.scores ?? prev?.scores,
-                status: payload.status !== 'completed' ? (payload.status ?? prev?.status) : prev?.status,
-              };
-            });
-            if (payload.event_data && typeof payload.event_data === 'object') {
-              setMatchEvents((prev) => [
-                ...prev,
-                {
-                  match_id: payload.match_id,
-                  event_data: payload.event_data,
-                  created_at: new Date().toISOString(),
-                },
-              ]);
+    let channel: any = null;
+    try {
+      channel = supabase
+        .channel(`match:${matchIdStr}`)
+        .on(
+          'broadcast',
+          { event: 'score_update' },
+          (response: any) => {
+            const payload = response?.payload;
+            // Guard against unverified client broadcast spoofing
+            if (payload && payload.match_id === matchIdStr && typeof payload.scores === 'object') {
+              setMatch((prev: any) => {
+                if (prev?.status === 'completed') return prev;
+                return {
+                  ...prev,
+                  scores: payload.scores ?? prev?.scores,
+                  status: payload.status !== 'completed' ? (payload.status ?? prev?.status) : prev?.status,
+                };
+              });
+              if (payload.event_data && typeof payload.event_data === 'object') {
+                setMatchEvents((prev) => [
+                  ...prev,
+                  {
+                    match_id: payload.match_id,
+                    event_data: payload.event_data,
+                    created_at: new Date().toISOString(),
+                  },
+                ]);
+              }
             }
           }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'matches',
-        },
-        (payload: any) => {
-          if (payload.new && payload.new.id === matchIdStr) {
-            setMatch((prev: any) => ({ ...prev, ...payload.new }));
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'matches',
+          },
+          (payload: any) => {
+            if (payload.new && payload.new.id === matchIdStr) {
+              setMatch((prev: any) => ({ ...prev, ...payload.new }));
+            }
           }
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'match_events',
-        },
-        (payload: any) => {
-          if (payload.new && payload.new.match_id === matchIdStr) {
-            setMatchEvents((prev) => {
-              const exists = prev.some(
-                (e) => e.id && payload.new.id && e.id === payload.new.id
-              );
-              if (exists) return prev;
-              return [...prev, payload.new];
-            });
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'match_events',
+          },
+          (payload: any) => {
+            if (payload.new && payload.new.match_id === matchIdStr) {
+              setMatchEvents((prev) => {
+                const exists = prev.some(
+                  (e) => e.id && payload.new.id && e.id === payload.new.id
+                );
+                if (exists) return prev;
+                return [...prev, payload.new];
+              });
+            }
           }
-        }
-      )
-      .subscribe();
+        );
+
+      channel.subscribe();
+    } catch (err) {
+      console.warn('[MatchDetail] Realtime unavailable:', err);
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        try { supabase.removeChannel(channel); } catch {}
+      }
     };
   }, [matchIdStr]);
 
