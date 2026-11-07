@@ -380,6 +380,9 @@ export const pt: Translations = {
     security: {
       title: "Autenticação & Segurança",
       changePassword: "Alterar Palavra-passe",
+      currentPassword: "Palavra-passe Atual",
+      currentPasswordRequired: "A palavra-passe atual é obrigatória.",
+      currentPasswordIncorrect: "A palavra-passe atual está incorreta.",
       newPassword: "Nova Palavra-passe",
       confirmPassword: "Confirmar Nova Palavra-passe",
       updatePassword: "Atualizar Palavra-passe",

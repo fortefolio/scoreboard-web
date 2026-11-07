@@ -44,6 +44,7 @@ export default function SettingsPage() {
   const [savingPreferences, setSavingPreferences] = useState(false);
 
   // Security Tab State
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
@@ -257,25 +258,46 @@ export default function SettingsPage() {
     e.preventDefault();
     if (!user) return;
 
-    const passwordValidation = validatePassword(newPassword);
-    if (!passwordValidation.isValid) {
-      toast.error(t("settings.security.passwordLength"));
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error(t("settings.security.passwordMismatch"));
+    if (!currentPassword) {
+      toast.error(t("settings.security.currentPasswordRequired"));
       return;
     }
 
     setSavingPassword(true);
     try {
+      if (user.email) {
+        const { error: authError } = await supabase.auth.signInWithPassword({
+          email: user.email,
+          password: currentPassword,
+        });
+
+        if (authError) {
+          toast.error(t("settings.security.currentPasswordIncorrect"));
+          setSavingPassword(false);
+          return;
+        }
+      }
+
+      const passwordValidation = validatePassword(newPassword);
+      if (!passwordValidation.isValid) {
+        toast.error(t("settings.security.passwordLength"));
+        setSavingPassword(false);
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        toast.error(t("settings.security.passwordMismatch"));
+        setSavingPassword(false);
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({ password: newPassword });
 
       if (error) {
         toast.error(error.message);
       } else {
         toast.success(t("settings.security.passwordUpdated"));
+        setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       }
@@ -695,6 +717,20 @@ export default function SettingsPage() {
               </p>
 
               <form onSubmit={handleUpdatePassword} className="space-y-6 max-w-md">
+                <div>
+                  <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                    {t("settings.security.currentPassword")}
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••••••"
+                    className="w-full px-5 py-3.5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold outline-none focus:border-primary transition-all"
+                  />
+                </div>
+
                 <div>
                   <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
                     {t("settings.security.newPassword")}

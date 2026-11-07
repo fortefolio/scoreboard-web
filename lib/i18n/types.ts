@@ -376,6 +376,9 @@ export interface Translations {
     security: {
       title: string;
       changePassword: string;
+      currentPassword: string;
+      currentPasswordRequired: string;
+      currentPasswordIncorrect: string;
       newPassword: string;
       confirmPassword: string;
       updatePassword: string;

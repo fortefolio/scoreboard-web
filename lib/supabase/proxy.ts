@@ -3,6 +3,24 @@ import { createServerClient } from "@supabase/ssr";
 import { supabaseEnv } from "./env";
 import { isProtectedPath } from "@/lib/auth/protected-routes";
 
+const SECURITY_HEADERS: Record<string, string> = {
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+  "Cross-Origin-Opener-Policy": "same-origin",
+};
+
+function applySecurityHeaders(res: NextResponse): NextResponse {
+  Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
+    if (!res.headers.has(key)) {
+      res.headers.set(key, value);
+    }
+  });
+  return res;
+}
+
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
@@ -40,7 +58,7 @@ export async function updateSession(request: NextRequest) {
     redirectUrl.searchParams.set("next", pathname);
     const redirectResponse = NextResponse.redirect(redirectUrl);
     redirectResponse.headers.set("Cache-Control", "private, no-cache, no-store, must-revalidate");
-    return redirectResponse;
+    return applySecurityHeaders(redirectResponse);
   }
 
   // Enforce private caching on cookie-authenticated requests to prevent edge KV / CDN cross-tenant caching
@@ -51,5 +69,5 @@ export async function updateSession(request: NextRequest) {
     response.headers.set("Vary", "Cookie");
   }
 
-  return response;
+  return applySecurityHeaders(response);
 }

@@ -159,3 +159,32 @@ describe("updateSession — cookie refresh", () => {
     expect(observed.find(c => c.name === "sb-access-token")?.value).toBe("test-token");
   });
 });
+
+describe("updateSession — security headers", () => {
+  beforeEach(() => {
+    capturedCookies = null;
+    getUserMock.mockReset();
+  });
+
+  it("applies OWASP ASVS compliant security headers to responses", async () => {
+    stubGuest();
+    const res = await updateSession(makeRequest("/tournament/abc"));
+
+    expect(res.headers.get("strict-transport-security")).toBe("max-age=31536000; includeSubDomains; preload");
+    expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(res.headers.get("x-frame-options")).toBe("DENY");
+    expect(res.headers.get("referrer-policy")).toBe("strict-origin-when-cross-origin");
+    expect(res.headers.get("permissions-policy")).toBe("camera=(), microphone=(), geolocation=(), browsing-topics=()");
+    expect(res.headers.get("cross-origin-opener-policy")).toBe("same-origin");
+  });
+
+  it("applies security headers to redirect responses as well", async () => {
+    stubGuest();
+    const res = await updateSession(makeRequest("/settings"));
+
+    expect(res.status).toBe(307);
+    expect(res.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(res.headers.get("x-frame-options")).toBe("DENY");
+    expect(res.headers.get("strict-transport-security")).toBe("max-age=31536000; includeSubDomains; preload");
+  });
+});

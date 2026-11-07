@@ -380,6 +380,9 @@ export const en: Translations = {
     security: {
       title: "Authentication & Security",
       changePassword: "Change Password",
+      currentPassword: "Current Password",
+      currentPasswordRequired: "Current password is required.",
+      currentPasswordIncorrect: "Current password is incorrect.",
       newPassword: "New Password",
       confirmPassword: "Confirm New Password",
       updatePassword: "Update Password",
