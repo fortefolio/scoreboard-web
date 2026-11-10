@@ -36,7 +36,8 @@ function HomeContent() {
   const followHook = useFollow();
 
   // Authentication Modal State
-  const [authModal, setAuthModal] = useState<"login" | "signup" | null>(null);
+  const [authModal, setAuthModal] = useState<"login" | "signup" | "forgot" | null>(null);
+  const [forgotEmailSent, setForgotEmailSent] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
@@ -63,6 +64,7 @@ function HomeContent() {
   // Auth modal query sync
   const closeAuthModal = useCallback(() => {
     setAuthModal(null);
+    setForgotEmailSent(false);
     const params = new URLSearchParams(searchParams.toString());
     params.delete("auth");
     router.replace(
@@ -75,6 +77,7 @@ function HomeContent() {
     const auth = searchParams.get("auth");
     if (auth === "login") setAuthModal("login");
     else if (auth === "signup") setAuthModal("signup");
+    else if (auth === "forgot") setAuthModal("forgot");
     else setAuthModal(null);
 
     const tab = searchParams.get("tab");
@@ -140,7 +143,28 @@ function HomeContent() {
     setIsSubmitting(true);
 
     try {
-      if (authModal === "signup") {
+      if (authModal === "forgot") {
+        if (!email.trim()) {
+          toast.error(t("auth.fillAllFields"));
+          setIsSubmitting(false);
+          return;
+        }
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        });
+
+        if (error) {
+          toast.error(error.message);
+          setIsSubmitting(false);
+          return;
+        }
+
+        setForgotEmailSent(true);
+        toast.success(t("auth.resetEmailSentMessage"));
+        setIsSubmitting(false);
+        return;
+      } else if (authModal === "signup") {
         if (!username.trim()) {
           toast.error(t("auth.usernameRequired"));
           setIsSubmitting(false);
@@ -1176,127 +1200,185 @@ function HomeContent() {
 
             <div className="text-center mb-8">
               <h2 className="font-headline text-3xl font-black uppercase tracking-tight text-on-surface">
-                {authModal === "signup" ? t("auth.createAccount") : t("auth.welcomeBack")}
+                {authModal === "signup"
+                  ? t("auth.createAccount")
+                  : authModal === "forgot"
+                  ? t("auth.forgotPasswordTitle")
+                  : t("auth.welcomeBack")}
               </h2>
               <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant/60 mt-1">
                 {authModal === "signup"
                   ? t("auth.joinSubtitle")
+                  : authModal === "forgot"
+                  ? t("auth.forgotPasswordSubtitle")
                   : t("auth.manageSubtitle")}
               </p>
             </div>
 
-            <form onSubmit={handleAuthSubmit} className="space-y-4">
-              {authModal === "signup" && (
-                <div>
-                  <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
-                    {t("auth.username")}
-                  </label>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder={t("auth.usernamePlaceholder")}
-                    className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
-                  />
+            {forgotEmailSent ? (
+              <div className="text-center py-4">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <span className="material-symbols-outlined text-3xl">mark_email_read</span>
                 </div>
-              )}
-
-              <div>
-                <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
-                  {t("auth.email")}
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t("auth.emailPlaceholder")}
-                  required
-                  className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
-                />
+                <h3 className="font-headline text-lg font-bold text-on-surface mb-2">
+                  {t("auth.resetEmailSentTitle")}
+                </h3>
+                <p className="text-xs text-on-surface-variant mb-6 leading-relaxed">
+                  {t("auth.resetEmailSentMessage")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthModal("login");
+                    setForgotEmailSent(false);
+                  }}
+                  className="w-full bg-primary text-on-primary py-3.5 rounded-2xl font-label text-xs font-black uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-primary/20"
+                >
+                  {t("auth.backToSignIn")}
+                </button>
               </div>
+            ) : (
+              <>
+                <form onSubmit={handleAuthSubmit} className="space-y-4">
+                  {authModal === "signup" && (
+                    <div>
+                      <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
+                        {t("auth.username")}
+                      </label>
+                      <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder={t("auth.usernamePlaceholder")}
+                        className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
+                      />
+                    </div>
+                  )}
 
-              <div>
-                <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
-                  {t("auth.password")}
-                </label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder={t("auth.passwordPlaceholder")}
-                  required
-                  className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
-                />
-                {authModal === "signup" && (
-                  <p className="text-[11px] text-on-surface-variant/70 mt-1 leading-snug">
-                    {t("auth.passwordRequirements")}
-                  </p>
-                )}
-              </div>
+                  <div>
+                    <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
+                      {t("auth.email")}
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder={t("auth.emailPlaceholder")}
+                      required
+                      className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
+                    />
+                  </div>
 
-              {authModal === "signup" && (
-                <div>
-                  <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
-                    {t("auth.confirmPassword")}
-                  </label>
-                  <input
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder={t("auth.confirmPasswordPlaceholder")}
-                    className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
-                  />
+                  {authModal !== "forgot" && (
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
+                          {t("auth.password")}
+                        </label>
+                        {authModal === "login" && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAuthModal("forgot");
+                              setForgotEmailSent(false);
+                            }}
+                            className="text-[11px] text-primary hover:underline cursor-pointer font-medium"
+                          >
+                            {t("auth.forgotPassword")}
+                          </button>
+                        )}
+                      </div>
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder={t("auth.passwordPlaceholder")}
+                        required
+                        className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
+                      />
+                      {authModal === "signup" && (
+                        <p className="text-[11px] text-on-surface-variant/70 mt-1 leading-snug">
+                          {t("auth.passwordRequirements")}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {authModal === "signup" && (
+                    <div>
+                      <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
+                        {t("auth.confirmPassword")}
+                      </label>
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder={t("auth.confirmPasswordPlaceholder")}
+                        className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
+                      />
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full bg-primary text-on-primary py-3.5 rounded-2xl font-label text-xs font-black uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-primary/20 mt-2"
+                  >
+                    {isSubmitting
+                      ? t("auth.processing")
+                      : authModal === "signup"
+                      ? t("auth.signUpBtn")
+                      : authModal === "forgot"
+                      ? t("auth.sendResetLink")
+                      : t("auth.signInBtn")}
+                  </button>
+                </form>
+
+                <div className="mt-6 text-center">
+                  {authModal === "forgot" ? (
+                    <button
+                      type="button"
+                      onClick={() => setAuthModal("login")}
+                      className="text-xs text-primary font-bold hover:underline cursor-pointer"
+                    >
+                      {t("auth.backToSignIn")}
+                    </button>
+                  ) : authModal === "signup" ? (
+                    <p className="text-xs text-on-surface-variant">
+                      {t("auth.alreadyHaveAccount")}{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthModal("login");
+                          const params = new URLSearchParams(searchParams.toString());
+                          params.set("auth", "login");
+                          router.replace(window.location.pathname + "?" + params.toString());
+                        }}
+                        className="text-primary font-bold hover:underline cursor-pointer"
+                      >
+                        {t("auth.signInBtn")}
+                      </button>
+                    </p>
+                  ) : (
+                    <p className="text-xs text-on-surface-variant">
+                      {t("auth.dontHaveAccount")}{" "}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAuthModal("signup");
+                          const params = new URLSearchParams(searchParams.toString());
+                          params.set("auth", "signup");
+                          router.replace(window.location.pathname + "?" + params.toString());
+                        }}
+                        className="text-primary font-bold hover:underline cursor-pointer"
+                      >
+                        {t("auth.signUpBtn")}
+                      </button>
+                    </p>
+                  )}
                 </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-primary text-on-primary py-3.5 rounded-2xl font-label text-xs font-black uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-primary/20 mt-2"
-              >
-                {isSubmitting
-                  ? t("auth.processing")
-                  : authModal === "signup"
-                  ? t("auth.signUpBtn")
-                  : t("auth.signInBtn")}
-              </button>
-            </form>
-
-            <div className="mt-6 text-center">
-              {authModal === "signup" ? (
-                <p className="text-xs text-on-surface-variant">
-                  {t("auth.alreadyHaveAccount")}{" "}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthModal("login");
-                      const params = new URLSearchParams(searchParams.toString());
-                      params.set("auth", "login");
-                      router.replace(window.location.pathname + "?" + params.toString());
-                    }}
-                    className="text-primary font-bold hover:underline cursor-pointer"
-                  >
-                    {t("auth.signInBtn")}
-                  </button>
-                </p>
-              ) : (
-                <p className="text-xs text-on-surface-variant">
-                  {t("auth.dontHaveAccount")}{" "}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAuthModal("signup");
-                      const params = new URLSearchParams(searchParams.toString());
-                      params.set("auth", "signup");
-                      router.replace(window.location.pathname + "?" + params.toString());
-                    }}
-                    className="text-primary font-bold hover:underline cursor-pointer"
-                  >
-                    {t("auth.signUpBtn")}
-                  </button>
-                </p>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </div>
       )}

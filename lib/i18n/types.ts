@@ -150,6 +150,18 @@ export interface Translations {
     checkEmailTitle: string;
     checkEmailMessage: string;
     gotIt: string;
+    forgotPassword: string;
+    resetPassword: string;
+    forgotPasswordTitle: string;
+    forgotPasswordSubtitle: string;
+    sendResetLink: string;
+    resetEmailSentTitle: string;
+    resetEmailSentMessage: string;
+    backToSignIn: string;
+    newPassword: string;
+    newPasswordPlaceholder: string;
+    updatePasswordBtn: string;
+    passwordResetSuccess: string;
   };
   tournament: {
     officialTournament: string;

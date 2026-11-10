@@ -42,8 +42,15 @@ function ConfirmContent() {
 
           if (isMobile) {
             setTimeout(() => {
-              window.location.href = "scoreboard://auth/callback";
+              window.location.href =
+                type === "recovery"
+                  ? "scoreboard://auth/reset-password"
+                  : "scoreboard://auth/callback";
             }, 600);
+          } else if (type === "recovery") {
+            setTimeout(() => {
+              window.location.href = "/auth/reset-password";
+            }, 1000);
           }
         }
       } catch (err: any) {
