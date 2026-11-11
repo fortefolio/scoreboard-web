@@ -43,6 +43,8 @@ export interface Translations {
     sport: string;
     status: string;
     score: string;
+    match: string;
+    tournament: string;
     format: string;
     event: string;
     teamsOrPlayers: string;

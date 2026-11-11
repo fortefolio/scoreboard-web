@@ -43,6 +43,8 @@ export const en: Translations = {
     sport: "Sport",
     status: "Status",
     score: "Score",
+    match: "Match",
+    tournament: "Tournament",
     format: "Format",
     event: "Event",
     teamsOrPlayers: "Teams / Players",

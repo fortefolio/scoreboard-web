@@ -43,6 +43,8 @@ export const pt: Translations = {
     sport: "Desporto",
     status: "Estado",
     score: "Resultado",
+    match: "Partida",
+    tournament: "Torneio",
     format: "Formato",
     event: "Evento",
     teamsOrPlayers: "Equipas / Jogadores",

@@ -429,8 +429,47 @@ function HomeContent() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8 bg-surface-container p-3 sm:p-4 rounded-xl border border-outline-variant">
         {/* Search & Filters */}
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 flex-1">
+          {/* Favorites/Following Type Segmented Control: All (X) | Matches (Y) | Tournaments (Z) */}
+          {activeTab === "following" && user && (followedMatches.length > 0 || followedTournaments.length > 0) && (
+            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-surface-container-high border border-outline-variant">
+              <button
+                type="button"
+                onClick={() => setFollowingFilter("all")}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                  followingFilter === "all"
+                    ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                {t("home.allFollowed")} ({followedMatches.length + followedTournaments.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFollowingFilter("matches")}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                  followingFilter === "matches"
+                    ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                {t("home.matchesTab")} ({followedMatches.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFollowingFilter("tournaments")}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                  followingFilter === "tournaments"
+                    ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                {t("home.tournamentsTab")} ({followedTournaments.length})
+              </button>
+            </div>
+          )}
+
           {/* Search Box */}
-          <div className="relative w-full sm:w-auto sm:min-w-[200px] flex-1 max-w-full sm:max-w-xs">
+          <div className="relative w-full sm:w-auto sm:min-w-[180px] flex-1 max-w-full sm:max-w-xs">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-text-muted">
               search
             </span>
@@ -444,29 +483,6 @@ function HomeContent() {
               }}
               className="w-full bg-surface-container-high text-text-primary text-xs font-medium pl-9 pr-3 py-1.5 rounded-lg border border-outline-variant outline-none focus:border-outline transition-colors placeholder:text-text-muted"
             />
-          </div>
-
-          {/* Sport Filter Dropdown (Hidden on mobile where SportFilterBar is present; visible on desktop) */}
-          <div className="hidden lg:flex items-center gap-2">
-            <span className="text-xs font-medium text-text-secondary">
-              {t("common.sport")}:
-            </span>
-            <select
-              value={sportFilter}
-              onChange={(e) => {
-                setSportFilter(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="bg-surface-container-high text-text-primary text-xs font-medium px-3 py-1.5 rounded-lg border border-outline-variant outline-none focus:border-outline transition-colors cursor-pointer"
-            >
-              <option value="all">{t("sports.all")}</option>
-              <option value="Basketball">{t("sports.basketball")}</option>
-              <option value="Volleyball">{t("sports.volleyball")}</option>
-              <option value="Beach Volleyball">{t("sports.beachVolleyball")}</option>
-              <option value="Football">{t("sports.football")}</option>
-              <option value="Tennis">{t("sports.tennis")}</option>
-              <option value="Padel">{t("sports.padel")}</option>
-            </select>
           </div>
 
           {/* Status Filter */}
@@ -1051,69 +1067,6 @@ function HomeContent() {
               ) : (
                 /* Followed Items List */
                 <div className="space-y-6">
-                  {/* Sub-filter chips & View Toggle */}
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div className="flex items-center gap-1.5 p-1 rounded-xl bg-surface-container border border-outline-variant">
-                      <button
-                        onClick={() => setFollowingFilter("all")}
-                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                          followingFilter === "all"
-                            ? "bg-surface-container-high text-text-primary shadow-sm"
-                            : "text-text-muted hover:text-text-secondary"
-                        }`}
-                      >
-                        {t("home.allFollowed")} ({followedMatches.length + followedTournaments.length})
-                      </button>
-                      <button
-                        onClick={() => setFollowingFilter("matches")}
-                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                          followingFilter === "matches"
-                            ? "bg-surface-container-high text-text-primary shadow-sm"
-                            : "text-text-muted hover:text-text-secondary"
-                        }`}
-                      >
-                        {t("home.matchesTab")} ({followedMatches.length})
-                      </button>
-                      <button
-                        onClick={() => setFollowingFilter("tournaments")}
-                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                          followingFilter === "tournaments"
-                            ? "bg-surface-container-high text-text-primary shadow-sm"
-                            : "text-text-muted hover:text-text-secondary"
-                        }`}
-                      >
-                        {t("home.tournamentsTab")} ({followedTournaments.length})
-                      </button>
-                    </div>
-
-                    {/* View Mode Toggle (Defaults to list) */}
-                    <div className="inline-flex p-1 rounded-xl bg-surface-container border border-outline-variant gap-1 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => setViewMode("list")}
-                        title={t("common.viewList")}
-                        className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
-                          viewMode === "list"
-                            ? "bg-surface-container-highest text-text-primary shadow-sm"
-                            : "text-text-muted hover:text-text-primary"
-                        }`}
-                      >
-                        <span className="material-symbols-outlined text-[18px]">view_list</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setViewMode("cards")}
-                        title={t("common.viewCards")}
-                        className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
-                          viewMode === "cards"
-                            ? "bg-surface-container-highest text-text-primary shadow-sm"
-                            : "text-text-muted hover:text-text-primary"
-                        }`}
-                      >
-                        <span className="material-symbols-outlined text-[18px]">grid_view</span>
-                      </button>
-                    </div>
-                  </div>
 
                   {/* Followed Matches Section */}
                   {(followingFilter === "all" || followingFilter === "matches") && followedMatches.length > 0 && (

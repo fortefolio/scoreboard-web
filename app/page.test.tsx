@@ -346,12 +346,13 @@ describe("Home — tabs & tournaments sorting", () => {
 
     // Tournaments should render in the list
     await waitFor(() => {
-      expect(screen.getByText("Championship Alpha")).toBeInTheDocument();
-      expect(screen.getByText("Championship Beta")).toBeInTheDocument();
+      expect(screen.getAllByText("Championship Alpha")[0]).toBeInTheDocument();
+      expect(screen.getAllByText("Championship Beta")[0]).toBeInTheDocument();
     });
 
     // Clicking on a tournament row should navigate to /tournament/t1
-    await user.click(screen.getByText("Championship Alpha"));
+    const tournamentElements = screen.getAllByText("Championship Alpha");
+    await user.click(tournamentElements[tournamentElements.length - 1]);
     expect(routerPush).toHaveBeenCalledWith("/tournament/t1");
   });
 
@@ -374,10 +375,11 @@ describe("Home — tabs & tournaments sorting", () => {
     await renderHome();
 
     await waitFor(() => {
-      expect(screen.getByText("SL Benfica")).toBeInTheDocument();
+      expect(screen.getAllByText("SL Benfica")[0]).toBeInTheDocument();
     });
 
-    await user.click(screen.getByText("SL Benfica"));
+    const matchElements = screen.getAllByText("SL Benfica");
+    await user.click(matchElements[matchElements.length - 1]);
     expect(routerPush).toHaveBeenCalledWith("/match/match-123");
   });
 });
