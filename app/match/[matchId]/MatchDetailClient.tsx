@@ -142,19 +142,21 @@ export default function MatchDetailClient() {
   const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
   const menuRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const [isScrolledPastHero, setIsScrolledPastHero] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isManuallyCollapsed, setIsManuallyCollapsed] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      if (!heroRef.current) return;
-      const rect = heroRef.current.getBoundingClientRect();
-      setIsScrolledPastHero(rect.bottom < 100);
+      const scrollPos = window.scrollY || document.documentElement.scrollTop || 0;
+      setIsScrolled(scrollPos > 40);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const isCollapsed = isScrolled || isManuallyCollapsed;
 
   const isOrganizer = Boolean(
     currentUser && (
@@ -568,99 +570,8 @@ export default function MatchDetailClient() {
 
   return (
     <div className="min-h-screen bg-transparent text-on-surface px-4 sm:px-6 py-8 flex flex-col items-center relative">
+      {/* MATCH ATMOSPHERE BACKGROUND */}
       <MatchAtmosphereBackground sportType={match.sport_type} mode="spectator" />
-
-      {/* COLLAPSIBLE STICKY TELEMETRY HEADER (Flashscore style) */}
-      <div
-        className={`fixed top-14 sm:top-16 left-0 right-0 z-40 bg-[#0b0d14]/95 backdrop-blur-md border-b border-outline-variant transition-all duration-300 transform ${
-          isScrolledPastHero
-            ? "opacity-100 translate-y-0 pointer-events-auto shadow-lg shadow-black/40"
-            : "opacity-0 -translate-y-4 pointer-events-none"
-        }`}
-      >
-        <div className="max-w-4xl mx-auto px-4 py-2 flex flex-col gap-1.5">
-          {/* Compact Telemetry Score Bar */}
-          <div className="flex items-center justify-between gap-3">
-            {/* Team 1 */}
-            <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
-              <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate">
-                {formatTeamOrPlayerName(match.participants?.[0]?.name) || "TBD"}
-              </span>
-              <span className="font-digital text-base sm:text-xl text-text-primary ml-auto pl-2 shrink-0">
-                {sets[0]}
-              </span>
-            </div>
-
-            {/* Center Status / Live Indicator */}
-            <div className="flex flex-col items-center justify-center px-2 shrink-0">
-              {isCompleted ? (
-                <span className="text-[10px] font-mono text-text-muted">{t("status.completed")}</span>
-              ) : match.status === "ongoing" ? (
-                <span className="text-[10px] font-mono text-success flex items-center gap-1 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                  {t("status.live")}
-                </span>
-              ) : (
-                <span className="text-[10px] font-mono text-text-muted">VS</span>
-              )}
-            </div>
-
-            {/* Team 2 */}
-            <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-              <span className="font-digital text-base sm:text-xl text-text-primary mr-auto pr-2 shrink-0">
-                {sets[1]}
-              </span>
-              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate text-right">
-                {formatTeamOrPlayerName(match.participants?.[1]?.name) || "TBD"}
-              </span>
-              <span className="w-2 h-2 rounded-full bg-secondary shrink-0" />
-            </div>
-          </div>
-
-          {/* Compact Sticky Segmented Tabs */}
-          <div className="flex items-center justify-center border-t border-outline-variant/40 pt-1">
-            <div className="inline-flex p-0.5 rounded-lg bg-surface-container border border-outline-variant gap-1">
-              <button
-                type="button"
-                onClick={() => setActiveDetailTab("progress")}
-                className={`px-3 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer ${
-                  activeDetailTab === "progress"
-                    ? "bg-surface-container-high text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-secondary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[13px]">analytics</span>
-                {t("match.scoreProgress")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveDetailTab("rules")}
-                className={`px-3 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer ${
-                  activeDetailTab === "rules"
-                    ? "bg-surface-container-high text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-secondary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[13px]">tune</span>
-                {t("match.matchRules")}
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveDetailTab("official")}
-                className={`px-3 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer ${
-                  activeDetailTab === "official"
-                    ? "bg-surface-container-high text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-secondary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[13px]">gavel</span>
-                {t("match.matchOfficial")}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="w-full max-w-4xl relative z-10">
         <div className="mb-6">
@@ -674,7 +585,9 @@ export default function MatchDetailClient() {
         </div>
 
         {/* HERO */}
-        <div ref={heroRef} className="relative bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant overflow-hidden">
+        <div ref={heroRef} className={`relative bg-surface-container rounded-2xl border border-outline-variant overflow-hidden transition-all duration-300 ${
+          isManuallyCollapsed ? "max-h-0 p-0 border-0 opacity-0 pointer-events-none" : "p-6 sm:p-8"
+        }`}>
           {/* Top Bar: Chips (Sport -> Author -> Status) & Options Menu */}
           <div className="relative z-20 flex items-start justify-between gap-3 mb-6 sm:mb-8">
             {/* Left Chips: Sport -> Author -> Status */}
@@ -718,8 +631,17 @@ export default function MatchDetailClient() {
               </div>
             </div>
 
-            {/* Top-Right: Follow Button & 3-Dots Dropdown Menu */}
+            {/* Top-Right: Follow Button, Compact Toggle & 3-Dots Dropdown Menu */}
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsManuallyCollapsed(true)}
+                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-muted hover:text-text-primary text-[11px] font-medium transition-colors cursor-pointer"
+                title="Collapse hero"
+              >
+                <span>Compact</span>
+                <span className="material-symbols-outlined text-[14px]">expand_less</span>
+              </button>
               <FollowButton entityId={matchIdStr} entityType="match" variant="pill" />
               <div className="relative shrink-0" ref={menuRef}>
                 <button
@@ -1049,45 +971,122 @@ export default function MatchDetailClient() {
           </div>
         </div>
 
-        {/* DETAIL TABS (Score Progress, Match Rules, Match Official) */}
-        <div className="flex items-center justify-center mt-8 mb-6 overflow-x-auto">
-          <div className="inline-flex p-1 rounded-xl bg-surface-container border border-outline-variant gap-1">
+        {/* FLASHSCORE COLLAPSIBLE STICKY TELEMETRY HEADER */}
+        <div
+          className="sticky top-14 sm:top-16 z-30 bg-[#0b0d14]/95 backdrop-blur-md border border-outline-variant rounded-xl sm:rounded-2xl my-6 transition-all duration-300 shadow-xl shadow-black/40 overflow-hidden"
+        >
+          {/* Collapsed Compact Score Bar (Shown when isCollapsed) */}
+          <div
+            className={`transition-all duration-300 flex items-center justify-between gap-3 px-4 ${
+              isCollapsed
+                ? "max-h-16 opacity-100 py-2.5 border-b border-outline-variant"
+                : "max-h-0 opacity-0 py-0 border-b-0 pointer-events-none overflow-hidden"
+            }`}
+          >
+            {/* Team 1 */}
+            <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
+              <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
+              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate">
+                {formatTeamOrPlayerName(match.participants?.[0]?.name) || "TBD"}
+              </span>
+              <span className="font-digital text-lg sm:text-2xl text-primary ml-auto pl-2 shrink-0">
+                {sets[0]}
+              </span>
+            </div>
+
+            {/* Center Status / Live Indicator */}
+            <div className="flex flex-col items-center justify-center px-2 shrink-0">
+              {isCompleted ? (
+                <span className="text-[10px] font-mono text-text-muted">{t("status.completed")}</span>
+              ) : match.status === "ongoing" ? (
+                <span className="text-[10px] font-mono text-success flex items-center gap-1 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                  {t("status.live")}
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono text-text-muted">VS</span>
+              )}
+            </div>
+
+            {/* Team 2 */}
+            <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+              <span className="font-digital text-lg sm:text-2xl text-primary mr-auto pr-2 shrink-0">
+                {sets[1]}
+              </span>
+              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate text-right">
+                {formatTeamOrPlayerName(match.participants?.[1]?.name) || "TBD"}
+              </span>
+              <span className="w-2 h-2 rounded-full bg-secondary shrink-0" />
+            </div>
+
+            {/* Expand / Show More Button */}
             <button
               type="button"
-              onClick={() => setActiveDetailTab("progress")}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-                activeDetailTab === "progress"
-                  ? "bg-surface-container-high text-text-primary shadow-sm"
-                  : "text-text-muted hover:text-text-secondary"
-              }`}
+              onClick={() => {
+                setIsManuallyCollapsed(false);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              title="Expand Hero"
+              className="text-[11px] font-medium text-text-muted hover:text-text-primary flex items-center gap-0.5 px-2 py-1 rounded bg-surface-container border border-outline-variant cursor-pointer ml-1 shrink-0 transition-colors"
             >
-              <span className="material-symbols-outlined text-[16px]">analytics</span>
-              {t("match.scoreProgress")}
+              <span className="hidden sm:inline">Show more</span>
+              <span className="material-symbols-outlined text-[15px]">expand_more</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setActiveDetailTab("rules")}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-                activeDetailTab === "rules"
-                  ? "bg-surface-container-high text-text-primary shadow-sm"
-                  : "text-text-muted hover:text-text-secondary"
-              }`}
-            >
-              <span className="material-symbols-outlined text-[16px]">tune</span>
-              {t("match.matchRules")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveDetailTab("official")}
-              className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
-                activeDetailTab === "official"
-                  ? "bg-surface-container-high text-text-primary shadow-sm"
-                  : "text-text-muted hover:text-text-secondary"
-              }`}
-            >
-              <span className="material-symbols-outlined text-[16px]">gavel</span>
-              {t("match.matchOfficial")}
-            </button>
+          </div>
+
+          {/* Sticky Tab Navigation Bar */}
+          <div className="flex items-center justify-between p-2">
+            <div className="inline-flex p-0.5 rounded-lg bg-surface-container border border-outline-variant gap-1 overflow-x-auto no-scrollbar">
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab("progress")}
+                className={`px-3 sm:px-4 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeDetailTab === "progress"
+                    ? "bg-surface-container-high text-text-primary shadow-sm"
+                    : "text-text-muted hover:text-text-secondary"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[15px]">analytics</span>
+                <span>{t("match.scoreProgress")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab("rules")}
+                className={`px-3 sm:px-4 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeDetailTab === "rules"
+                    ? "bg-surface-container-high text-text-primary shadow-sm"
+                    : "text-text-muted hover:text-text-secondary"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[15px]">tune</span>
+                <span>{t("match.matchRules")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab("official")}
+                className={`px-3 sm:px-4 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                  activeDetailTab === "official"
+                    ? "bg-surface-container-high text-text-primary shadow-sm"
+                    : "text-text-muted hover:text-text-secondary"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[15px]">gavel</span>
+                <span>{t("match.matchOfficial")}</span>
+              </button>
+            </div>
+
+            {/* If NOT collapsed, show "Compact view" shortcut */}
+            {!isCollapsed && (
+              <button
+                type="button"
+                onClick={() => setIsManuallyCollapsed(true)}
+                className="hidden md:inline-flex items-center gap-1 text-[11px] font-medium text-text-muted hover:text-text-primary px-2.5 py-1 rounded bg-surface-container border border-outline-variant cursor-pointer transition-colors"
+                title="Collapse to compact telemetry bar"
+              >
+                <span>Compact view</span>
+                <span className="material-symbols-outlined text-[14px]">expand_less</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -1684,6 +1683,113 @@ export default function MatchDetailClient() {
                   );
                 })}
               </div>
+            </div>
+          );
+        })()}
+
+        {/* FOOTBALL MATCH EVENTS & BREAKDOWN */}
+        {match.sport_type === "Football" && (() => {
+          const footballGoals = (matchEvents || []).filter(
+            (e: any) => e.event_data?.type === "goal"
+          );
+
+          return (
+            <div className="bg-surface-container rounded-2xl p-5 border border-outline-variant space-y-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[18px]">sports_soccer</span>
+                  <div>
+                    <h3 className="font-semibold text-sm text-text-primary">
+                      {t("match.scoreProgress")}
+                    </h3>
+                    <p className="text-xs text-text-muted">
+                      {footballGoals.length > 0
+                        ? `${footballGoals.length} goal${footballGoals.length > 1 ? "s" : ""} recorded`
+                        : "Goals & Match Events Log"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Halves Summary Table */}
+              <div className="bg-surface-container-high/30 rounded-xl border border-outline-variant overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-surface-container-high/60 border-b border-outline-variant text-[11px] font-medium text-text-muted">
+                    <tr>
+                      <th className="py-2.5 px-4 text-left font-normal">{t("common.team")}</th>
+                      <th className="py-2.5 px-4 text-center font-semibold text-text-primary min-w-[60px] bg-surface-container-high/40">
+                        {t("common.total")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-outline-variant">
+                    {[0, 1].map((pIdx) => {
+                      const pName = formatTeamOrPlayerName(match.participants?.[pIdx]?.name) || t("common.teamDefault", { num: pIdx + 1 });
+                      const goalsCount = match.scores?.current?.[pIdx === 0 ? "home" : "away"] ?? 0;
+                      const oppGoals = match.scores?.current?.[pIdx === 0 ? "away" : "home"] ?? 0;
+                      const isWinner = isCompleted && goalsCount > oppGoals;
+
+                      return (
+                        <tr key={pIdx} className={isWinner ? "bg-surface-container-high/20" : ""}>
+                          <td className="py-3 px-4 font-medium text-text-primary flex items-center gap-2">
+                            <span className={isWinner ? "font-semibold text-text-primary" : "text-text-secondary"}>
+                              {pName}
+                            </span>
+                            {isWinner && (
+                              <span className="material-symbols-outlined text-primary text-[15px]" title="Winner">
+                                emoji_events
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3 px-4 text-center font-digital font-semibold text-2xl text-text-primary bg-surface-container-high/40">
+                            {goalsCount}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Goals Chronological Feed */}
+              {footballGoals.length > 0 ? (
+                <div className="border border-outline-variant rounded-xl overflow-hidden">
+                  <div className="px-3.5 py-2 bg-surface-container-high/50 border-b border-outline-variant text-[11px] font-medium text-text-muted uppercase tracking-wider">
+                    Goals Timeline
+                  </div>
+                  <div className="divide-y divide-outline-variant font-mono text-xs">
+                    {footballGoals.map((g: any, gIdx: number) => {
+                      const side = g.event_data?.side || "home";
+                      const isHome = side === "home";
+                      const minute = g.event_data?.minute ? `${g.event_data.minute}'` : `Goal #${gIdx + 1}`;
+                      const teamName = formatTeamOrPlayerName(
+                        match.participants?.[isHome ? 0 : 1]?.name
+                      ) || (isHome ? "Team 1" : "Team 2");
+
+                      return (
+                        <div key={g.id || gIdx} className="px-3.5 py-2.5 flex items-center justify-between hover:bg-surface-container-high/30 transition-colors">
+                          <div className="flex items-center gap-2">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-semibold text-[11px]">
+                              {minute}
+                            </span>
+                            <span className="material-symbols-outlined text-[15px] text-primary">sports_soccer</span>
+                            <span className="font-sans font-medium text-text-primary">
+                              {teamName}
+                            </span>
+                          </div>
+                          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                            GOAL
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-surface-container-high/20 border border-outline-variant text-center text-xs text-text-muted">
+                  No individual goal events recorded yet. Score tracking is live.
+                </div>
+              )}
             </div>
           );
         })()}
