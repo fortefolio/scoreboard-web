@@ -143,7 +143,6 @@ export default function MatchDetailClient() {
   const menuRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isManuallyCollapsed, setIsManuallyCollapsed] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -156,7 +155,7 @@ export default function MatchDetailClient() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isCollapsed = isScrolled || isManuallyCollapsed;
+  const isCollapsed = isScrolled;
 
   const isOrganizer = Boolean(
     currentUser && (
@@ -584,11 +583,65 @@ export default function MatchDetailClient() {
           </Link>
         </div>
 
-        {/* HERO */}
-        <div ref={heroRef} className={`relative bg-surface-container rounded-2xl border border-outline-variant overflow-hidden transition-all duration-300 ${
-          isManuallyCollapsed ? "max-h-0 p-0 border-0 opacity-0 pointer-events-none" : "p-6 sm:p-8"
-        }`}>
-          {/* Top Bar: Chips (Sport -> Author -> Status) & Options Menu */}
+        {/* HERO / COLLAPSIBLE MATCH CARD */}
+        <div
+          ref={heroRef}
+          className="sticky top-14 sm:top-16 z-30 bg-[#0b0d14]/95 backdrop-blur-md rounded-2xl border border-outline-variant transition-all duration-300 shadow-xl shadow-black/40 overflow-hidden mb-6"
+        >
+          {/* COMPACT VERSION (Image 1) - Shown on scroll */}
+          <div
+            className={`transition-all duration-300 flex items-center justify-between gap-3 px-4 sm:px-6 ${
+              isScrolled
+                ? "max-h-16 opacity-100 py-3"
+                : "max-h-0 opacity-0 py-0 pointer-events-none overflow-hidden"
+            }`}
+          >
+            {/* Team 1 */}
+            <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
+              <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
+              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate">
+                {formatTeamOrPlayerName(match.participants?.[0]?.name) || "TBD"}
+              </span>
+              <span className="font-digital text-lg sm:text-2xl text-primary ml-auto pl-2 shrink-0">
+                {sets[0]}
+              </span>
+            </div>
+
+            {/* Center Status / Live Indicator */}
+            <div className="flex flex-col items-center justify-center px-2 shrink-0">
+              {isCompleted ? (
+                <span className="text-[10px] font-mono text-text-muted">{t("status.completed")}</span>
+              ) : match.status === "ongoing" ? (
+                <span className="text-[10px] font-mono text-success flex items-center gap-1 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                  {t("status.live")}
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono text-text-muted">VS</span>
+              )}
+            </div>
+
+            {/* Team 2 */}
+            <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+              <span className="font-digital text-lg sm:text-2xl text-primary mr-auto pr-2 shrink-0">
+                {sets[1]}
+              </span>
+              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate text-right">
+                {formatTeamOrPlayerName(match.participants?.[1]?.name) || "TBD"}
+              </span>
+              <span className="w-2 h-2 rounded-full bg-secondary shrink-0" />
+            </div>
+          </div>
+
+          {/* EXPANDED BIG CARD (Image 0) - Shown when at top */}
+          <div
+            className={`transition-all duration-300 ${
+              isScrolled
+                ? "max-h-0 opacity-0 p-0 pointer-events-none overflow-hidden"
+                : "max-h-[1400px] opacity-100 p-6 sm:p-8"
+            }`}
+          >
+            {/* Top Bar: Chips (Sport -> Author -> Status) & Options Menu */}
           <div className="relative z-20 flex items-start justify-between gap-3 mb-6 sm:mb-8">
             {/* Left Chips: Sport -> Author -> Status */}
             <div className="flex flex-wrap items-center gap-2">
@@ -631,17 +684,8 @@ export default function MatchDetailClient() {
               </div>
             </div>
 
-            {/* Top-Right: Follow Button, Compact Toggle & 3-Dots Dropdown Menu */}
+            {/* Top-Right: Follow Button & 3-Dots Dropdown Menu */}
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setIsManuallyCollapsed(true)}
-                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-muted hover:text-text-primary text-[11px] font-medium transition-colors cursor-pointer"
-                title="Collapse hero"
-              >
-                <span>Compact</span>
-                <span className="material-symbols-outlined text-[14px]">expand_less</span>
-              </button>
               <FollowButton entityId={matchIdStr} entityType="match" variant="pill" />
               <div className="relative shrink-0" ref={menuRef}>
                 <button
@@ -970,123 +1014,47 @@ export default function MatchDetailClient() {
             )}
           </div>
         </div>
+      </div>
 
-        {/* FLASHSCORE COLLAPSIBLE STICKY TELEMETRY HEADER */}
-        <div
-          className="sticky top-14 sm:top-16 z-30 bg-[#0b0d14]/95 backdrop-blur-md border border-outline-variant rounded-xl sm:rounded-2xl my-6 transition-all duration-300 shadow-xl shadow-black/40 overflow-hidden"
-        >
-          {/* Collapsed Compact Score Bar (Shown when isCollapsed) */}
-          <div
-            className={`transition-all duration-300 flex items-center justify-between gap-3 px-4 ${
-              isCollapsed
-                ? "max-h-16 opacity-100 py-2.5 border-b border-outline-variant"
-                : "max-h-0 opacity-0 py-0 border-b-0 pointer-events-none overflow-hidden"
-            }`}
-          >
-            {/* Team 1 */}
-            <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
-              <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate">
-                {formatTeamOrPlayerName(match.participants?.[0]?.name) || "TBD"}
-              </span>
-              <span className="font-digital text-lg sm:text-2xl text-primary ml-auto pl-2 shrink-0">
-                {sets[0]}
-              </span>
-            </div>
-
-            {/* Center Status / Live Indicator */}
-            <div className="flex flex-col items-center justify-center px-2 shrink-0">
-              {isCompleted ? (
-                <span className="text-[10px] font-mono text-text-muted">{t("status.completed")}</span>
-              ) : match.status === "ongoing" ? (
-                <span className="text-[10px] font-mono text-success flex items-center gap-1 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                  {t("status.live")}
-                </span>
-              ) : (
-                <span className="text-[10px] font-mono text-text-muted">VS</span>
-              )}
-            </div>
-
-            {/* Team 2 */}
-            <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-              <span className="font-digital text-lg sm:text-2xl text-primary mr-auto pr-2 shrink-0">
-                {sets[1]}
-              </span>
-              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate text-right">
-                {formatTeamOrPlayerName(match.participants?.[1]?.name) || "TBD"}
-              </span>
-              <span className="w-2 h-2 rounded-full bg-secondary shrink-0" />
-            </div>
-
-            {/* Expand / Show More Button */}
+        {/* DETAIL TABS (Score Progress, Match Rules, Match Official) */}
+        <div className="flex items-center justify-center my-6 overflow-x-auto">
+          <div className="inline-flex p-1 rounded-xl bg-surface-container border border-outline-variant gap-1 overflow-x-auto no-scrollbar">
             <button
               type="button"
-              onClick={() => {
-                setIsManuallyCollapsed(false);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
-              title="Expand Hero"
-              className="text-[11px] font-medium text-text-muted hover:text-text-primary flex items-center gap-0.5 px-2 py-1 rounded bg-surface-container border border-outline-variant cursor-pointer ml-1 shrink-0 transition-colors"
+              onClick={() => setActiveDetailTab("progress")}
+              className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                activeDetailTab === "progress"
+                  ? "bg-surface-container-high text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-secondary"
+              }`}
             >
-              <span className="hidden sm:inline">Show more</span>
-              <span className="material-symbols-outlined text-[15px]">expand_more</span>
+              <span className="material-symbols-outlined text-[15px]">analytics</span>
+              <span>{t("match.scoreProgress")}</span>
             </button>
-          </div>
-
-          {/* Sticky Tab Navigation Bar */}
-          <div className="flex items-center justify-between p-2">
-            <div className="inline-flex p-0.5 rounded-lg bg-surface-container border border-outline-variant gap-1 overflow-x-auto no-scrollbar">
-              <button
-                type="button"
-                onClick={() => setActiveDetailTab("progress")}
-                className={`px-3 sm:px-4 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
-                  activeDetailTab === "progress"
-                    ? "bg-surface-container-high text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-secondary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[15px]">analytics</span>
-                <span>{t("match.scoreProgress")}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveDetailTab("rules")}
-                className={`px-3 sm:px-4 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
-                  activeDetailTab === "rules"
-                    ? "bg-surface-container-high text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-secondary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[15px]">tune</span>
-                <span>{t("match.matchRules")}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveDetailTab("official")}
-                className={`px-3 sm:px-4 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
-                  activeDetailTab === "official"
-                    ? "bg-surface-container-high text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-secondary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[15px]">gavel</span>
-                <span>{t("match.matchOfficial")}</span>
-              </button>
-            </div>
-
-            {/* If NOT collapsed, show "Compact view" shortcut */}
-            {!isCollapsed && (
-              <button
-                type="button"
-                onClick={() => setIsManuallyCollapsed(true)}
-                className="hidden md:inline-flex items-center gap-1 text-[11px] font-medium text-text-muted hover:text-text-primary px-2.5 py-1 rounded bg-surface-container border border-outline-variant cursor-pointer transition-colors"
-                title="Collapse to compact telemetry bar"
-              >
-                <span>Compact view</span>
-                <span className="material-symbols-outlined text-[14px]">expand_less</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setActiveDetailTab("rules")}
+              className={`px-3 sm:px-4 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                activeDetailTab === "rules"
+                  ? "bg-surface-container-high text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-secondary"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[15px]">tune</span>
+              <span>{t("match.matchRules")}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveDetailTab("official")}
+              className={`px-3 sm:px-4 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer shrink-0 ${
+                activeDetailTab === "official"
+                  ? "bg-surface-container-high text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-secondary"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[15px]">gavel</span>
+              <span>{t("match.matchOfficial")}</span>
+            </button>
           </div>
         </div>
 
