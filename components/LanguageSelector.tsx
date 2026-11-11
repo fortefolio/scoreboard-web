@@ -59,10 +59,11 @@ export default function LanguageSelector() {
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={`Select language (current: ${currentLanguage.label})`}
-        className="flex items-center justify-center bg-slate-900/90 hover:bg-slate-800/90 text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 rounded-xl px-3 py-1.5 text-xs font-bold transition-all duration-200 cursor-pointer shadow-inner focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+        className="h-8 px-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-text-primary border border-outline-variant text-xs font-mono font-medium transition-colors cursor-pointer flex items-center gap-1.5 focus:outline-none"
       >
-        <span className="font-black text-[11px] tracking-wider uppercase">
-          {currentLanguage.code.toUpperCase()}
+        <span className="font-semibold">{currentLanguage.code.toUpperCase()}</span>
+        <span className={`material-symbols-outlined text-[14px] text-text-muted transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}>
+          expand_more
         </span>
       </button>
 
@@ -71,12 +72,12 @@ export default function LanguageSelector() {
         <div
           role="listbox"
           aria-label="Available languages"
-          className="absolute right-0 mt-2 w-44 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-1.5 z-[120] animate-in fade-in slide-in-from-top-2 duration-150 backdrop-blur-xl"
+          className="absolute right-0 mt-2 w-48 bg-surface-container border border-outline-variant rounded-xl shadow-2xl p-1.5 z-[120] animate-in fade-in slide-in-from-top-1 duration-150"
         >
-          <div className="px-2.5 py-1.5 border-b border-slate-800/60 mb-1">
-            <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+          <div className="px-2.5 py-1.5 border-b border-outline-variant mb-1 flex items-center justify-between">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-text-muted">
               Language / Idioma
-            </p>
+            </span>
           </div>
 
           <div className="space-y-0.5">
@@ -89,18 +90,25 @@ export default function LanguageSelector() {
                   role="option"
                   aria-selected={isSelected}
                   onClick={() => handleSelectLanguage(lang.code)}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
                     isSelected
-                      ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 font-black shadow-sm"
-                      : "text-slate-300 hover:text-white hover:bg-slate-800/70 border border-transparent"
+                      ? "bg-surface-container-highest text-text-primary border border-outline-variant"
+                      : "text-text-secondary hover:text-text-primary hover:bg-surface-container-high border border-transparent"
                   }`}
                 >
-                  <span>{lang.nativeName}</span>
+                  <div className="flex items-center gap-2">
+                    {isSelected ? (
+                      <span className="material-symbols-outlined text-[14px] text-text-primary">check</span>
+                    ) : (
+                      <span className="w-3.5" />
+                    )}
+                    <span>{lang.nativeName}</span>
+                  </div>
                   <span
-                    className={`text-[10px] font-mono font-black uppercase px-1.5 py-0.5 rounded-md ${
+                    className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
                       isSelected
-                        ? "bg-indigo-500/30 text-indigo-200"
-                        : "bg-slate-800 text-slate-500"
+                        ? "bg-surface-container text-text-primary border border-outline-variant"
+                        : "bg-surface-container-low text-text-muted"
                     }`}
                   >
                     {lang.code.toUpperCase()}
