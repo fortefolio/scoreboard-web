@@ -98,7 +98,7 @@ export default function MatchCard({ match }: { match: any }) {
         {/* Header: Sport & Status */}
         <div className="flex justify-between items-center gap-2 mb-4 relative z-10 min-w-0">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <SportIcon sport={match.sport_type} className="text-primary text-[15px] shrink-0" />
+            <SportIcon sport={match.sport_type} className="text-text-muted group-hover:text-text-primary text-[15px] shrink-0" />
             <span 
               className="text-xs font-medium text-text-secondary truncate block"
               title={match.tournaments?.name || getSportTranslation(match.sport_type, t)}

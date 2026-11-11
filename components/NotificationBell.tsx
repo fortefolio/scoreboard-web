@@ -139,21 +139,21 @@ export default function NotificationBell() {
                               onClick={() => handleInvitation(n.id, matchId, 'accept')}
                               title={t("notifications.accept")}
                               aria-label={t("notifications.accept")}
-                              className="w-5 h-5 rounded bg-success/15 text-success flex items-center justify-center transition-colors hover:bg-success hover:text-white border border-success/20 cursor-pointer"
+                              className="w-6 h-6 rounded-md bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-secondary hover:text-text-primary flex items-center justify-center transition-colors cursor-pointer"
                             >
-                              <span className="material-symbols-outlined text-[13px] leading-none">check</span>
+                              <span className="material-symbols-outlined text-[14px] leading-none">check</span>
                             </button>
                             <button 
                               onClick={() => handleInvitation(n.id, matchId, 'refuse')}
                               title={t("notifications.decline")}
                               aria-label={t("notifications.decline")}
-                              className="w-5 h-5 rounded bg-error/15 text-error flex items-center justify-center transition-colors hover:bg-error hover:text-white border border-error/20 cursor-pointer"
+                              className="w-6 h-6 rounded-md bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-muted hover:text-text-primary flex items-center justify-center transition-colors cursor-pointer"
                             >
-                              <span className="material-symbols-outlined text-[13px] leading-none">close</span>
+                              <span className="material-symbols-outlined text-[14px] leading-none">close</span>
                             </button>
                           </>
                         ) : isUnread ? (
-                          <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-text-primary/70 shrink-0" />
                         ) : null}
                       </div>
                     </div>

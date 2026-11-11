@@ -489,7 +489,7 @@ function UserProfileContent({
                       <div>
                         <div className="flex justify-between items-start gap-3 mb-4">
                           <div className="flex items-center gap-2">
-                            <SportIcon sport={tourn.sport_type} className="text-primary text-[16px]" />
+                            <SportIcon sport={tourn.sport_type} className="text-text-muted group-hover:text-text-primary text-[16px]" />
                             <span className="text-secondary font-label text-[10px] font-black uppercase tracking-[0.2em]">
                               {getSportTranslation(tourn.sport_type, t)}
                             </span>
@@ -573,7 +573,7 @@ function UserProfileContent({
                             {/* Desporto */}
                             <td className="py-4 px-4">
                               <div className="flex items-center gap-2">
-                                <SportIcon sport={tItem.sport_type} className="text-primary text-[18px] shrink-0" />
+                                <SportIcon sport={tItem.sport_type} className="text-text-muted group-hover:text-text-primary text-[18px] shrink-0" />
                                 <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
                                   {getSportTranslation(tItem.sport_type, t)}
                                 </span>
@@ -732,7 +732,7 @@ function UserProfileContent({
                               {/* Desporto */}
                               <td className="py-4 px-4">
                                 <div className="flex items-center gap-2">
-                                  <SportIcon sport={m.sport_type} className="text-primary text-[18px] shrink-0" />
+                                  <SportIcon sport={m.sport_type} className="text-text-muted group-hover:text-text-primary text-[18px] shrink-0" />
                                   <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
                                     {getSportTranslation(m.sport_type, t)}
                                   </span>

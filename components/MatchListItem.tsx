@@ -52,7 +52,7 @@ export default function MatchListItem({ match }: { match: any }) {
       <Link href={`/match/${match.id}`} className="flex items-center gap-3 min-w-0 flex-1">
         {/* Sport Icon Box */}
         <div className="w-9 h-9 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center shrink-0">
-          <SportIcon sport={match.sport_type} className="text-primary text-[15px]" />
+          <SportIcon sport={match.sport_type} className="text-text-muted text-[15px]" />
         </div>
 
         {/* Teams and Scores Column */}

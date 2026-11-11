@@ -730,7 +730,7 @@ function HomeContent() {
                                 <div className="flex items-center gap-2">
                                   <SportIcon
                                     sport={m.sport_type}
-                                    className="text-primary text-[16px] shrink-0"
+                                    className="text-text-muted group-hover:text-text-primary text-[16px] shrink-0"
                                   />
                                   <span className="text-xs font-medium text-text-secondary">
                                     {getSportTranslation(m.sport_type, t)}
@@ -841,7 +841,7 @@ function HomeContent() {
                           <div className="flex items-center gap-2">
                             <SportIcon
                               sport={tItem.sport_type}
-                              className="text-primary text-[20px]"
+                              className="text-text-muted group-hover:text-text-primary text-[20px]"
                             />
                             <span className="text-[10px] font-label font-black uppercase tracking-wider text-on-surface-variant">
                               {getSportTranslation(tItem.sport_type, t)}
@@ -920,7 +920,7 @@ function HomeContent() {
                       >
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="w-10 h-10 rounded-xl bg-surface-container-high/40 border border-white/5 flex items-center justify-center shrink-0">
-                            <SportIcon sport={tItem.sport_type} className="text-primary text-[18px]" />
+                            <SportIcon sport={tItem.sport_type} className="text-text-muted group-hover:text-text-primary text-[18px]" />
                           </div>
                           <div className="min-w-0 flex-1">
                             <h4 className="text-xs font-bold text-on-surface truncate">{tItem.name}</h4>
@@ -990,7 +990,7 @@ function HomeContent() {
                               <div className="flex items-center gap-2">
                                 <SportIcon
                                   sport={tItem.sport_type}
-                                  className="text-primary text-[18px] shrink-0"
+                                  className="text-text-muted group-hover:text-text-primary text-[18px] shrink-0"
                                 />
                                 <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
                                   {getSportTranslation(tItem.sport_type, t)}

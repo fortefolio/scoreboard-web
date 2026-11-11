@@ -53,7 +53,7 @@ export default function SportFilterBar({
             {s.sportType && (
               <SportIcon
                 sport={s.sportType}
-                className={`text-[13px] ${isSelected ? "text-primary" : "text-text-muted"}`}
+                className={`text-[13px] ${isSelected ? "text-text-primary" : "text-text-muted"}`}
               />
             )}
             <span>{t(s.labelKey) || s.key}</span>
