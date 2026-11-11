@@ -142,25 +142,6 @@ export default function MatchDetailClient() {
   const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
   const menuRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const scrollPos = window.scrollY || document.documentElement.scrollTop || 0;
-          setIsScrolled(scrollPos > 90);
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const isOrganizer = Boolean(
     currentUser && (
@@ -964,53 +945,6 @@ export default function MatchDetailClient() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* STICKY COMPACT TELEMETRY HEADER (Image 1 - Pins smoothly on scroll) */}
-        <div
-          className={`sticky top-14 sm:top-16 z-30 mb-6 transition-all duration-300 ${
-            isScrolled
-              ? "opacity-100 translate-y-0 pointer-events-auto"
-              : "opacity-0 -translate-y-2 pointer-events-none"
-          }`}
-        >
-          <div className="bg-[#0b0d14]/95 backdrop-blur-md rounded-xl sm:rounded-2xl border border-outline-variant shadow-xl shadow-black/40 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
-            {/* Team 1 */}
-            <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
-              <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate">
-                {formatTeamOrPlayerName(match.participants?.[0]?.name) || "TBD"}
-              </span>
-              <span className="font-digital text-lg sm:text-2xl text-primary ml-auto pl-2 shrink-0">
-                {sets[0]}
-              </span>
-            </div>
-
-            {/* Center Status / Live Indicator */}
-            <div className="flex flex-col items-center justify-center px-2 shrink-0">
-              {isCompleted ? (
-                <span className="text-[10px] font-mono text-text-muted">{t("status.completed")}</span>
-              ) : match.status === "ongoing" ? (
-                <span className="text-[10px] font-mono text-success flex items-center gap-1 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                  {t("status.live")}
-                </span>
-              ) : (
-                <span className="text-[10px] font-mono text-text-muted">VS</span>
-              )}
-            </div>
-
-            {/* Team 2 */}
-            <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-              <span className="font-digital text-lg sm:text-2xl text-primary mr-auto pr-2 shrink-0">
-                {sets[1]}
-              </span>
-              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate text-right">
-                {formatTeamOrPlayerName(match.participants?.[1]?.name) || "TBD"}
-              </span>
-              <span className="w-2 h-2 rounded-full bg-secondary shrink-0" />
-            </div>
           </div>
         </div>
 
