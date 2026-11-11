@@ -142,12 +142,21 @@ export default function MatchDetailClient() {
   const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
   const menuRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      const scrollPos = window.scrollY || document.documentElement.scrollTop || 0;
-      setIsScrolled(scrollPos > 40);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollPos = window.scrollY || document.documentElement.scrollTop || 0;
+          // Smooth progressive interpolation from 0 (expanded) to 1 (collapsed) over 180px scroll
+          const p = Math.min(1, Math.max(0, scrollPos / 180));
+          setScrollProgress(p);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -155,7 +164,7 @@ export default function MatchDetailClient() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isCollapsed = isScrolled;
+  const isCollapsed = scrollProgress >= 0.8;
 
   const isOrganizer = Boolean(
     currentUser && (
@@ -586,15 +595,19 @@ export default function MatchDetailClient() {
         {/* HERO / COLLAPSIBLE MATCH CARD */}
         <div
           ref={heroRef}
-          className="sticky top-14 sm:top-16 z-30 bg-[#0b0d14]/95 backdrop-blur-md rounded-2xl border border-outline-variant transition-all duration-300 shadow-xl shadow-black/40 overflow-hidden mb-6"
+          style={{
+            maxHeight: scrollProgress >= 1 ? "58px" : `${Math.round(580 - scrollProgress * (580 - 58))}px`,
+          }}
+          className="sticky top-14 sm:top-16 z-30 bg-[#0b0d14]/95 backdrop-blur-md rounded-2xl border border-outline-variant shadow-xl shadow-black/40 overflow-hidden mb-6 relative"
         >
-          {/* COMPACT VERSION (Image 1) - Shown on scroll */}
+          {/* COMPACT VERSION (Image 1) - Progressively revealed on scroll */}
           <div
-            className={`transition-all duration-300 flex items-center justify-between gap-3 px-4 sm:px-6 ${
-              isScrolled
-                ? "max-h-16 opacity-100 py-3"
-                : "max-h-0 opacity-0 py-0 pointer-events-none overflow-hidden"
-            }`}
+            style={{
+              opacity: Math.max(0, (scrollProgress - 0.25) / 0.75),
+              transform: `translateY(${(1 - scrollProgress) * 8}px)`,
+              pointerEvents: scrollProgress > 0.5 ? "auto" : "none",
+            }}
+            className="absolute top-0 left-0 right-0 h-14 flex items-center justify-between gap-3 px-4 sm:px-6 z-10"
           >
             {/* Team 1 */}
             <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
@@ -633,13 +646,14 @@ export default function MatchDetailClient() {
             </div>
           </div>
 
-          {/* EXPANDED BIG CARD (Image 0) - Shown when at top */}
+          {/* EXPANDED BIG CARD (Image 0) - Progressively dissolved on scroll */}
           <div
-            className={`transition-all duration-300 ${
-              isScrolled
-                ? "max-h-0 opacity-0 p-0 pointer-events-none overflow-hidden"
-                : "max-h-[1400px] opacity-100 p-6 sm:p-8"
-            }`}
+            style={{
+              opacity: Math.max(0, 1 - scrollProgress * 1.5),
+              transform: `translateY(${-scrollProgress * 20}px) scale(${1 - scrollProgress * 0.04})`,
+              pointerEvents: scrollProgress > 0.5 ? "none" : "auto",
+            }}
+            className="p-6 sm:p-8"
           >
             {/* Top Bar: Chips (Sport -> Author -> Status) & Options Menu */}
           <div className="relative z-20 flex items-start justify-between gap-3 mb-6 sm:mb-8">
@@ -843,7 +857,10 @@ export default function MatchDetailClient() {
 
             {/* SCOREBOARD TABLE (QUARTERS FOR BASKETBALL, SETS FOR VOLLEYBALL/TENNIS) */}
             {match.sport_type === "Basketball" ? (
-              <div className="w-full mt-8 pt-6 border-t border-outline-variant">
+              <div
+                style={{ opacity: Math.max(0, 1 - scrollProgress * 2.2) }}
+                className="w-full mt-8 pt-6 border-t border-outline-variant transition-opacity"
+              >
                 <div className="bg-surface-container-high/30 rounded-xl border border-outline-variant overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-surface-container-high/60 border-b border-outline-variant text-[11px] font-medium text-text-muted">
@@ -902,7 +919,10 @@ export default function MatchDetailClient() {
                 </div>
               </div>
             ) : (setsData.length > 0 || match.status === "ongoing") && (
-              <div className="w-full mt-8 pt-6 border-t border-outline-variant">
+              <div
+                style={{ opacity: Math.max(0, 1 - scrollProgress * 2.2) }}
+                className="w-full mt-8 pt-6 border-t border-outline-variant transition-opacity"
+              >
                 <div className="bg-surface-container-high/30 rounded-xl border border-outline-variant overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-surface-container-high/60 border-b border-outline-variant text-[11px] font-medium text-text-muted">
