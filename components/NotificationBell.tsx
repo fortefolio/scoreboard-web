@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { useNotifications } from "@/lib/hooks/useNotifications";
@@ -23,14 +24,14 @@ const getRelativeTime = (dateString: string) => {
 };
 
 export default function NotificationBell() {
-  const { user, supabase } = useAuth();
+  const router = useRouter();
+  const { user } = useAuth();
   const { t } = useTranslation();
   const { 
     notifications, 
     unreadCount, 
     markAsRead, 
     markAllAsRead,
-    deleteNotification,
     handleInvitation
   } = useNotifications();
   const [isOpen, setIsOpen] = useState(false);
@@ -87,99 +88,80 @@ export default function NotificationBell() {
                 const matchDetails = data.match_details || {};
                 const isUnread = !n.read_at;
                 
+                const dateText = isInvitation 
+                  ? (matchDetails.scheduled_at 
+                      ? new Date(matchDetails.scheduled_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
+                      : new Date(n.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    )
+                  : getRelativeTime(n.created_at);
+
                 return (
                   <div 
                     key={n.id} 
-                    className={`p-3.5 rounded-xl border transition-colors ${
+                    onClick={() => {
+                      if (isUnread) markAsRead(n.id);
+                      if (matchId) {
+                        router.push(`/match/${matchId}`);
+                        setIsOpen(false);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        if (isUnread) markAsRead(n.id);
+                        if (matchId) {
+                          router.push(`/match/${matchId}`);
+                          setIsOpen(false);
+                        }
+                      }
+                    }}
+                    className={`p-3 rounded-xl border transition-colors cursor-pointer group ${
                       isUnread 
-                        ? 'border-outline-variant bg-surface-container-high' 
-                        : 'border-outline-variant/60 bg-surface-container-high/40 opacity-70 hover:opacity-100'
+                        ? 'border-outline-variant bg-surface-container-high hover:bg-surface-container-highest' 
+                        : 'border-outline-variant/60 bg-surface-container-high/40 opacity-70 hover:opacity-100 hover:bg-surface-container-high'
                     }`}
                   >
-                    {/* Top Row: Badge & Action Icons */}
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex items-center gap-1.5">
-                        {isUnread && <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />}
-                        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-surface-container text-text-secondary border border-outline-variant">
-                          {isInvitation ? t("notifications.umpireInvitation") : t("notifications.matchUpdate")}
+                    {/* Top Row: Type Icon + Date/Time on left, Actions or Unread Dot on right */}
+                    <div className="flex justify-between items-center mb-1.5">
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-text-muted">
+                        <span className="material-symbols-outlined text-[15px] text-text-secondary leading-none">
+                          {isInvitation ? "sports" : "notifications"}
                         </span>
+                        <span>{dateText}</span>
                       </div>
                       
-                      <div className="flex items-center gap-1.5">
-                        {isInvitation && isUnread && (
+                      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                        {isInvitation && isUnread ? (
                           <>
                             <button 
                               onClick={() => handleInvitation(n.id, matchId, 'accept')}
                               title={t("notifications.accept")}
-                              className="w-6 h-6 rounded-md bg-success/10 text-success flex items-center justify-center transition-colors hover:bg-success hover:text-white border border-success/20 cursor-pointer"
+                              aria-label={t("notifications.accept")}
+                              className="w-5 h-5 rounded bg-success/15 text-success flex items-center justify-center transition-colors hover:bg-success hover:text-white border border-success/20 cursor-pointer"
                             >
-                              <span className="material-symbols-outlined text-[13px]">check</span>
+                              <span className="material-symbols-outlined text-[13px] leading-none">check</span>
                             </button>
                             <button 
                               onClick={() => handleInvitation(n.id, matchId, 'refuse')}
                               title={t("notifications.decline")}
-                              className="w-6 h-6 rounded-md bg-error/10 text-error flex items-center justify-center transition-colors hover:bg-error hover:text-white border border-error/20 cursor-pointer"
+                              aria-label={t("notifications.decline")}
+                              className="w-5 h-5 rounded bg-error/15 text-error flex items-center justify-center transition-colors hover:bg-error hover:text-white border border-error/20 cursor-pointer"
                             >
-                              <span className="material-symbols-outlined text-[13px]">close</span>
+                              <span className="material-symbols-outlined text-[13px] leading-none">close</span>
                             </button>
                           </>
-                        )}
-                        {!isInvitation && isUnread && (
-                          <button 
-                            onClick={() => markAsRead(n.id)}
-                            className="w-6 h-6 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-container-highest flex items-center justify-center transition-colors cursor-pointer"
-                            title={t("notifications.markAsRead")}
-                          >
-                            <span className="material-symbols-outlined text-[13px]">done</span>
-                          </button>
-                        )}
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteNotification(n.id);
-                          }}
-                          className="w-6 h-6 rounded-md text-text-muted hover:text-error hover:bg-error/10 flex items-center justify-center transition-colors cursor-pointer"
-                          title={t("notifications.deleteNotif")}
-                          aria-label={t("notifications.deleteNotif")}
-                        >
-                          <span className="material-symbols-outlined text-[13px]">delete</span>
-                        </button>
+                        ) : isUnread ? (
+                          <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />
+                        ) : null}
                       </div>
                     </div>
 
-                    {/* Middle Row: Content */}
-                    <h4 className="text-xs font-semibold text-text-primary leading-tight mb-2">
+                    {/* Notification Title */}
+                    <h4 className={`text-xs font-semibold leading-snug line-clamp-2 ${isUnread ? "text-text-primary group-hover:text-primary transition-colors" : "text-text-secondary"}`}>
                       {formatVersusTitle(isInvitation ? (matchDetails.teams || n.title) : n.title)}
                     </h4>
-
-                    {/* Bottom Row: Info & CTA */}
-                    <div className="flex justify-between items-center pt-1 border-t border-outline-variant/50">
-                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-text-muted">
-                        <span className="material-symbols-outlined text-[13px]">{isInvitation ? 'calendar_today' : 'schedule'}</span>
-                        <span>
-                          {isInvitation 
-                            ? (matchDetails.scheduled_at 
-                                ? new Date(matchDetails.scheduled_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
-                                : new Date(n.created_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-                              )
-                            : getRelativeTime(n.created_at)
-                          }
-                        </span>
-                      </div>
-                      
-                      {matchId && (
-                        <Link 
-                          href={`/match/${matchId}`}
-                          onClick={() => {
-                            if (!n.read_at) markAsRead(n.id);
-                            setIsOpen(false);
-                          }}
-                          className="text-[11px] font-medium text-text-primary hover:text-white transition-colors bg-surface-container px-2.5 py-1 rounded-md border border-outline-variant"
-                        >
-                          {isInvitation ? t("notifications.details") : t("notifications.liveFeed")}
-                        </Link>
-                      )}
-                    </div>
                   </div>
                 );
               })

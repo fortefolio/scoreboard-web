@@ -196,13 +196,13 @@ describe("NotificationBell — authenticated", () => {
     expect(toastInfo).toHaveBeenCalledWith("New Notification: Live!");
   });
 
-  it("deleting a notification removes it from the list and decreases badge count", async () => {
+  it("clicking a notification marks it as read and zeroes the unread badge", async () => {
     const user = userEvent.setup();
     supabaseMock.__queueResponse("notifications", {
-      data: [note({ id: "n1", title: "Note to delete", read_at: null })],
+      data: [note({ id: "n1", title: "Match Invite", read_at: null, data: { match_id: "m-123" } })],
       error: null,
     });
-    // Queue response for delete query
+    // Queue response for mark as read query
     supabaseMock.__queueResponse("notifications", { data: null, error: null });
 
     renderBell(testUser);
@@ -210,15 +210,14 @@ describe("NotificationBell — authenticated", () => {
 
     // Open bell dropdown
     await user.click(screen.getByRole("button"));
-    expect(await screen.findByText("Note to delete")).toBeInTheDocument();
+    const noteCard = await screen.findByText("Match Invite");
+    expect(noteCard).toBeInTheDocument();
 
-    const deleteBtn = screen.getByRole("button", { name: /delete notification/i });
     await act(async () => {
-      await user.click(deleteBtn);
+      await user.click(noteCard);
     });
 
     await waitFor(() => {
-      expect(screen.queryByText("Note to delete")).not.toBeInTheDocument();
       expect(screen.queryByText("1")).not.toBeInTheDocument();
     });
   });
