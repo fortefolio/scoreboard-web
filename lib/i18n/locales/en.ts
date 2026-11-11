@@ -45,6 +45,8 @@ export const en: Translations = {
     score: "Score",
     match: "Match",
     tournament: "Tournament",
+    newMatch: "New Match",
+    newTournament: "New Tournament",
     format: "Format",
     event: "Event",
     teamsOrPlayers: "Teams / Players",

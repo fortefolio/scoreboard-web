@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
@@ -10,7 +10,16 @@ import UpgradeModal from "@/components/subscription/UpgradeModal";
 import SportIcon from "@/components/SportIcon";
 
 export default function MyTournamentsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen pt-20" />}>
+      <MyTournamentsContent />
+    </Suspense>
+  );
+}
+
+function MyTournamentsContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, supabase } = useAuth();
   const { t: tr } = useTranslation();
   const [tournaments, setTournaments] = useState<any[]>([]);
@@ -66,7 +75,7 @@ export default function MyTournamentsPage() {
     fetchTournaments(user.id);
   }, [user, fetchTournaments]);
 
-  const handleOpenCreate = () => {
+  const handleOpenCreate = useCallback(() => {
     if (!user) {
       toast.error("Please log in to create an event.");
       return;
@@ -76,7 +85,13 @@ export default function MyTournamentsPage() {
     } else {
       setShowModal(true);
     }
-  };
+  }, [user, subscriptionTier]);
+
+  useEffect(() => {
+    if (searchParams.get("create") === "true") {
+      handleOpenCreate();
+    }
+  }, [searchParams, handleOpenCreate]);
 
   const handleCreate = async () => {
     if (!user) {
@@ -180,6 +195,14 @@ export default function MyTournamentsPage() {
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          <button 
+            onClick={handleOpenCreate}
+            className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[16px]">add</span>
+            {tr("common.newTournament")}
+          </button>
+
           {/* View Mode Toggle (Defaults to list) */}
           <div className="inline-flex p-1 rounded-xl bg-surface-container border border-outline-variant gap-1 shrink-0">
             <button
@@ -207,14 +230,6 @@ export default function MyTournamentsPage() {
               <span className="material-symbols-outlined text-[18px]">grid_view</span>
             </button>
           </div>
-
-          <button 
-            onClick={handleOpenCreate}
-            className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[16px]">add</span>
-            New Tournament
-          </button>
         </div>
       </div>
 

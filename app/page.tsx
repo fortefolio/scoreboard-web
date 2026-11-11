@@ -535,32 +535,69 @@ function HomeContent() {
           )}
         </div>
 
-        {/* View Mode Toggle */}
-        <div className="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg border border-outline-variant self-start sm:self-auto shrink-0">
-          <button
-            type="button"
-            onClick={() => setViewMode("list")}
-            title={t("common.viewList")}
-            className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
-              viewMode === "list"
-                ? "bg-surface-container-highest text-text-primary shadow-sm"
-                : "text-text-muted hover:text-text-primary"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[18px]">view_list</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode("cards")}
-            title={t("common.viewCards")}
-            className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
-              viewMode === "cards"
-                ? "bg-surface-container-highest text-text-primary shadow-sm"
-                : "text-text-muted hover:text-text-primary"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[18px]">grid_view</span>
-          </button>
+        {/* Actions & View Mode Toggle */}
+        <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
+          {activeTab === "matches" && (
+            <button
+              type="button"
+              onClick={() => {
+                if (!user) {
+                  setAuthModal("login");
+                } else {
+                  router.push("/my-matches?create=true");
+                }
+              }}
+              className="px-3 py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[16px]">add</span>
+              {t("common.newMatch")}
+            </button>
+          )}
+
+          {activeTab === "tournaments" && (
+            <button
+              type="button"
+              onClick={() => {
+                if (!user) {
+                  setAuthModal("login");
+                } else {
+                  router.push("/my-tournaments?create=true");
+                }
+              }}
+              className="px-3 py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[16px]">add</span>
+              {t("common.newTournament")}
+            </button>
+          )}
+
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg border border-outline-variant shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              title={t("common.viewList")}
+              className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
+                viewMode === "list"
+                  ? "bg-surface-container-highest text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-primary"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">view_list</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("cards")}
+              title={t("common.viewCards")}
+              className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
+                viewMode === "cards"
+                  ? "bg-surface-container-highest text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-primary"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">grid_view</span>
+            </button>
+          </div>
         </div>
       </div>
 

@@ -13,6 +13,7 @@ vi.mock("next/navigation", () => ({
     forward: vi.fn(),
     prefetch: vi.fn(),
   }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 const mockUser = {
@@ -126,7 +127,7 @@ describe("MyTournamentsPage - Pro Paywall Guard", () => {
 
     // Expect Create Event modal to be shown
     await waitFor(() => {
-      expect(screen.getByText("NEW TOURNAMENT")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /New Tournament/i })).toBeInTheDocument();
       expect(screen.getByPlaceholderText("e.g. Summer Open 2026")).toBeInTheDocument();
     });
   });
@@ -185,8 +186,8 @@ describe("MyTournamentsPage - Tournament Creation & Reset (Issue #14)", () => {
     const nameInput = await screen.findByPlaceholderText("e.g. Summer Open 2026");
     fireEvent.change(nameInput, { target: { value: "Summer Championship" } });
 
-    // Click "Create Event"
-    const createBtn = screen.getByRole("button", { name: /Create Event/i });
+    // Click "Create Tournament"
+    const createBtn = screen.getByRole("button", { name: /Create Tournament/i });
     fireEvent.click(createBtn);
 
     await waitFor(() => {
@@ -195,7 +196,7 @@ describe("MyTournamentsPage - Tournament Creation & Reset (Issue #14)", () => {
     });
 
     // Modal should be closed
-    expect(screen.queryByText("NEW TOURNAMENT")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /New Tournament/i })).not.toBeInTheDocument();
   });
 
   it("resets form inputs when user cancels the creation modal", async () => {

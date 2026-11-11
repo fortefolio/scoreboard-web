@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import MatchCard from "@/components/MatchCard";
@@ -15,6 +15,7 @@ import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 
 function MyMatchesContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, supabase } = useAuth();
   const { t } = useTranslation();
   const [matches, setMatches] = useState<any[]>([]);
@@ -59,6 +60,12 @@ function MyMatchesContent() {
     }
     Promise.all([fetchMyMatches(user.id), fetchUserTournaments(user.id)]);
   }, [user, fetchMyMatches, fetchUserTournaments]);
+
+  useEffect(() => {
+    if (searchParams.get("create") === "true") {
+      setShowModal(true);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!user) return;
@@ -183,6 +190,14 @@ function MyMatchesContent() {
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          <button 
+            onClick={() => setShowModal(true)}
+            className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[16px]">add</span>
+            {t("common.newMatch")}
+          </button>
+
           {/* View Mode Toggle (Defaults to list) */}
           <div className="inline-flex p-1 rounded-xl bg-surface-container border border-outline-variant gap-1 shrink-0">
             <button
@@ -210,14 +225,6 @@ function MyMatchesContent() {
               <span className="material-symbols-outlined text-[18px]">grid_view</span>
             </button>
           </div>
-
-          <button 
-            onClick={() => setShowModal(true)}
-            className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
-          >
-            <span className="material-symbols-outlined text-[16px]">add</span>
-            New Match
-          </button>
         </div>
       </div>
 
