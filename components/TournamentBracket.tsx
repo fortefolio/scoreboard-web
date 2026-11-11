@@ -161,33 +161,33 @@ const BracketTree = ({
 
         return (
           <div key={roundNum} className="flex flex-col w-72 relative">
-            <div className="text-center group mb-8 h-32 flex flex-col items-center justify-start shrink-0">
-              <div className="inline-block px-4 py-1 bg-surface-container-highest/50 rounded-full border border-outline-variant/10 mb-2">
-                 <h3 className="font-label text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em]">
+            <div className="text-center group mb-6 h-28 flex flex-col items-center justify-start shrink-0">
+              <div className="inline-block px-3 py-0.5 bg-surface-container rounded-md border border-outline-variant mb-2">
+                 <h3 className="text-xs font-semibold text-text-primary">
                    {roundName}
                  </h3>
               </div>
               
-              <div className="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-xl border border-outline-variant/10 mb-2">
-                <span className="material-symbols-outlined text-[12px] text-on-surface-variant">calendar_today</span>
+              <div className="flex items-center gap-1.5 bg-surface-container-high px-2.5 py-1 rounded-md border border-outline-variant mb-1.5">
+                <span className="material-symbols-outlined text-[12px] text-text-muted">calendar_today</span>
                 <input 
                   type="date"
-                  className="bg-transparent text-[9px] font-black uppercase tracking-widest text-on-surface outline-none w-24"
+                  className="bg-transparent text-[11px] font-mono text-text-primary outline-none w-24"
                   value={tournament?.settings?.round_dates?.[`bracket_${roundInt}`] || ""}
                   onChange={(e) => onSaveScheduledDate(`bracket_${roundInt}`, e.target.value)}
                 />
               </div>
 
-              <div className="text-[10px] text-primary font-black uppercase tracking-widest opacity-70">
+              <div className="text-[11px] text-text-muted font-mono">
                 {tournament?.sport_type === "Tennis"
                   ? `Best of ${rules.max_sets} Sets`
                   : `${rules.max_sets} Sets • ${rules.points_per_set} Pts ${rules.point_cap ? `• Cap ${rules.point_cap}` : ""}`}
               </div>
               
-              <div className="h-8 flex items-center justify-center">
+              <div className="h-7 flex items-center justify-center mt-1">
                 <button 
                   onClick={() => setSelectedRound(roundInt)}
-                  className="opacity-0 group-hover:opacity-100 text-[9px] bg-primary text-on-primary px-3 py-1 rounded-full transition-all font-black uppercase tracking-tighter hover:scale-105 active:scale-95"
+                  className="opacity-0 group-hover:opacity-100 text-xs bg-primary hover:bg-primary/90 text-white px-2.5 py-0.5 rounded-md transition-all font-medium"
                 >
                   Edit Rules
                 </button>
@@ -199,19 +199,19 @@ const BracketTree = ({
                  const isEven = (idx + 1) % 2 === 0;
                  return (
                    <div key={match.id} className="flex-1 flex flex-col justify-center relative py-6">
-                     {/* Left Connector */}
+                     {/* Left Connector (Incoming from previous round) */}
                      {roundInt > 1 && (
-                       <div className="absolute right-full top-1/2 w-8 border-t-2 border-dotted border-outline-variant/40 -translate-y-1/2" />
+                       <div className="absolute right-full top-1/2 w-8 border-t-2 border-solid border-slate-500/80 -translate-y-1/2 pointer-events-none z-0" />
                      )}
 
                      <MatchCard match={match} tournament={tournament} />
 
-                     {/* Right Connector */}
+                     {/* Right Connector (Outgoing to next round) */}
                      {roundInt < maxRound && (
-                       <div className={`absolute left-full top-1/2 w-8 border-dotted border-outline-variant/40 ${
+                       <div className={`absolute left-full top-1/2 w-8 border-solid border-slate-500/80 pointer-events-none z-0 ${
                          !isEven 
-                           ? "border-t-2 border-r-2 h-1/2 rounded-tr-2xl" 
-                           : "border-b-2 border-r-2 h-1/2 -translate-y-full rounded-br-2xl"
+                           ? "border-t-2 border-r-2 h-[calc(50%+1px)] rounded-tr-lg" 
+                           : "border-b-2 border-r-2 h-[calc(50%+1px)] -translate-y-full rounded-br-lg"
                        }`} />
                      )}
                    </div>
@@ -452,21 +452,21 @@ export default function TournamentBracket({
       style={{ WebkitOverflowScrolling: "touch" }}
     >
       {round1Complete && enrichedMatches.some(m => m.is_virtual) && (
-        <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4">
-          <div className="bg-primary-container/10 border border-primary/20 p-8 rounded-[2rem] flex items-center justify-between shadow-2xl">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-primary-container rounded-full flex items-center justify-center shadow-lg shadow-primary/20">
-                 <span className="material-symbols-outlined text-2xl text-on-primary-container">bolt</span>
+        <div className="max-w-xl mx-auto animate-in fade-in duration-300">
+          <div className="bg-surface-container border border-outline-variant p-5 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-surface-container-high rounded-lg flex items-center justify-center text-primary border border-outline-variant">
+                 <span className="material-symbols-outlined text-xl">bolt</span>
               </div>
               <div className="text-left">
-                <h3 className="text-on-surface text-lg font-black uppercase tracking-tighter">Initialize Knockout</h3>
-                <p className="text-on-surface-variant text-[10px] font-medium leading-relaxed">Groups finalized. Ready to assign teams.</p>
+                <h3 className="text-text-primary text-sm font-semibold">Initialize Knockout</h3>
+                <p className="text-text-muted text-xs">Groups finalized. Ready to assign teams to bracket.</p>
               </div>
             </div>
             <button
               onClick={handleGenerateKnockout}
               disabled={isGeneratingKnockout}
-              className="bg-primary-container hover:brightness-110 text-on-primary-container px-6 py-3 rounded-full font-black uppercase tracking-[0.2em] text-[10px] transition-all active:scale-95 disabled:opacity-50 shadow-xl shadow-primary/20"
+              className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium text-xs transition-colors disabled:opacity-50"
             >
               {isGeneratingKnockout ? "Initializing..." : "Generate Bracket"}
             </button>
@@ -475,13 +475,13 @@ export default function TournamentBracket({
       )}
 
       {isDoubleElimination ? (
-        <div className="space-y-32">
+        <div className="space-y-16">
           <section>
-            <div className="flex items-center gap-6 mb-12 border-b border-outline-variant/10 pb-6">
-              <div className="w-12 h-12 rounded-2xl bg-primary-container/20 flex items-center justify-center">
-                 <span className="material-symbols-outlined text-primary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>military_tech</span>
+            <div className="flex items-center gap-3 mb-8 border-b border-outline-variant pb-4">
+              <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary border border-outline-variant">
+                 <span className="material-symbols-outlined text-lg">military_tech</span>
               </div>
-              <h2 className="text-3xl font-black uppercase tracking-tighter text-on-surface">Winners Bracket</h2>
+              <h2 className="text-lg font-semibold tracking-tight text-text-primary">Winners Bracket</h2>
             </div>
             <BracketTree 
               matches={enrichedMatches.filter(m => m.bracket_type === 'winners' || m.bracket_type === 'main')} 
@@ -492,11 +492,11 @@ export default function TournamentBracket({
           </section>
 
           <section>
-            <div className="flex items-center gap-6 mb-12 border-b border-outline-variant/10 pb-6">
-              <div className="w-12 h-12 rounded-2xl bg-tertiary-container/20 flex items-center justify-center">
-                 <span className="material-symbols-outlined text-tertiary text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>history</span>
+            <div className="flex items-center gap-3 mb-8 border-b border-outline-variant pb-4">
+              <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-muted border border-outline-variant">
+                 <span className="material-symbols-outlined text-lg">history</span>
               </div>
-              <h2 className="text-3xl font-black uppercase tracking-tighter text-on-surface">Losers Bracket</h2>
+              <h2 className="text-lg font-semibold tracking-tight text-text-primary">Losers Bracket</h2>
             </div>
             <BracketTree 
               matches={enrichedMatches.filter(m => m.bracket_type === 'losers')} 
@@ -506,14 +506,12 @@ export default function TournamentBracket({
             />
           </section>
 
-          <section className="flex flex-col items-center bg-surface-container-high/30 p-20 rounded-[4rem] border border-outline-variant/10 shadow-3xl relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-radial from-primary/10 via-transparent to-transparent opacity-30 group-hover:opacity-50 transition-opacity duration-1000"></div>
-            <div className="text-center mb-12 relative z-10">
-              <span className="text-6xl mb-6 block group-hover:scale-110 transition-transform duration-700">👑</span>
-              <h2 className="text-5xl font-black uppercase tracking-tighter text-on-surface leading-none">Grand Final</h2>
-              <div className="h-1 w-24 bg-primary mx-auto mt-6 rounded-full opacity-50"></div>
+          <section className="flex flex-col items-center bg-surface-container p-8 sm:p-12 rounded-2xl border border-outline-variant text-center">
+            <div className="text-center mb-6">
+              <span className="material-symbols-outlined text-3xl text-amber-400 mb-2 block">trophy</span>
+              <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-text-primary">Grand Final</h2>
             </div>
-            <div className="w-80 relative z-10">
+            <div className="w-80 mx-auto">
               <MatchCard match={enrichedMatches.find(m => m.bracket_type === 'grand_final')} tournament={tournament} />
             </div>
           </section>
