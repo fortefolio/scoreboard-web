@@ -324,7 +324,7 @@ export default function VolleyballScoreboard({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           
           {/* HOME TEAM */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left order-2 md:order-1">
+          <div className="flex flex-col items-center text-center order-2 md:order-1">
             <div className="flex items-center gap-2 mb-1.5">
               <span className="w-2 h-2 rounded-full bg-primary" />
               <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
@@ -428,12 +428,12 @@ export default function VolleyballScoreboard({
           </div>
 
           {/* AWAY TEAM */}
-          <div className="flex flex-col items-center md:items-end text-center md:text-right order-3">
+          <div className="flex flex-col items-center text-center order-3">
             <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-secondary" />
               <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
                 {teamAway}
               </h2>
-              <span className="w-2 h-2 rounded-full bg-secondary" />
             </div>
 
             {/* Serving / Receiving Indicator */}
@@ -453,10 +453,10 @@ export default function VolleyballScoreboard({
             {/* Sets Won & Timeouts Context Pills */}
             <div className="flex items-center gap-2 text-xs mb-3">
               <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
-                Descontos: <span className="font-digital text-sm text-text-primary">{timeouts.away}/2</span>
+                Sets: <span className="font-digital text-sm text-text-primary">{setsWon.away}</span>
               </span>
               <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
-                Sets: <span className="font-digital text-sm text-text-primary">{setsWon.away}</span>
+                Descontos: <span className="font-digital text-sm text-text-primary">{timeouts.away}/2</span>
               </span>
             </div>
 
@@ -470,6 +470,14 @@ export default function VolleyballScoreboard({
               <div className="flex flex-col gap-2 w-full max-w-xs mt-3">
                 <div className="flex gap-2">
                   <button
+                    onClick={() => handlePoint("away")}
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
+                    title="Ponto para Equipa Visitante"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">add</span>
+                    Ponto
+                  </button>
+                  <button
                     onClick={() => handleUndoPoint("away")}
                     disabled={currentPoints.away <= 0}
                     className="bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-2 px-3 rounded-lg font-medium text-xs border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1"
@@ -477,14 +485,6 @@ export default function VolleyballScoreboard({
                   >
                     <span className="material-symbols-outlined text-[16px]">undo</span>
                     -1
-                  </button>
-                  <button
-                    onClick={() => handlePoint("away")}
-                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
-                    title="Ponto para Equipa Visitante"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">add</span>
-                    Ponto
                   </button>
                 </div>
 

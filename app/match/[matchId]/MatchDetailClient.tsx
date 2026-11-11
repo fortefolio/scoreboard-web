@@ -1138,10 +1138,10 @@ export default function MatchDetailClient() {
 
                         {/* Right: Quick Stats & Chevron */}
                         <div className="flex items-center gap-3 self-end sm:self-auto">
-                          <div className="flex items-center gap-2 text-xs font-mono">
+                          <div className="flex items-center gap-1.5 text-xs">
                             {q.threesCount > 0 && (
                               <span
-                                className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20 text-[11px]"
+                                className="px-2 py-0.5 rounded-md bg-surface-container border border-outline-variant font-mono text-text-secondary text-[11px]"
                                 title="Triplos convertidos"
                               >
                                 {q.threesCount} 3PT
@@ -1149,7 +1149,7 @@ export default function MatchDetailClient() {
                             )}
                             {q.twosCount > 0 && (
                               <span
-                                className="px-2 py-0.5 rounded-md bg-primary/10 text-primary font-bold border border-primary/20 text-[11px]"
+                                className="px-2 py-0.5 rounded-md bg-surface-container border border-outline-variant font-mono text-text-secondary text-[11px]"
                                 title="Cestos de 2 pontos convertidos"
                               >
                                 {q.twosCount} 2PT
@@ -1157,21 +1157,21 @@ export default function MatchDetailClient() {
                             )}
                             {q.onesCount > 0 && (
                               <span
-                                className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 font-bold border border-amber-500/20 text-[11px]"
+                                className="px-2 py-0.5 rounded-md bg-surface-container border border-outline-variant font-mono text-text-secondary text-[11px]"
                                 title={t("match.freeThrowsConverted")}
                               >
                                 {q.onesCount} FT
                               </span>
                             )}
                             {q.totalBaskets > 0 && (
-                              <span className="text-[11px] text-on-surface-variant/60 font-label">
+                              <span className="text-[11px] text-text-muted font-sans ml-1">
                                 ({q.totalBaskets} {t("match.shots")})
                               </span>
                             )}
                           </div>
 
                           <span
-                            className={`material-symbols-outlined text-on-surface-variant text-[20px] transition-transform duration-300 ml-1 ${
+                            className={`material-symbols-outlined text-text-muted text-[18px] transition-transform duration-200 ml-1 ${
                               isExpanded ? "rotate-180 text-primary" : ""
                             }`}
                           >
@@ -1180,75 +1180,62 @@ export default function MatchDetailClient() {
                         </div>
                       </button>
 
-                      {/* Expanded Section: Evolution of Baskets */}
+                      {/* Expanded Section: Play-by-Play Table */}
                       {isExpanded && (
-                        <div className="px-5 pb-5 pt-2 border-t border-white/5">
+                        <div className="px-4 pb-4 pt-2 border-t border-outline-variant">
                           {q.baskets.length > 0 ? (
-                            <div className="space-y-3 pt-2">
-                              <div className="flex items-center gap-2">
-                                <span className="font-label text-[9px] font-black uppercase tracking-widest text-on-surface-variant/50">
-                                  {t("match.scoreEvolution")}
-                                </span>
-                              </div>
+                            <div className="mt-2 overflow-x-auto rounded-lg border border-outline-variant/60">
+                              <table className="w-full text-left text-xs">
+                                <thead className="bg-surface-container-high/60 text-[11px] font-medium text-text-muted border-b border-outline-variant/60">
+                                  <tr>
+                                    <th className="py-2 px-3">{t("common.score")}</th>
+                                    <th className="py-2 px-3">{t("common.team")}</th>
+                                    <th className="py-2 px-3">{t("common.format")}</th>
+                                    <th className="py-2 px-3 text-right">{t("common.pointsLabel")}</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-outline-variant/40 font-sans">
+                                  {q.baskets.map((b: any, bIdx: number) => {
+                                    const isHome = b.side === "home";
+                                    const teamName = isHome
+                                      ? match.participants?.[0]?.name || "Home"
+                                      : match.participants?.[1]?.name || "Away";
+                                    const actionType =
+                                      b.points === 3
+                                        ? "3-Pointer"
+                                        : b.points === 2
+                                        ? "2-Pointer"
+                                        : b.points === 1
+                                        ? "Free Throw"
+                                        : "Correction";
 
-                              {/* Progression Pills */}
-                              <div className="flex flex-wrap items-center gap-2">
-                                {q.baskets.map((b: any, bIdx: number) => {
-                                  const isLast = bIdx === q.baskets.length - 1;
-                                  const isHome = b.side === "home";
-                                  const teamName = isHome
-                                    ? match.participants?.[0]?.name || "Home"
-                                    : match.participants?.[1]?.name || "Away";
-
-                                  return (
-                                    <div
-                                      key={bIdx}
-                                      title={
-                                        b.desc
-                                          ? `${teamName}: ${b.desc} (${b.scoreAfter.home} - ${b.scoreAfter.away})`
-                                          : `${teamName} (+${b.points} pts)`
-                                      }
-                                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-mono text-xs transition-all cursor-default border ${
-                                        isLast && !q.isLive
-                                          ? "bg-primary-container text-on-primary-container font-black shadow-md shadow-primary-container/20 border-primary"
-                                          : isHome
-                                          ? "bg-surface-container-high text-on-surface border-primary/30 hover:border-primary/60"
-                                          : "bg-surface-container-high text-on-surface border-secondary/30 hover:border-secondary/60"
-                                      }`}
-                                    >
-                                      {/* Points Badge */}
-                                      <span
-                                        className={`px-1 rounded text-[10px] font-black ${
-                                          b.points === 3
-                                            ? "bg-emerald-500/20 text-emerald-400"
-                                            : b.points === 2
-                                            ? "bg-primary/20 text-primary"
-                                            : "bg-amber-500/20 text-amber-400"
-                                        }`}
-                                      >
-                                        +{b.points}
-                                      </span>
-
-                                      {/* Team Indicator */}
-                                      <span className={`text-[10px] font-headline font-bold uppercase truncate max-w-[80px] ${
-                                        isHome ? "text-primary/80" : "text-secondary/80"
-                                      }`}>
-                                        {teamName.split(" ")[0]}
-                                      </span>
-
-                                      {/* Score After */}
-                                      <span className="font-bold text-white tracking-tight">
-                                        {b.scoreAfter.home}-{b.scoreAfter.away}
-                                      </span>
-                                    </div>
-                                  );
-                                })}
-                              </div>
+                                    return (
+                                      <tr key={bIdx} className="hover:bg-surface-container-high/40 transition-colors">
+                                        <td className="py-2 px-3 font-digital text-sm text-text-primary tracking-wide">
+                                          {b.scoreAfter.home} - {b.scoreAfter.away}
+                                        </td>
+                                        <td className="py-2 px-3 font-medium text-text-primary">
+                                          <div className="flex items-center gap-1.5">
+                                            <span className={`w-1.5 h-1.5 rounded-full ${isHome ? "bg-primary" : "bg-secondary"}`} />
+                                            <span>{teamName}</span>
+                                          </div>
+                                        </td>
+                                        <td className="py-2 px-3 text-text-muted">
+                                          {actionType}
+                                        </td>
+                                        <td className="py-2 px-3 text-right font-mono tabular-nums font-semibold text-text-primary">
+                                          {b.points > 0 ? `+${b.points}` : b.points}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
                             </div>
                           ) : (
-                            <div className="pt-2 text-xs text-on-surface-variant">
+                            <div className="pt-2 text-xs text-text-muted">
                               {t("match.quarterFinishedWith")}{" "}
-                              <strong className="text-on-surface font-mono">
+                              <strong className="text-text-primary font-digital text-sm">
                                 {q.home} - {q.away}
                               </strong>
                               .
@@ -1461,45 +1448,37 @@ export default function MatchDetailClient() {
                         <div className="px-5 pb-5 pt-2 border-t border-white/5">
                           {isVolleyballLike ? (
                             s.pointsProgression.length > 0 ? (
-                              <div className="flex flex-wrap items-center gap-1.5 pt-2">
-                                <span className="font-label text-[9px] font-black uppercase tracking-widest text-on-surface-variant/50 mr-1">
+                              <div className="pt-2">
+                                <span className="text-[11px] font-medium text-text-muted mb-2 block">
                                   {t("match.scoreEvolution")}
                                 </span>
-                                {s.pointsProgression.map((pt: string, ptIdx: number) => {
-                                  const isLast = ptIdx === s.pointsProgression.length - 1;
-                                  const r = s.ralliesHistory[ptIdx];
-                                  const isServicePoint = r ? !r.is_sideout : false;
-                                  const scorerName = r
-                                    ? match.participants?.[r.winner]?.name || `Team ${r.winner + 1}`
-                                    : "";
+                                <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
+                                  {s.pointsProgression.map((pt: string, ptIdx: number) => {
+                                    const isLast = ptIdx === s.pointsProgression.length - 1;
+                                    const r = s.ralliesHistory[ptIdx];
+                                    const isServicePoint = r ? !r.is_sideout : false;
 
-                                  return (
-                                    <span
-                                      key={ptIdx}
-                                      title={
-                                        r
-                                          ? `Rally #${r.rally_number}: ${scorerName} (${
-                                              r.is_sideout ? "Side-out" : t("match.servicePointsCount", { count: 1 })
-                                            })`
-                                          : pt
-                                      }
-                                      className={`px-2 py-0.5 rounded-md font-mono text-[11px] transition-all cursor-default ${
-                                        isLast && !s.isLive
-                                          ? "bg-primary-container text-on-primary-container font-black shadow-md shadow-primary-container/20"
-                                          : isServicePoint
-                                          ? "bg-indigo-500/15 text-indigo-300 font-bold border border-indigo-500/30"
-                                          : "bg-surface-container-high text-on-surface-variant font-medium hover:text-on-surface"
-                                      }`}
-                                    >
-                                      {pt}
-                                    </span>
-                                  );
-                                })}
+                                    return (
+                                      <span
+                                        key={ptIdx}
+                                        className={`px-2 py-0.5 rounded text-xs font-digital whitespace-nowrap border ${
+                                          isLast
+                                            ? "bg-primary/10 text-primary border-primary/30 font-semibold"
+                                            : isServicePoint
+                                            ? "bg-surface-container border-outline-variant text-text-primary"
+                                            : "bg-surface-container-high/40 border-outline-variant/50 text-text-muted"
+                                        }`}
+                                      >
+                                        {pt}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
                               </div>
                             ) : (
-                              <div className="pt-2 text-xs text-on-surface-variant">
+                              <div className="pt-2 text-xs text-text-muted">
                                 {t("match.setFinishedWith")}{" "}
-                                <strong className="text-on-surface font-mono">
+                                <strong className="text-text-primary font-digital text-sm">
                                   {s.home} - {s.away}
                                 </strong>
                                 .

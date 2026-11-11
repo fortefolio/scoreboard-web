@@ -342,7 +342,7 @@ export default function BasketballScoreboard({
       <div className="w-full bg-surface-container rounded-2xl border border-outline-variant p-6 md:p-8 relative overflow-hidden mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           {/* HOME TEAM */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left order-2 md:order-1">
+          <div className="flex flex-col items-center text-center order-2 md:order-1">
             <div className="flex items-center gap-2 mb-1.5">
               <span className="w-2 h-2 rounded-full bg-primary" />
               <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
@@ -514,12 +514,12 @@ export default function BasketballScoreboard({
           </div>
 
           {/* AWAY TEAM */}
-          <div className="flex flex-col items-center md:items-end text-center md:text-right order-3">
+          <div className="flex flex-col items-center text-center order-3">
             <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-secondary" />
               <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
                 {teamAway}
               </h2>
-              <span className="w-2 h-2 rounded-full bg-secondary" />
             </div>
 
             {/* Bonus Indicator / Spacing */}
@@ -538,15 +538,15 @@ export default function BasketballScoreboard({
 
             {/* Away Fouls & Timeouts */}
             <div className="flex items-center gap-2 text-xs mb-3">
-              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant text-xs font-medium">
-                Descontos: <span className="font-digital text-sm text-text-primary">{timeouts.away}</span>
-              </span>
               <span className={`px-2.5 py-0.5 rounded-md border text-xs font-medium ${
                 teamFouls.away >= 5
                   ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
                   : "bg-surface-container-high text-text-secondary border-outline-variant"
               }`}>
                 Faltas: <span className="font-digital text-sm text-text-primary">{teamFouls.away}</span>
+              </span>
+              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant text-xs font-medium">
+                Descontos: <span className="font-digital text-sm text-text-primary">{timeouts.away}</span>
               </span>
             </div>
 
@@ -560,18 +560,11 @@ export default function BasketballScoreboard({
               <div className="flex flex-col gap-2 w-full max-w-xs mt-3">
                 <div className="grid grid-cols-4 gap-1.5">
                   <button
-                    onClick={() => handleScore("away", -1)}
-                    className="h-10 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-rose-400 font-digital text-base font-medium rounded-lg border border-outline-variant transition-colors flex items-center justify-center cursor-pointer"
-                    title="Corrigir (-1)"
+                    onClick={() => handleScore("away", 1)}
+                    className="h-10 bg-surface-container-high hover:bg-surface-container-highest text-text-primary font-digital text-base font-semibold rounded-lg border border-outline-variant transition-colors flex items-center justify-center cursor-pointer"
+                    title="Lance Livre (+1)"
                   >
-                    -1
-                  </button>
-                  <button
-                    onClick={() => handleScore("away", 3)}
-                    className="h-10 bg-primary hover:bg-primary/90 text-on-primary font-digital text-base font-semibold rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
-                    title="Triplo (+3)"
-                  >
-                    +3
+                    +1
                   </button>
                   <button
                     onClick={() => handleScore("away", 2)}
@@ -581,27 +574,34 @@ export default function BasketballScoreboard({
                     +2
                   </button>
                   <button
-                    onClick={() => handleScore("away", 1)}
-                    className="h-10 bg-surface-container-high hover:bg-surface-container-highest text-text-primary font-digital text-base font-semibold rounded-lg border border-outline-variant transition-colors flex items-center justify-center cursor-pointer"
-                    title="Lance Livre (+1)"
+                    onClick={() => handleScore("away", 3)}
+                    className="h-10 bg-primary hover:bg-primary/90 text-on-primary font-digital text-base font-semibold rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
+                    title="Triplo (+3)"
                   >
-                    +1
+                    +3
+                  </button>
+                  <button
+                    onClick={() => handleScore("away", -1)}
+                    className="h-10 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-rose-400 font-digital text-base font-medium rounded-lg border border-outline-variant transition-colors flex items-center justify-center cursor-pointer"
+                    title="Corrigir (-1)"
+                  >
+                    -1
                   </button>
                 </div>
 
                 <div className="flex gap-2">
+                  <button
+                    onClick={() => addFoul("away")}
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors cursor-pointer"
+                  >
+                    + Falta
+                  </button>
                   <button
                     onClick={() => useTimeout("away")}
                     disabled={timeouts.away <= 0}
                     className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer"
                   >
                     Desconto
-                  </button>
-                  <button
-                    onClick={() => addFoul("away")}
-                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors cursor-pointer"
-                  >
-                    + Falta
                   </button>
                 </div>
               </div>

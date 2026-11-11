@@ -299,7 +299,7 @@ export default function FootballScoreboard({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           
           {/* HOME TEAM */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left order-2 md:order-1">
+          <div className="flex flex-col items-center text-center order-2 md:order-1">
             <div className="flex items-center gap-2 mb-1.5">
               <span className="w-2 h-2 rounded-full bg-primary" />
               <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
@@ -464,12 +464,12 @@ export default function FootballScoreboard({
           </div>
 
           {/* AWAY TEAM */}
-          <div className="flex flex-col items-center md:items-end text-center md:text-right order-3">
+          <div className="flex flex-col items-center text-center order-3">
             <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-secondary" />
               <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
                 {teamAway}
               </h2>
-              <span className="w-2 h-2 rounded-full bg-secondary" />
             </div>
 
             {/* Sub-label row */}
@@ -508,6 +508,14 @@ export default function FootballScoreboard({
               <div className="flex flex-col gap-2 w-full max-w-xs mt-3">
                 <div className="flex gap-2">
                   <button
+                    onClick={() => handleGoal("away", 1)}
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
+                    title="Registar Golo (+1)"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">sports_soccer</span>
+                    Golo
+                  </button>
+                  <button
                     onClick={() => handleGoal("away", -1)}
                     disabled={goals.away <= 0}
                     className="bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-2 px-3 rounded-lg font-medium text-xs border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1"
@@ -515,14 +523,6 @@ export default function FootballScoreboard({
                   >
                     <span className="material-symbols-outlined text-[16px]">undo</span>
                     -1
-                  </button>
-                  <button
-                    onClick={() => handleGoal("away", 1)}
-                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
-                    title="Registar Golo (+1)"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">sports_soccer</span>
-                    Golo
                   </button>
                 </div>
 

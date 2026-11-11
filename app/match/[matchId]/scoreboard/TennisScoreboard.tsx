@@ -363,7 +363,7 @@ export default function TennisScoreboard({
       <div className="w-full bg-surface-container rounded-2xl border border-outline-variant p-6 mb-6 relative overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           {/* Left Column: Home Player / Team */}
-          <div className="flex flex-col items-center md:items-start text-center md:text-left order-2 md:order-1">
+          <div className="flex flex-col items-center text-center order-2 md:order-1">
             <div className="flex items-center gap-2 mb-1.5">
               <span className="w-2 h-2 rounded-full bg-primary"></span>
               <span className="text-lg md:text-xl font-semibold text-text-primary">
@@ -505,12 +505,12 @@ export default function TennisScoreboard({
           </div>
 
           {/* Right Column: Away Player / Team */}
-          <div className="flex flex-col items-center md:items-end text-center md:text-right order-3">
+          <div className="flex flex-col items-center text-center order-3">
             <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-secondary"></span>
               <span className="text-lg md:text-xl font-semibold text-text-primary">
                 {formatTeamOrPlayerName(teamAway)}
               </span>
-              <span className="w-2 h-2 rounded-full bg-secondary"></span>
             </div>
 
             {/* Serving / Receiving Indicator */}
@@ -530,10 +530,10 @@ export default function TennisScoreboard({
             {/* Sets & Games Context Pills */}
             <div className="flex items-center gap-2 text-xs mb-3">
               <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
-                Games: <span className="font-digital text-sm text-text-primary">{games[1]}</span>
+                Sets: <span className="font-digital text-sm text-text-primary">{awaySetsWon}</span>
               </span>
               <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
-                Sets: <span className="font-digital text-sm text-text-primary">{awaySetsWon}</span>
+                Games: <span className="font-digital text-sm text-text-primary">{games[1]}</span>
               </span>
             </div>
 
@@ -547,6 +547,13 @@ export default function TennisScoreboard({
               <div className="flex flex-col gap-2 w-full max-w-xs mt-3">
                 <div className="flex gap-2">
                   <button
+                    onClick={() => handlePoint(1)}
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">add</span>
+                    Point
+                  </button>
+                  <button
                     onClick={() => handleCorrectPoint(1)}
                     disabled={points[1] <= 0}
                     className="bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-2 px-3 rounded-lg font-medium text-xs border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1"
@@ -555,24 +562,9 @@ export default function TennisScoreboard({
                     <span className="material-symbols-outlined text-[16px]">undo</span>
                     -1
                   </button>
-                  <button
-                    onClick={() => handlePoint(1)}
-                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">add</span>
-                    Point
-                  </button>
                 </div>
 
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => handleDoubleFault(1)}
-                    disabled={serverIdx !== 1}
-                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center justify-center gap-1"
-                  >
-                    <span className="material-symbols-outlined text-[14px] text-rose-400">close</span>
-                    Double Fault
-                  </button>
                   <button
                     onClick={() => handleAce(1)}
                     disabled={serverIdx !== 1}
@@ -580,6 +572,14 @@ export default function TennisScoreboard({
                   >
                     <span className="material-symbols-outlined text-[14px] text-amber-400">bolt</span>
                     Ace
+                  </button>
+                  <button
+                    onClick={() => handleDoubleFault(1)}
+                    disabled={serverIdx !== 1}
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center justify-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-[14px] text-rose-400">close</span>
+                    Double Fault
                   </button>
                 </div>
               </div>
