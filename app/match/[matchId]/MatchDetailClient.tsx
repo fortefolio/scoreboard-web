@@ -141,6 +141,20 @@ export default function MatchDetailClient() {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
   const menuRef = useRef<HTMLDivElement>(null);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [isScrolledPastHero, setIsScrolledPastHero] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!heroRef.current) return;
+      const rect = heroRef.current.getBoundingClientRect();
+      setIsScrolledPastHero(rect.bottom < 100);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const isOrganizer = Boolean(
     currentUser && (
@@ -555,6 +569,99 @@ export default function MatchDetailClient() {
   return (
     <div className="min-h-screen bg-transparent text-on-surface px-4 sm:px-6 py-8 flex flex-col items-center relative">
       <MatchAtmosphereBackground sportType={match.sport_type} mode="spectator" />
+
+      {/* COLLAPSIBLE STICKY TELEMETRY HEADER (Flashscore style) */}
+      <div
+        className={`fixed top-14 sm:top-16 left-0 right-0 z-40 bg-[#0b0d14]/95 backdrop-blur-md border-b border-outline-variant transition-all duration-300 transform ${
+          isScrolledPastHero
+            ? "opacity-100 translate-y-0 pointer-events-auto shadow-lg shadow-black/40"
+            : "opacity-0 -translate-y-4 pointer-events-none"
+        }`}
+      >
+        <div className="max-w-4xl mx-auto px-4 py-2 flex flex-col gap-1.5">
+          {/* Compact Telemetry Score Bar */}
+          <div className="flex items-center justify-between gap-3">
+            {/* Team 1 */}
+            <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
+              <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
+              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate">
+                {formatTeamOrPlayerName(match.participants?.[0]?.name) || "TBD"}
+              </span>
+              <span className="font-digital text-base sm:text-xl text-text-primary ml-auto pl-2 shrink-0">
+                {sets[0]}
+              </span>
+            </div>
+
+            {/* Center Status / Live Indicator */}
+            <div className="flex flex-col items-center justify-center px-2 shrink-0">
+              {isCompleted ? (
+                <span className="text-[10px] font-mono text-text-muted">{t("status.completed")}</span>
+              ) : match.status === "ongoing" ? (
+                <span className="text-[10px] font-mono text-success flex items-center gap-1 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                  {t("status.live")}
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono text-text-muted">VS</span>
+              )}
+            </div>
+
+            {/* Team 2 */}
+            <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+              <span className="font-digital text-base sm:text-xl text-text-primary mr-auto pr-2 shrink-0">
+                {sets[1]}
+              </span>
+              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate text-right">
+                {formatTeamOrPlayerName(match.participants?.[1]?.name) || "TBD"}
+              </span>
+              <span className="w-2 h-2 rounded-full bg-secondary shrink-0" />
+            </div>
+          </div>
+
+          {/* Compact Sticky Segmented Tabs */}
+          <div className="flex items-center justify-center border-t border-outline-variant/40 pt-1">
+            <div className="inline-flex p-0.5 rounded-lg bg-surface-container border border-outline-variant gap-1">
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab("progress")}
+                className={`px-3 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer ${
+                  activeDetailTab === "progress"
+                    ? "bg-surface-container-high text-text-primary shadow-sm"
+                    : "text-text-muted hover:text-text-secondary"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[13px]">analytics</span>
+                {t("match.scoreProgress")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab("rules")}
+                className={`px-3 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer ${
+                  activeDetailTab === "rules"
+                    ? "bg-surface-container-high text-text-primary shadow-sm"
+                    : "text-text-muted hover:text-text-secondary"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[13px]">tune</span>
+                {t("match.matchRules")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveDetailTab("official")}
+                className={`px-3 py-1 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1 cursor-pointer ${
+                  activeDetailTab === "official"
+                    ? "bg-surface-container-high text-text-primary shadow-sm"
+                    : "text-text-muted hover:text-text-secondary"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[13px]">gavel</span>
+                {t("match.matchOfficial")}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="w-full max-w-4xl relative z-10">
         <div className="mb-6">
           <Link
@@ -567,7 +674,7 @@ export default function MatchDetailClient() {
         </div>
 
         {/* HERO */}
-        <div className="relative bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant overflow-hidden">
+        <div ref={heroRef} className="relative bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant overflow-hidden">
           {/* Top Bar: Chips (Sport -> Author -> Status) & Options Menu */}
           <div className="relative z-20 flex items-start justify-between gap-3 mb-6 sm:mb-8">
             {/* Left Chips: Sport -> Author -> Status */}
