@@ -79,13 +79,13 @@ export default function MatchAtmosphereBackground({
 
         {/* Layer 2a: Semi-transparent Occlusion Mask */}
         <div
-          className={`absolute inset-0 transition-colors duration-500 backdrop-blur-[1.5px] ${
-            isUmpire ? "bg-slate-950/85" : "bg-slate-950/70"
+          className={`absolute inset-0 transition-colors duration-500 backdrop-blur-[1px] ${
+            isUmpire ? "bg-[#0b0d14]/85" : "bg-[#0b0d14]/75"
           }`}
         />
 
         {/* Layer 2b: Top & Bottom Vignette Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-950/95 via-transparent to-slate-950" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0b0d14]/90 via-transparent to-[#0b0d14]" />
       </div>
 
       {/* Layer 3: Interactive UI content */}

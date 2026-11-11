@@ -28,25 +28,25 @@ export default function BottomTabBar() {
   return (
     <nav
       aria-label="Mobile Bottom Navigation"
-      className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-[#0a0f1d]/95 backdrop-blur-xl border-t border-white/10 px-2 py-1.5 safe-area-bottom shadow-[0_-8px_30px_rgba(0,0,0,0.5)]"
+      className="md:hidden fixed bottom-0 inset-x-0 z-50 bg-[#0b0d14]/95 backdrop-blur-md border-t border-outline-variant px-2 py-1 safe-area-bottom"
     >
       <div className="flex items-center justify-around max-w-md mx-auto">
         {/* Matches Tab */}
         <Link
           href="/?tab=matches"
           scroll={false}
-          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all ${
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-lg transition-colors ${
             isMatchesActive
-              ? "text-emerald-400"
-              : "text-slate-400 hover:text-slate-200"
+              ? "text-text-primary"
+              : "text-text-muted hover:text-text-secondary"
           }`}
         >
-          <span className="material-symbols-outlined text-[22px]">sports_tennis</span>
-          <span className="text-[10px] font-bold tracking-tight mt-0.5">
+          <span className="material-symbols-outlined text-[20px]">sports_tennis</span>
+          <span className="text-[10px] font-medium tracking-tight mt-0.5">
             {t("nav.matches")}
           </span>
           {isMatchesActive && (
-            <span className="w-1 h-1 rounded-full bg-emerald-400 mt-0.5" />
+            <span className="w-1 h-1 rounded-full bg-primary mt-0.5" />
           )}
         </Link>
 
@@ -54,18 +54,18 @@ export default function BottomTabBar() {
         <Link
           href="/?tab=tournaments"
           scroll={false}
-          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all ${
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-lg transition-colors ${
             isTournamentsActive
-              ? "text-emerald-400"
-              : "text-slate-400 hover:text-slate-200"
+              ? "text-text-primary"
+              : "text-text-muted hover:text-text-secondary"
           }`}
         >
-          <span className="material-symbols-outlined text-[22px]">emoji_events</span>
-          <span className="text-[10px] font-bold tracking-tight mt-0.5">
+          <span className="material-symbols-outlined text-[20px]">emoji_events</span>
+          <span className="text-[10px] font-medium tracking-tight mt-0.5">
             {t("nav.tournaments")}
           </span>
           {isTournamentsActive && (
-            <span className="w-1 h-1 rounded-full bg-emerald-400 mt-0.5" />
+            <span className="w-1 h-1 rounded-full bg-primary mt-0.5" />
           )}
         </Link>
 
@@ -73,18 +73,18 @@ export default function BottomTabBar() {
         <Link
           href="/?tab=following"
           scroll={false}
-          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all ${
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-lg transition-colors ${
             isFollowingActive
-              ? "text-emerald-400"
-              : "text-slate-400 hover:text-slate-200"
+              ? "text-text-primary"
+              : "text-text-muted hover:text-text-secondary"
           }`}
         >
-          <span className="material-symbols-outlined text-[22px]">star</span>
-          <span className="text-[10px] font-bold tracking-tight mt-0.5">
+          <span className="material-symbols-outlined text-[20px]">star</span>
+          <span className="text-[10px] font-medium tracking-tight mt-0.5">
             {t("nav.following")}
           </span>
           {isFollowingActive && (
-            <span className="w-1 h-1 rounded-full bg-emerald-400 mt-0.5" />
+            <span className="w-1 h-1 rounded-full bg-primary mt-0.5" />
           )}
         </Link>
 
@@ -92,25 +92,25 @@ export default function BottomTabBar() {
         <Link
           href={user ? "/notifications" : "/?auth=login"}
           scroll={false}
-          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-xl transition-all relative ${
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-lg transition-colors relative ${
             isNotificationsActive
-              ? "text-emerald-400"
-              : "text-slate-400 hover:text-slate-200"
+              ? "text-text-primary"
+              : "text-text-muted hover:text-text-secondary"
           }`}
         >
           <div className="relative">
-            <span className="material-symbols-outlined text-[22px]">notifications</span>
+            <span className="material-symbols-outlined text-[20px]">notifications</span>
             {user && unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] bg-red-500 text-white text-[8px] font-black flex items-center justify-center rounded-full px-0.5 border border-slate-950">
+              <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] bg-primary text-white text-[9px] font-semibold flex items-center justify-center rounded-full px-0.5 border border-[#0b0d14]">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
           </div>
-          <span className="text-[10px] font-bold tracking-tight mt-0.5">
+          <span className="text-[10px] font-medium tracking-tight mt-0.5">
             {t("nav.notifications")}
           </span>
           {isNotificationsActive && (
-            <span className="w-1 h-1 rounded-full bg-emerald-400 mt-0.5" />
+            <span className="w-1 h-1 rounded-full bg-primary mt-0.5" />
           )}
         </Link>
       </div>

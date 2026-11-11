@@ -426,12 +426,12 @@ function HomeContent() {
       </div>
 
       {/* Filter, Search & View Controls Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8 bg-surface-container-low p-3 sm:p-4 rounded-2xl border border-white/5 shadow-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8 bg-surface-container p-3 sm:p-4 rounded-xl border border-outline-variant">
         {/* Search & Filters */}
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 flex-1">
           {/* Search Box */}
           <div className="relative w-full sm:w-auto sm:min-w-[200px] flex-1 max-w-full sm:max-w-xs">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant/50">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-text-muted">
               search
             </span>
             <input
@@ -442,13 +442,13 @@ function HomeContent() {
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="w-full bg-surface-container text-on-surface text-xs font-bold pl-9 pr-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors placeholder:text-on-surface-variant/40"
+              className="w-full bg-surface-container-high text-text-primary text-xs font-medium pl-9 pr-3 py-1.5 rounded-lg border border-outline-variant outline-none focus:border-outline transition-colors placeholder:text-text-muted"
             />
           </div>
 
           {/* Sport Filter Dropdown (Hidden on mobile where SportFilterBar is present; visible on desktop) */}
           <div className="hidden lg:flex items-center gap-2">
-            <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
+            <span className="text-xs font-medium text-text-secondary">
               {t("common.sport")}:
             </span>
             <select
@@ -457,7 +457,7 @@ function HomeContent() {
                 setSportFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
+              className="bg-surface-container-high text-text-primary text-xs font-medium px-3 py-1.5 rounded-lg border border-outline-variant outline-none focus:border-outline transition-colors cursor-pointer"
             >
               <option value="all">{t("sports.all")}</option>
               <option value="Basketball">{t("sports.basketball")}</option>
@@ -471,7 +471,7 @@ function HomeContent() {
 
           {/* Status Filter */}
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
+            <span className="text-xs font-medium text-text-secondary">
               {t("common.status")}:
             </span>
             <select
@@ -480,7 +480,7 @@ function HomeContent() {
                 setStatusFilter(e.target.value);
                 setCurrentPage(1);
               }}
-              className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
+              className="bg-surface-container-high text-text-primary text-xs font-medium px-3 py-1.5 rounded-lg border border-outline-variant outline-none focus:border-outline transition-colors cursor-pointer"
             >
               <option value="all">{t("status.all")}</option>
               <option value="scheduled">{t("status.scheduled")}</option>
@@ -491,7 +491,7 @@ function HomeContent() {
 
           {/* Date Sort */}
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
+            <span className="text-xs font-medium text-text-secondary">
               {t("common.date")}:
             </span>
             <select
@@ -500,7 +500,7 @@ function HomeContent() {
                 setDateSort(e.target.value as "desc" | "asc");
                 setCurrentPage(1);
               }}
-              className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
+              className="bg-surface-container-high text-text-primary text-xs font-medium px-3 py-1.5 rounded-lg border border-outline-variant outline-none focus:border-outline transition-colors cursor-pointer"
             >
               <option value="desc">{t("common.recentFirst")}</option>
               <option value="asc">{t("common.oldestFirst")}</option>
@@ -512,7 +512,7 @@ function HomeContent() {
             <button
               type="button"
               onClick={clearFilters}
-              className="text-[10px] font-label font-bold uppercase tracking-wider text-primary hover:underline cursor-pointer"
+              className="text-xs font-medium text-primary hover:underline cursor-pointer"
             >
               {t("common.clearFilters")}
             </button>
@@ -520,15 +520,15 @@ function HomeContent() {
         </div>
 
         {/* View Mode Toggle */}
-        <div className="flex items-center gap-1 bg-surface-container p-1 rounded-xl border border-white/10 self-start sm:self-auto shrink-0">
+        <div className="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg border border-outline-variant self-start sm:self-auto shrink-0">
           <button
             type="button"
             onClick={() => setViewMode("list")}
             title={t("common.viewList")}
-            className={`p-1.5 rounded-lg transition-all flex items-center cursor-pointer ${
+            className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
               viewMode === "list"
-                ? "bg-primary text-on-primary shadow-sm"
-                : "text-on-surface-variant hover:text-on-surface"
+                ? "bg-surface-container-highest text-text-primary shadow-sm"
+                : "text-text-muted hover:text-text-primary"
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">view_list</span>
@@ -537,10 +537,10 @@ function HomeContent() {
             type="button"
             onClick={() => setViewMode("cards")}
             title={t("common.viewCards")}
-            className={`p-1.5 rounded-lg transition-all flex items-center cursor-pointer ${
+            className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
               viewMode === "cards"
-                ? "bg-primary text-on-primary shadow-sm"
-                : "text-on-surface-variant hover:text-on-surface"
+                ? "bg-surface-container-highest text-text-primary shadow-sm"
+                : "text-text-muted hover:text-text-primary"
             }`}
           >
             <span className="material-symbols-outlined text-[18px]">grid_view</span>
@@ -551,8 +551,8 @@ function HomeContent() {
       {/* Loading Indicator */}
       {loading ? (
         <div className="py-24 text-center">
-          <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-on-surface-variant font-label uppercase tracking-widest text-xs">
+          <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-text-muted text-xs font-medium">
             {t("common.loading")}
           </p>
         </div>
@@ -562,20 +562,20 @@ function HomeContent() {
           {activeTab === "matches" && (
             <div className="w-full">
               {filteredMatches.length === 0 ? (
-                <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5">
-                  <span className="material-symbols-outlined text-4xl text-on-surface-variant/40 mb-3">
+                <div className="bg-surface-container rounded-xl p-12 text-center border border-outline-variant">
+                  <span className="material-symbols-outlined text-3xl text-text-muted mb-2 block">
                     sports
                   </span>
-                  <h3 className="font-headline font-bold text-base text-on-surface mb-1">
+                  <h3 className="font-sans font-medium text-sm text-text-primary mb-1">
                     {t("home.noMatchesFound")}
                   </h3>
-                  <p className="text-on-surface-variant/60 text-xs mb-4">
+                  <p className="text-text-muted text-xs mb-4">
                     {t("home.noMatchesFilterDesc")}
                   </p>
                   {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "") && (
                     <button
                       onClick={clearFilters}
-                      className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-xs font-bold text-primary transition-all"
+                      className="px-3.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-xs font-medium text-primary transition-colors border border-outline-variant"
                     >
                       {t("common.clearFilters")}
                     </button>
@@ -598,20 +598,20 @@ function HomeContent() {
                   </div>
 
                   {/* Desktop Data Table View */}
-                  <div className="hidden md:block w-full bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
+                  <div className="hidden md:block w-full bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
                     <div className="w-full overflow-x-auto">
                       <table className="w-full text-left border-collapse">
-                      <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
+                      <thead className="border-b border-outline-variant bg-surface-container-high/60 text-xs font-medium text-text-muted">
                         <tr>
-                          <th className="py-3.5 px-6">{t("common.teamsOrPlayers")}</th>
-                          <th className="py-3.5 px-6">{t("common.event")}</th>
-                          <th className="py-3.5 px-4">{t("common.sport")}</th>
-                          <th className="py-3.5 px-4 text-center">{t("common.score")}</th>
-                          <th className="py-3.5 px-4 text-center">{t("common.status")}</th>
-                          <th className="py-3.5 px-6 text-right">{t("common.date")}</th>
+                          <th className="py-3 px-6">{t("common.teamsOrPlayers")}</th>
+                          <th className="py-3 px-6">{t("common.event")}</th>
+                          <th className="py-3 px-4">{t("common.sport")}</th>
+                          <th className="py-3 px-4 text-center">{t("common.score")}</th>
+                          <th className="py-3 px-4 text-center">{t("common.status")}</th>
+                          <th className="py-3 px-6 text-right">{t("common.date")}</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/5 text-sm font-body">
+                      <tbody className="divide-y divide-outline-variant text-sm">
                         {paginatedMatches.map((m) => {
                           const rawSetData = extractSetsData(m.scores);
                           const isTimedOrPointsSport =
@@ -644,60 +644,60 @@ function HomeContent() {
                                   router.push(`/match/${m.id}`);
                                 }
                               }}
-                              className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
+                              className="hover:bg-surface-container-high/40 transition-colors cursor-pointer group"
                             >
                               {/* Equipas / Jogadores */}
-                              <td className="py-4 px-6">
+                              <td className="py-3.5 px-6">
                                 <div className="space-y-1">
-                                  <div className="font-bold text-xs text-on-surface flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />
+                                  <div className="font-medium text-xs sm:text-sm text-text-primary flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 shrink-0" />
                                     {formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD"}
                                   </div>
-                                  <div className="font-bold text-xs text-on-surface flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-secondary/40 shrink-0" />
+                                  <div className="font-medium text-xs sm:text-sm text-text-primary flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-secondary/60 shrink-0" />
                                     {formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD"}
                                   </div>
                                 </div>
                               </td>
 
                               {/* Evento */}
-                              <td className="py-4 px-6">
-                                <div className="font-headline font-bold text-on-surface text-xs leading-snug">
+                              <td className="py-3.5 px-6">
+                                <div className="font-medium text-text-primary text-xs leading-snug">
                                   {m.tournaments?.name || t("home.isolatedMatch")}
                                 </div>
                                 {m.court && (
-                                  <div className="text-[10px] text-on-surface-variant/60 font-label mt-0.5">
+                                  <div className="text-xs text-text-muted mt-0.5">
                                     {m.court}
                                   </div>
                                 )}
                               </td>
 
                               {/* Desporto */}
-                              <td className="py-4 px-4">
+                              <td className="py-3.5 px-4">
                                 <div className="flex items-center gap-2">
                                   <SportIcon
                                     sport={m.sport_type}
-                                    className="text-primary text-[18px] shrink-0"
+                                    className="text-primary text-[16px] shrink-0"
                                   />
-                                  <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
+                                  <span className="text-xs font-medium text-text-secondary">
                                     {getSportTranslation(m.sport_type, t)}
                                   </span>
                                 </div>
                               </td>
 
                               {/* Score & Sets */}
-                              <td className="py-4 px-4 text-center">
+                              <td className="py-3.5 px-4 text-center">
                                 <div className="inline-flex flex-col items-center">
-                                  <span className="font-mono text-base font-black text-secondary tracking-tight">
+                                  <span className="font-mono tabular-nums text-sm font-semibold text-text-primary tracking-tight">
                                     {mainScore0} - {mainScore1}
                                   </span>
                                   {!isTimedOrPointsSport && setScores.length > 0 && (
-                                    <span className="font-mono text-[10px] text-on-surface-variant/60 tracking-tighter">
+                                    <span className="font-mono tabular-nums text-xs text-text-muted">
                                       ({setScores.map((s: any) => `${s.t1}-${s.t2}`).join(", ")})
                                     </span>
                                   )}
                                   {m.sport_type === "Basketball" && m.scores?.basketball?.quarters && (
-                                    <span className="font-mono text-[10px] text-on-surface-variant/60 tracking-tighter">
+                                    <span className="font-mono tabular-nums text-xs text-text-muted">
                                       ({m.scores.basketball.quarters
                                         .filter(
                                           (q: any) =>
@@ -711,26 +711,21 @@ function HomeContent() {
                               </td>
 
                               {/* Status */}
-                              <td className="py-4 px-4 text-center">
-                                <span
-                                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                                    m.status === "completed"
-                                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                      : m.status === "ongoing"
-                                      ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
-                                      : "bg-white/5 text-on-surface-variant/70 border border-white/10"
-                                  }`}
-                                >
-                                  {m.status === "completed"
-                                    ? t("status.completed")
-                                    : m.status === "ongoing"
-                                    ? t("status.live")
-                                    : t("status.scheduled")}
-                                </span>
+                              <td className="py-3.5 px-4 text-center">
+                                {m.status === "ongoing" ? (
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+                                    {t("status.live")}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-text-muted">
+                                    {m.status === "completed" ? t("status.completed") : t("status.scheduled")}
+                                  </span>
+                                )}
                               </td>
 
                               {/* Data */}
-                              <td className="py-4 px-6 text-right font-mono text-xs text-on-surface-variant/70">
+                              <td className="py-3.5 px-6 text-right font-mono tabular-nums text-xs text-text-muted">
                                 {m.scheduled_at
                                   ? new Date(m.scheduled_at).toLocaleDateString(undefined, {
                                       day: "numeric",
@@ -743,15 +738,15 @@ function HomeContent() {
                                       day: "numeric",
                                       month: "short",
                                     })
-                                  : "-"}
+                                  : ""}
                               </td>
                             </tr>
                           );
                         })}
                       </tbody>
-                    </table>
+                      </table>
+                    </div>
                   </div>
-                </div>
               </>
               )}
             </div>
@@ -1004,14 +999,14 @@ function HomeContent() {
             <div className="w-full">
               {!user ? (
                 /* Unauthenticated Call to Action */
-                <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5 max-w-xl mx-auto shadow-2xl">
-                  <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-4 text-amber-400">
-                    <span className="material-symbols-outlined text-3xl">star</span>
+                <div className="bg-surface-container rounded-2xl p-8 text-center border border-outline-variant max-w-md mx-auto">
+                  <div className="w-12 h-12 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center mx-auto mb-4 text-text-muted">
+                    <span className="material-symbols-outlined text-2xl">star</span>
                   </div>
-                  <h3 className="font-headline font-black text-2xl mb-2 text-on-surface">
+                  <h3 className="font-semibold text-lg mb-1.5 text-text-primary">
                     {t("home.unauthTitle")}
                   </h3>
-                  <p className="text-on-surface-variant text-sm mb-6 leading-relaxed">
+                  <p className="text-text-muted text-xs mb-5 leading-relaxed">
                     {t("home.unauthDesc")}
                   </p>
                   <button
@@ -1020,34 +1015,34 @@ function HomeContent() {
                       params.set("auth", "login");
                       router.replace(window.location.pathname + "?" + params.toString());
                     }}
-                    className="inline-flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-full font-label text-xs font-black uppercase tracking-wider hover:brightness-110 transition-all cursor-pointer shadow-lg shadow-primary/20"
+                    className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[18px]">login</span>
+                    <span className="material-symbols-outlined text-[16px]">login</span>
                     {t("home.unauthSignIn")}
                   </button>
                 </div>
               ) : followedMatches.length === 0 && followedTournaments.length === 0 ? (
                 /* Empty Following State */
-                <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5">
-                  <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 text-amber-400/60">
-                    <span className="material-symbols-outlined text-3xl">star_outline</span>
+                <div className="bg-surface-container rounded-2xl p-8 text-center border border-outline-variant max-w-md mx-auto">
+                  <div className="w-12 h-12 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center mx-auto mb-4 text-text-muted">
+                    <span className="material-symbols-outlined text-2xl">star_outline</span>
                   </div>
-                  <h3 className="font-headline font-bold text-lg text-on-surface mb-2">
+                  <h3 className="font-semibold text-base text-text-primary mb-1">
                     {t("home.emptyFollowingTitle")}
                   </h3>
-                  <p className="text-on-surface-variant/70 text-xs max-w-md mx-auto mb-6">
+                  <p className="text-text-muted text-xs max-w-sm mx-auto mb-5">
                     {t("home.emptyFollowingDesc")}
                   </p>
-                  <div className="flex items-center justify-center gap-3">
+                  <div className="flex items-center justify-center gap-2">
                     <button
                       onClick={() => handleTabChange("matches")}
-                      className="px-5 py-2.5 rounded-full bg-primary-container text-on-primary-container font-label text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-text-primary text-xs font-medium border border-outline-variant transition-colors cursor-pointer"
                     >
                       {t("home.exploreMatches")}
                     </button>
                     <button
                       onClick={() => handleTabChange("tournaments")}
-                      className="px-5 py-2.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface font-label text-xs font-bold uppercase tracking-wider transition-all cursor-pointer border border-white/10"
+                      className="px-3.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-text-primary text-xs font-medium border border-outline-variant transition-colors cursor-pointer"
                     >
                       {t("home.exploreTournaments")}
                     </button>
@@ -1056,121 +1051,322 @@ function HomeContent() {
               ) : (
                 /* Followed Items List */
                 <div className="space-y-6">
-                  {/* Sub-filter chips */}
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setFollowingFilter("all")}
-                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                        followingFilter === "all"
-                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                          : "bg-surface-container text-on-surface-variant hover:text-on-surface border border-transparent"
-                      }`}
-                    >
-                      {t("home.allFollowed")} ({followedMatches.length + followedTournaments.length})
-                    </button>
-                    <button
-                      onClick={() => setFollowingFilter("matches")}
-                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                        followingFilter === "matches"
-                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                          : "bg-surface-container text-on-surface-variant hover:text-on-surface border border-transparent"
-                      }`}
-                    >
-                      {t("home.matchesTab")} ({followedMatches.length})
-                    </button>
-                    <button
-                      onClick={() => setFollowingFilter("tournaments")}
-                      className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                        followingFilter === "tournaments"
-                          ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                          : "bg-surface-container text-on-surface-variant hover:text-on-surface border border-transparent"
-                      }`}
-                    >
-                      {t("home.tournamentsTab")} ({followedTournaments.length})
-                    </button>
+                  {/* Sub-filter chips & View Toggle */}
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-1.5 p-1 rounded-xl bg-surface-container border border-outline-variant">
+                      <button
+                        onClick={() => setFollowingFilter("all")}
+                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                          followingFilter === "all"
+                            ? "bg-surface-container-high text-text-primary shadow-sm"
+                            : "text-text-muted hover:text-text-secondary"
+                        }`}
+                      >
+                        {t("home.allFollowed")} ({followedMatches.length + followedTournaments.length})
+                      </button>
+                      <button
+                        onClick={() => setFollowingFilter("matches")}
+                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                          followingFilter === "matches"
+                            ? "bg-surface-container-high text-text-primary shadow-sm"
+                            : "text-text-muted hover:text-text-secondary"
+                        }`}
+                      >
+                        {t("home.matchesTab")} ({followedMatches.length})
+                      </button>
+                      <button
+                        onClick={() => setFollowingFilter("tournaments")}
+                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                          followingFilter === "tournaments"
+                            ? "bg-surface-container-high text-text-primary shadow-sm"
+                            : "text-text-muted hover:text-text-secondary"
+                        }`}
+                      >
+                        {t("home.tournamentsTab")} ({followedTournaments.length})
+                      </button>
+                    </div>
+
+                    {/* View Mode Toggle (Defaults to list) */}
+                    <div className="inline-flex p-1 rounded-xl bg-surface-container border border-outline-variant gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("list")}
+                        title={t("common.viewList")}
+                        className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
+                          viewMode === "list"
+                            ? "bg-surface-container-highest text-text-primary shadow-sm"
+                            : "text-text-muted hover:text-text-primary"
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">view_list</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("cards")}
+                        title={t("common.viewCards")}
+                        className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
+                          viewMode === "cards"
+                            ? "bg-surface-container-highest text-text-primary shadow-sm"
+                            : "text-text-muted hover:text-text-primary"
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-[18px]">grid_view</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Followed Matches Section */}
                   {(followingFilter === "all" || followingFilter === "matches") && followedMatches.length > 0 && (
                     <div className="space-y-3">
-                      <div className="flex items-center gap-2 font-label text-xs font-black uppercase tracking-wider text-amber-400">
-                        <span className="material-symbols-outlined text-[16px]">sports</span>
-                        {t("home.followedMatchesTitle")} ({followedMatches.length})
+                      <div className="flex items-center gap-2 text-xs font-medium text-text-secondary">
+                        <span className="material-symbols-outlined text-[16px] text-primary">sports</span>
+                        <span>{t("home.followedMatchesTitle")} ({followedMatches.length})</span>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {followedMatches.map((m) => (
-                          <MatchCard key={m.id} match={m} />
-                        ))}
-                      </div>
+
+                      {viewMode === "cards" ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                          {followedMatches.map((m) => (
+                            <MatchCard key={m.id} match={m} />
+                          ))}
+                        </div>
+                      ) : (
+                        <>
+                          {/* Mobile List View */}
+                          <div className="md:hidden divide-y divide-outline-variant rounded-xl border border-outline-variant bg-surface-container overflow-hidden">
+                            {followedMatches.map((m) => (
+                              <MatchListItem key={m.id} match={m} />
+                            ))}
+                          </div>
+
+                          {/* Desktop Data Table View */}
+                          <div className="hidden md:block w-full bg-surface-container rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+                            <div className="w-full overflow-x-auto">
+                              <table className="w-full text-left border-collapse">
+                                <thead className="border-b border-outline-variant bg-surface-container-high/60 text-[11px] font-medium text-text-muted">
+                                  <tr>
+                                    <th className="py-3 px-6">{t("common.match")}</th>
+                                    <th className="py-3 px-4">{t("common.sport")}</th>
+                                    <th className="py-3 px-4">{t("common.tournament")}</th>
+                                    <th className="py-3 px-4 text-center">{t("common.status")}</th>
+                                    <th className="py-3 px-6 text-right font-mono">{t("common.score")}</th>
+                                    <th className="py-3 px-4 text-right">{t("common.date")}</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-outline-variant text-sm font-sans">
+                                  {followedMatches.map((m) => (
+                                    <tr
+                                      key={m.id}
+                                      onClick={() => router.push(`/match/${m.id}`)}
+                                      role="button"
+                                      tabIndex={0}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter" || e.key === " ") {
+                                          e.preventDefault();
+                                          router.push(`/match/${m.id}`);
+                                        }
+                                      }}
+                                      className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
+                                    >
+                                      <td className="py-3.5 px-6">
+                                        <div className="font-medium text-sm text-text-primary group-hover:text-primary transition-colors flex items-center gap-2">
+                                          <span>{m.participants?.[0]?.name || "TBD"}</span>
+                                          <span className="text-text-muted text-xs font-normal">vs</span>
+                                          <span>{m.participants?.[1]?.name || "TBD"}</span>
+                                        </div>
+                                      </td>
+                                      <td className="py-3.5 px-4">
+                                        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+                                          <SportIcon sport={m.sport_type} className="text-text-muted text-[16px]" />
+                                          <span>{getSportTranslation(m.sport_type, t)}</span>
+                                        </div>
+                                      </td>
+                                      <td className="py-3.5 px-4 text-xs text-text-muted">
+                                        {m.tournaments?.name || "-"}
+                                      </td>
+                                      <td className="py-3.5 px-4 text-center">
+                                        <span
+                                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
+                                            m.status === "completed"
+                                              ? "bg-surface-container-high text-text-muted border-outline-variant"
+                                              : m.status === "ongoing"
+                                              ? "bg-surface-container-high text-success border-success/30"
+                                              : "bg-surface-container-high text-text-secondary border-outline-variant"
+                                          }`}
+                                        >
+                                          {m.status === "ongoing" && <span className="w-1.5 h-1.5 rounded-full bg-success" />}
+                                          <span>
+                                            {m.status === "completed"
+                                              ? t("status.completed")
+                                              : m.status === "ongoing"
+                                              ? t("status.live")
+                                              : t("status.scheduled")}
+                                          </span>
+                                        </span>
+                                      </td>
+                                      <td className="py-3.5 px-6 text-right font-mono tabular-nums text-sm font-semibold text-text-primary">
+                                        {m.scores?.sets ? `${m.scores.sets[0]} - ${m.scores.sets[1]}` : m.scores?.current ? `${m.scores.current.home} - ${m.scores.current.away}` : "-"}
+                                      </td>
+                                      <td className="py-3.5 px-4 text-right text-xs text-text-muted">
+                                        {m.scheduled_at
+                                          ? new Date(m.scheduled_at).toLocaleDateString(undefined, {
+                                              day: "numeric",
+                                              month: "short",
+                                            })
+                                          : "-"}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
 
                   {/* Followed Tournaments Section */}
                   {(followingFilter === "all" || followingFilter === "tournaments") && followedTournaments.length > 0 && (
                     <div className="space-y-3 pt-4">
-                      <div className="flex items-center gap-2 font-label text-xs font-black uppercase tracking-wider text-amber-400">
-                        <span className="material-symbols-outlined text-[16px]">emoji_events</span>
-                        {t("home.followedTournamentsTitle")} ({followedTournaments.length})
+                      <div className="flex items-center gap-2 text-xs font-medium text-text-secondary">
+                        <span className="material-symbols-outlined text-[16px] text-primary">emoji_events</span>
+                        <span>{t("home.followedTournamentsTitle")} ({followedTournaments.length})</span>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {followedTournaments.map((tItem) => (
-                          <div
-                            key={tItem.id}
-                            className="bg-surface-container-low rounded-3xl p-6 border border-white/5 hover:border-amber-500/30 transition-all flex flex-col justify-between group shadow-lg"
-                          >
-                            <div>
-                              <div className="flex items-center justify-between gap-2 mb-4">
-                                <div className="flex items-center gap-2">
-                                  <SportIcon
-                                    sport={tItem.sport_type}
-                                    className="text-primary text-[20px]"
+
+                      {viewMode === "cards" ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {followedTournaments.map((tItem) => (
+                            <div
+                              key={tItem.id}
+                              className="bg-surface-container rounded-xl p-5 border border-outline-variant hover:border-outline-focus transition-colors flex flex-col justify-between group"
+                            >
+                              <div>
+                                <div className="flex items-center justify-between gap-2 mb-3">
+                                  <div className="flex items-center gap-1.5">
+                                    <SportIcon
+                                      sport={tItem.sport_type}
+                                      className="text-text-muted text-[16px]"
+                                    />
+                                    <span className="text-xs font-medium text-text-secondary">
+                                      {getSportTranslation(tItem.sport_type, t)}
+                                    </span>
+                                  </div>
+                                  <FollowButton
+                                    entityId={tItem.id}
+                                    entityType="tournament"
+                                    variant="icon"
+                                    followHook={followHook}
                                   />
-                                  <span className="text-[10px] font-label font-black uppercase tracking-wider text-on-surface-variant">
-                                    {getSportTranslation(tItem.sport_type, t)}
-                                  </span>
                                 </div>
-                                <FollowButton
-                                  entityId={tItem.id}
-                                  entityType="tournament"
-                                  variant="icon"
-                                  followHook={followHook}
-                                />
+
+                                <h3 className="font-semibold text-base text-text-primary mb-1.5 group-hover:text-primary transition-colors">
+                                  {tItem.name}
+                                </h3>
+
+                                <p className="text-xs text-text-muted mb-4">
+                                  {tItem.settings?.stage_1?.type === "groups"
+                                    ? t("tournament.groupStage")
+                                    : t("tournament.singleElimination")}
+                                </p>
                               </div>
 
-                              <h3 className="font-headline font-black text-lg text-on-surface mb-2 group-hover:text-primary transition-colors">
-                                {tItem.name}
-                              </h3>
-
-                              <p className="text-xs text-on-surface-variant/70 font-label uppercase tracking-wider mb-4">
-                                {tItem.settings?.stage_1?.type === "groups"
-                                  ? t("tournament.groupStage")
-                                  : t("tournament.singleElimination")}
-                              </p>
-                            </div>
-
-                            <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                              <span className="font-mono text-xs text-on-surface-variant/60">
-                                {tItem.start_date
-                                  ? new Date(tItem.start_date).toLocaleDateString(undefined, {
-                                      day: "numeric",
-                                      month: "short",
-                                      year: "numeric",
-                                    })
-                                  : t("home.tbdDate")}
-                              </span>
-                              <Link
-                                href={`/tournament/${tItem.id}`}
-                                className="inline-flex items-center gap-1 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform"
-                              >
-                                {t("home.viewTournament")}
-                                <span className="material-symbols-outlined text-[16px]">
-                                  arrow_forward
+                              <div className="pt-3 border-t border-outline-variant flex items-center justify-between">
+                                <span className="font-mono text-xs text-text-muted">
+                                  {tItem.start_date
+                                    ? new Date(tItem.start_date).toLocaleDateString(undefined, {
+                                        day: "numeric",
+                                        month: "short",
+                                        year: "numeric",
+                                      })
+                                    : t("home.tbdDate")}
                                 </span>
-                              </Link>
+                                <Link
+                                  href={`/tournament/${tItem.id}`}
+                                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                                >
+                                  {t("home.viewTournament")}
+                                  <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                                </Link>
+                              </div>
                             </div>
+                          ))}
+                        </div>
+                      ) : (
+                        /* Desktop Data Table View for Tournaments */
+                        <div className="w-full bg-surface-container rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+                          <div className="w-full overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                              <thead className="border-b border-outline-variant bg-surface-container-high/60 text-[11px] font-medium text-text-muted">
+                                <tr>
+                                  <th className="py-3 px-6">{t("common.event")}</th>
+                                  <th className="py-3 px-4">{t("common.sport")}</th>
+                                  <th className="py-3 px-4">{t("common.format")}</th>
+                                  <th className="py-3 px-4 text-center">{t("common.status")}</th>
+                                  <th className="py-3 px-6 text-right">{t("common.date")}</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-outline-variant text-sm font-sans">
+                                {followedTournaments.map((tItem) => (
+                                  <tr
+                                    key={tItem.id}
+                                    onClick={() => router.push(`/tournament/${tItem.id}`)}
+                                    role="button"
+                                    tabIndex={0}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        router.push(`/tournament/${tItem.id}`);
+                                      }
+                                    }}
+                                    className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
+                                  >
+                                    <td className="py-3.5 px-6">
+                                      <div className="font-medium text-sm text-text-primary group-hover:text-primary transition-colors">
+                                        {tItem.name}
+                                      </div>
+                                    </td>
+                                    <td className="py-3.5 px-4">
+                                      <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+                                        <SportIcon sport={tItem.sport_type} className="text-text-muted text-[16px]" />
+                                        <span>{getSportTranslation(tItem.sport_type, t)}</span>
+                                      </div>
+                                    </td>
+                                    <td className="py-3.5 px-4 text-xs text-text-muted">
+                                      {tItem.settings?.stage_1?.type === "groups"
+                                        ? t("tournament.groupStage")
+                                        : tItem.settings?.stage_1?.type === "double_elimination"
+                                        ? t("tournament.doubleElimination")
+                                        : t("tournament.singleElimination")}
+                                    </td>
+                                    <td className="py-3.5 px-4 text-center">
+                                      <span
+                                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
+                                          tItem.status === "completed"
+                                            ? "bg-surface-container-high text-text-muted border-outline-variant"
+                                            : tItem.status === "ongoing"
+                                            ? "bg-surface-container-high text-success border-success/30"
+                                            : "bg-surface-container-high text-text-secondary border-outline-variant"
+                                        }`}
+                                      >
+                                        <span>{tItem.status === "completed" ? t("status.completed") : tItem.status === "ongoing" ? t("status.live") : t("status.scheduled")}</span>
+                                      </span>
+                                    </td>
+                                    <td className="py-3.5 px-6 text-right font-mono text-xs text-text-muted">
+                                      {tItem.start_date
+                                        ? new Date(tItem.start_date).toLocaleDateString(undefined, {
+                                            day: "numeric",
+                                            month: "short",
+                                            year: "numeric",
+                                          })
+                                        : "-"}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

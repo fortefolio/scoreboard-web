@@ -10,77 +10,89 @@
 
 @theme {
   --font-digital: "Digital7", monospace;
-  --color-background: #0c1324;
-  --color-surface: #0c1324;
-  --color-on-background: #dce1fb;
-  --color-on-surface: #dce1fb;
-  --color-on-surface-variant: #c7c4d8;
-  --color-surface-bright: #33394c;
-  --color-surface-dim: #0c1324;
-  --color-surface-variant: #2e3447;
-  --color-surface-container-lowest: #070d1f;
-  --color-surface-container-low: #151b2d;
-  --color-surface-container: #191f31;
-  --color-surface-container-high: #23293c;
-  --color-surface-container-highest: #2e3447;
   
-  --color-primary: #c3c0ff;
-  --color-on-primary: #1d00a5;
+  /* Unslop Ink Neutral Ramp for Precision Sports Telemetry */
+  --color-background: #0b0d14;
+  --color-surface: #0b0d14;
+  --color-surface-dim: #07080d;
+  --color-surface-bright: #222736;
+  --color-surface-variant: #1a1e28;
+  --color-surface-container-lowest: #07080d;
+  --color-surface-container-low: #0f121a;
+  --color-surface-container: #11141c;
+  --color-surface-container-high: #161a24;
+  --color-surface-container-highest: #1a1e28;
+  
+  /* Text roles: Primary (#eef0f5), Secondary (#a3a9b8), Muted (#7a8296) */
+  --color-on-background: #eef0f5;
+  --color-on-surface: #eef0f5;
+  --color-on-surface-variant: #a3a9b8;
+  --color-text-primary: #eef0f5;
+  --color-text-secondary: #a3a9b8;
+  --color-text-muted: #7a8296;
+
+  /* Primary Action & Accent */
+  --color-primary: #6366f1;
+  --color-on-primary: #ffffff;
   --color-primary-container: #4f46e5;
-  --color-on-primary-container: #dad7ff;
-  --color-inverse-primary: #4d44e3;
-  --color-primary-fixed: #e2dfff;
-  --color-on-primary-fixed: #0f0069;
-  --color-primary-fixed-dim: #c3c0ff;
-  --color-on-primary-fixed-variant: #3323cc;
+  --color-on-primary-container: #eef0f5;
+  --color-inverse-primary: #818cf8;
+  --color-primary-fixed: #e0e7ff;
+  --color-on-primary-fixed: #1e1b4b;
+  --color-primary-fixed-dim: #c7d2fe;
+  --color-on-primary-fixed-variant: #3730a3;
   
-  --color-secondary: #4edea3;
-  --color-on-secondary: #003824;
-  --color-secondary-container: #00a572;
-  --color-on-secondary-container: #00311f;
-  --color-secondary-fixed: #6ffbbe;
-  --color-secondary-fixed-dim: #4edea3;
-  --color-on-secondary-fixed: #002113;
-  --color-on-secondary-fixed-variant: #005236;
+  /* Secondary / Live indicator */
+  --color-secondary: #4cc38a;
+  --color-on-secondary: #052e16;
+  --color-secondary-container: #15803d;
+  --color-on-secondary-container: #dcfce7;
+  --color-secondary-fixed: #bbf7d0;
+  --color-secondary-fixed-dim: #86efac;
+  --color-on-secondary-fixed: #052e16;
+  --color-on-secondary-fixed-variant: #166534;
   
-  --color-tertiary: #ffb690;
-  --color-on-tertiary: #552100;
-  --color-tertiary-container: #a04500;
-  --color-on-tertiary-container: #ffd2bd;
-  --color-tertiary-fixed: #ffdbca;
-  --color-tertiary-fixed-dim: #ffb690;
-  --color-on-tertiary-fixed: #341100;
-  --color-on-tertiary-fixed-variant: #783200;
+  /* Tertiary / Warm telemetry */
+  --color-tertiary: #f59e0b;
+  --color-on-tertiary: #451a03;
+  --color-tertiary-container: #b45309;
+  --color-on-tertiary-container: #fef3c7;
+  --color-tertiary-fixed: #fde68a;
+  --color-tertiary-fixed-dim: #fcd34d;
+  --color-on-tertiary-fixed: #451a03;
+  --color-on-tertiary-fixed-variant: #78350f;
   
-  --color-error: #ffb4ab;
-  --color-on-error: #690005;
-  --color-error-container: #93000a;
-  --color-on-error-container: #ffdad6;
-  
-  --color-outline: #918fa1;
-  --color-outline-variant: #464555;
-  --color-surface-tint: #c3c0ff;
-  --color-inverse-surface: #dce1fb;
-  --color-inverse-on-surface: #2a3043;
-  
-  --color-success: #10b981;
+  /* Semantic feedback */
+  --color-error: #e5484d;
+  --color-on-error: #ffffff;
+  --color-error-container: #991b1b;
+  --color-on-error-container: #fee2e2;
+  --color-success: #4cc38a;
   --color-warning: #f59e0b;
-  --color-critical: #ef4444;
+  --color-critical: #e5484d;
+  
+  /* Borders & Outlines: Quiet Hairlines (6-10% opacity) */
+  --color-outline: rgba(238, 240, 245, 0.12);
+  --color-outline-variant: rgba(238, 240, 245, 0.08);
+  --color-surface-tint: #6366f1;
+  --color-inverse-surface: #eef0f5;
+  --color-inverse-on-surface: #11141c;
 
   --font-headline: "Manrope", sans-serif;
   --font-body: "Inter", sans-serif;
   --font-label: "Space Grotesk", sans-serif;
   
-  --radius-DEFAULT: 0.125rem;
-  --radius-lg: 0.25rem;
+  --radius-DEFAULT: 0.25rem;
+  --radius-lg: 0.375rem;
   --radius-xl: 0.5rem;
-  --radius-full: 0.75rem;
+  --radius-full: 9999px;
 }
 
 :root {
-  --background: #0c1324;
-  --foreground: #dce1fb;
+  --background: #0b0d14;
+  --foreground: #eef0f5;
   --font-digital: "Digital7", monospace;
+  --border-hairline: rgba(238, 240, 245, 0.08);
 }
 
 @utility font-digital {
@@ -95,50 +107,26 @@ body {
 }
 
 .glass-effect {
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .glass-panel {
-  background-color: rgba(35, 41, 60, 0.4);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-.bg-gradient-radial {
-  background-image: radial-gradient(circle at center, var(--tw-gradient-stops));
-}
-
-.asymmetric-stat {
-  transform: translateY(-20px) translateX(10px);
-}
-
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-}
-
-@keyframes pulse-hardcap {
-  0%, 100% { opacity: 1; border-color: rgba(239, 68, 68, 1); box-shadow: 0 0 0px rgba(239, 68, 68, 0); }
-  50% { opacity: 0.8; border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 20px rgba(239, 68, 68, 0.2); }
-}
-
-.animate-hardcap {
-  animation: pulse-hardcap 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background-color: #11141c;
+  border: 1px solid var(--border-hairline);
 }
 
 .glass-card {
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #11141c;
+  border: 1px solid var(--border-hairline);
 }
 
 .score-shadow-indigo {
-  text-shadow: 0 0 40px rgba(79, 70, 229, 0.4);
+  /* Quiet craft: no colored halos, let the crisp score numbers lead */
 }
 
 .score-shadow-emerald {
-  text-shadow: 0 0 40px rgba(16, 185, 129, 0.4);
+  /* Quiet craft: no colored halos, let the crisp score numbers lead */
 }
 
 @utility no-scrollbar {

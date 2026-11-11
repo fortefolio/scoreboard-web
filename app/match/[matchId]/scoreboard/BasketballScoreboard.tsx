@@ -299,29 +299,29 @@ export default function BasketballScoreboard({
   return (
     <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
       {/* Top Banner / Match Info */}
-      <div className="w-full flex items-center justify-between py-3 px-6 bg-surface-container-low rounded-2xl border border-white/5 mb-6">
-        <div className="flex items-center gap-2.5">
-          <SportIcon sport="Basketball" className="text-secondary text-[20px]" />
+      <div className="w-full flex items-center justify-between py-3 px-5 bg-surface-container-low rounded-2xl border border-outline-variant mb-6">
+        <div className="flex items-center gap-3">
+          <SportIcon sport="Basketball" className="text-secondary text-lg" />
           <div>
-            <span className="text-[10px] font-label font-black uppercase tracking-widest text-secondary block">
+            <span className="text-[11px] font-medium text-on-surface-variant block">
               Basquetebol Oficial
             </span>
-            <span className="text-sm font-bold text-on-surface">
+            <span className="text-sm font-semibold text-on-surface">
               {matchData.tournaments?.name || "Jogo Isolado"}
             </span>
           </div>
         </div>
 
         {/* Period Selector Tabs */}
-        <div className="flex items-center gap-1.5 bg-surface-container p-1 rounded-xl border border-white/5">
+        <div className="flex items-center gap-1 bg-surface-container-high/60 p-1 rounded-xl border border-outline-variant">
           {["Q1", "Q2", "Q3", "Q4", "OT"].map((p) => (
             <button
               key={p}
               onClick={() => changePeriod(p)}
               disabled={!canEdit}
-              className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
                 currentPeriod === p
-                  ? "bg-primary text-on-primary shadow-md"
+                  ? "bg-primary text-on-primary"
                   : "text-on-surface-variant hover:text-on-surface"
               } ${!canEdit ? "cursor-default" : "cursor-pointer"}`}
             >
@@ -332,63 +332,63 @@ export default function BasketballScoreboard({
       </div>
 
       {/* Main Scoreboard Display */}
-      <div className="w-full bg-[#0d1424] rounded-3xl border border-white/10 p-6 md:p-8 shadow-2xl relative overflow-hidden mb-6">
+      <div className="w-full bg-surface-container rounded-2xl border border-outline-variant p-6 md:p-8 relative overflow-hidden mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           {/* HOME TEAM */}
           <div className="flex flex-col items-center text-center">
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-3 h-3 rounded-full bg-primary" />
-              <h2 className="text-xl md:text-2xl font-headline font-black text-white truncate max-w-[240px]">
+              <span className="w-2.5 h-2.5 rounded-full bg-primary" />
+              <h2 className="text-lg md:text-xl font-headline font-semibold text-on-surface truncate max-w-[240px]">
                 {teamHome}
               </h2>
             </div>
 
             {/* Home Score */}
-            <div className="text-7xl md:text-8xl font-digital text-white tracking-tighter my-2 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+            <div className="text-6xl md:text-7xl font-mono tabular-nums font-semibold text-on-surface tracking-tight my-2">
               {scores.home}
             </div>
 
             {/* Home Fouls & Timeouts */}
-            <div className="flex items-center gap-3 text-xs mt-2">
-              <span className={`px-2.5 py-1 rounded-lg border font-bold ${
+            <div className="flex items-center gap-2 text-xs mt-2">
+              <span className={`px-2.5 py-1 rounded-lg border text-xs font-medium ${
                 teamFouls.home >= 5
-                  ? "bg-rose-500/20 text-rose-400 border-rose-500/40 animate-pulse"
-                  : "bg-surface-container text-on-surface-variant border-white/5"
+                  ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+                  : "bg-surface-container-high text-on-surface-variant border-outline-variant"
               }`}>
-                Faltas: <span className="font-digital text-sm">{teamFouls.home}</span> {teamFouls.home >= 5 && "(BÓNUS)"}
+                Faltas: <span className="font-mono tabular-nums">{teamFouls.home}</span> {teamFouls.home >= 5 && "(BÓNUS)"}
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant border border-white/5">
-                Descontos: <span className="font-digital text-sm">{timeouts.home}</span>
+              <span className="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline-variant text-xs font-medium">
+                Descontos: <span className="font-mono tabular-nums">{timeouts.home}</span>
               </span>
             </div>
 
             {/* Quick Scoring Buttons for Home */}
             {canEdit && (
-              <div className="grid grid-cols-4 gap-2 w-full max-w-[260px] mt-6">
+              <div className="grid grid-cols-4 gap-1.5 w-full max-w-[260px] mt-6">
                 <button
                   onClick={() => handleScore("home", 1)}
-                  className="py-2.5 bg-surface-container hover:bg-primary/20 text-on-surface hover:text-primary font-mono font-black rounded-xl border border-white/10 transition-all text-sm"
+                  className="h-9 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-mono tabular-nums font-semibold rounded-lg border border-outline-variant transition-colors text-xs cursor-pointer"
                   title="Lance Livre (+1)"
                 >
                   +1
                 </button>
                 <button
                   onClick={() => handleScore("home", 2)}
-                  className="py-2.5 bg-primary-container hover:brightness-110 text-on-primary-container font-mono font-black rounded-xl shadow-lg shadow-primary/20 transition-all text-sm"
+                  className="h-9 bg-primary hover:bg-primary/90 text-on-primary font-mono tabular-nums font-semibold rounded-lg transition-colors text-xs cursor-pointer"
                   title="Cesto (+2)"
                 >
                   +2
                 </button>
                 <button
                   onClick={() => handleScore("home", 3)}
-                  className="py-2.5 bg-secondary hover:brightness-110 text-on-secondary font-mono font-black rounded-xl shadow-lg shadow-secondary/20 transition-all text-sm"
+                  className="h-9 bg-secondary hover:bg-secondary/90 text-on-secondary font-mono tabular-nums font-semibold rounded-lg transition-colors text-xs cursor-pointer"
                   title="Triplo (+3)"
                 >
                   +3
                 </button>
                 <button
                   onClick={() => handleScore("home", -1)}
-                  className="py-2.5 bg-surface-container-high hover:bg-rose-500/20 text-on-surface-variant hover:text-rose-400 font-mono font-bold rounded-xl border border-white/5 transition-all text-xs"
+                  className="h-9 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-rose-400 font-mono tabular-nums font-medium rounded-lg border border-outline-variant transition-colors text-xs cursor-pointer"
                   title="Corrigir (-1)"
                 >
                   -1
@@ -398,17 +398,17 @@ export default function BasketballScoreboard({
 
             {/* Foul & Timeout actions */}
             {canEdit && (
-              <div className="flex gap-2 mt-3">
+              <div className="flex gap-2 mt-2.5">
                 <button
                   onClick={() => addFoul("home")}
-                  className="px-3 py-1 bg-surface-container hover:bg-white/10 text-xs text-on-surface-variant rounded-lg border border-white/5"
+                  className="h-7 px-3 bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant transition-colors cursor-pointer"
                 >
                   + Falta
                 </button>
                 <button
                   onClick={() => useTimeout("home")}
                   disabled={timeouts.home <= 0}
-                  className="px-3 py-1 bg-surface-container hover:bg-white/10 text-xs text-on-surface-variant rounded-lg border border-white/5 disabled:opacity-40"
+                  className="h-7 px-3 bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer"
                 >
                   Desconto
                 </button>
@@ -417,18 +417,18 @@ export default function BasketballScoreboard({
           </div>
 
           {/* CENTER: CLOCK & PERIOD */}
-          <div className="flex flex-col items-center justify-center py-4 border-y md:border-y-0 md:border-x border-white/10 px-4">
-            <span className="text-secondary font-label text-xs font-black uppercase tracking-[0.3em] mb-2">
+          <div className="flex flex-col items-center justify-center py-4 border-y md:border-y-0 md:border-x border-outline-variant px-4">
+            <span className="text-on-surface-variant text-xs font-medium mb-2">
               {currentPeriod}
             </span>
 
             {/* Game Clock */}
             <div
               onClick={toggleClock}
-              className={`text-5xl md:text-6xl font-digital tracking-tight cursor-pointer select-none py-2 px-5 rounded-2xl border transition-all ${
+              className={`text-4xl md:text-5xl font-mono tabular-nums font-semibold tracking-tight cursor-pointer select-none py-2 px-5 rounded-xl border transition-colors ${
                 isClockRunning
-                  ? "text-primary border-primary/40 bg-primary/10 shadow-[0_0_20px_rgba(99,102,241,0.2)]"
-                  : "text-white border-white/10 bg-surface-container/60 hover:border-white/30"
+                  ? "text-primary border-primary/40 bg-primary/10"
+                  : "text-on-surface border-outline-variant bg-surface-container-high/60 hover:border-outline-variant/80"
               }`}
               title="Clique para Iniciar/Pausar o Relógio"
             >
@@ -436,14 +436,14 @@ export default function BasketballScoreboard({
             </div>
 
             {/* Shot Clock (24s / 14s) */}
-            <div className="flex items-center gap-3 mt-4">
-              <div className="flex items-center gap-2 bg-surface-container px-3 py-1.5 rounded-xl border border-white/5">
-                <span className="text-[10px] font-label uppercase font-black text-on-surface-variant/70">
+            <div className="flex items-center gap-2.5 mt-3">
+              <div className="flex items-center gap-2 bg-surface-container-high/60 px-3 py-1 rounded-lg border border-outline-variant">
+                <span className="text-[11px] font-medium text-on-surface-variant">
                   Posse:
                 </span>
                 <span
-                  className={`font-digital text-2xl font-black ${
-                    shotClock <= 5 ? "text-rose-400 animate-pulse" : "text-amber-400"
+                  className={`font-mono tabular-nums text-lg font-semibold ${
+                    shotClock <= 5 ? "text-rose-400" : "text-amber-400"
                   }`}
                 >
                   {shotClock}s
@@ -451,17 +451,17 @@ export default function BasketballScoreboard({
               </div>
 
               {canEdit && (
-                <div className="flex gap-1.5">
+                <div className="flex gap-1">
                   <button
                     onClick={() => resetShotClock(24)}
-                    className="px-2.5 py-1 text-[11px] font-mono font-bold bg-surface-container-high hover:bg-amber-400/20 text-on-surface rounded-lg border border-white/10"
+                    className="h-7 px-2.5 text-xs font-mono tabular-nums font-medium bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-lg border border-outline-variant transition-colors cursor-pointer"
                     title="Reset 24 segundos"
                   >
                     24s
                   </button>
                   <button
                     onClick={() => resetShotClock(14)}
-                    className="px-2.5 py-1 text-[11px] font-mono font-bold bg-surface-container-high hover:bg-amber-400/20 text-on-surface rounded-lg border border-white/10"
+                    className="h-7 px-2.5 text-xs font-mono tabular-nums font-medium bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-lg border border-outline-variant transition-colors cursor-pointer"
                     title="Reset 14 segundos (Ressalto Ofensivo)"
                   >
                     14s
@@ -472,26 +472,26 @@ export default function BasketballScoreboard({
 
             {/* Timer controls */}
             {canEdit && (
-              <div className="flex items-center gap-2 mt-4">
+              <div className="flex items-center gap-2 mt-3">
                 <button
                   onClick={toggleClock}
-                  className={`px-4 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                  className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
                     isClockRunning
                       ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                      : "bg-primary text-on-primary shadow-md"
+                      : "bg-primary text-on-primary hover:bg-primary/90"
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[16px]">
+                  <span className="material-symbols-outlined text-sm">
                     {isClockRunning ? "pause" : "play_arrow"}
                   </span>
                   {isClockRunning ? "Pausar" : "Iniciar"}
                 </button>
                 <button
                   onClick={() => setQuarterSeconds(10 * 60)}
-                  className="px-2.5 py-1.5 bg-surface-container hover:bg-white/10 text-on-surface-variant text-xs rounded-xl border border-white/5"
+                  className="h-8 px-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant transition-colors cursor-pointer flex items-center justify-center"
                   title="Repor 10:00"
                 >
-                  <span className="material-symbols-outlined text-[16px]">restart_alt</span>
+                  <span className="material-symbols-outlined text-base">restart_alt</span>
                 </button>
               </div>
             )}
@@ -500,58 +500,58 @@ export default function BasketballScoreboard({
           {/* AWAY TEAM */}
           <div className="flex flex-col items-center text-center">
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-3 h-3 rounded-full bg-secondary" />
-              <h2 className="text-xl md:text-2xl font-headline font-black text-white truncate max-w-[240px]">
+              <span className="w-2.5 h-2.5 rounded-full bg-secondary" />
+              <h2 className="text-lg md:text-xl font-headline font-semibold text-on-surface truncate max-w-[240px]">
                 {teamAway}
               </h2>
             </div>
 
             {/* Away Score */}
-            <div className="text-7xl md:text-8xl font-digital text-secondary tracking-tighter my-2 drop-shadow-[0_0_20px_rgba(78,222,163,0.15)]">
+            <div className="text-6xl md:text-7xl font-mono tabular-nums font-semibold text-on-surface tracking-tight my-2">
               {scores.away}
             </div>
 
             {/* Away Fouls & Timeouts */}
-            <div className="flex items-center gap-3 text-xs mt-2">
-              <span className={`px-2.5 py-1 rounded-lg border font-bold ${
+            <div className="flex items-center gap-2 text-xs mt-2">
+              <span className={`px-2.5 py-1 rounded-lg border text-xs font-medium ${
                 teamFouls.away >= 5
-                  ? "bg-rose-500/20 text-rose-400 border-rose-500/40 animate-pulse"
-                  : "bg-surface-container text-on-surface-variant border-white/5"
+                  ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
+                  : "bg-surface-container-high text-on-surface-variant border-outline-variant"
               }`}>
-                Faltas: <span className="font-digital text-sm">{teamFouls.away}</span> {teamFouls.away >= 5 && "(BÓNUS)"}
+                Faltas: <span className="font-mono tabular-nums">{teamFouls.away}</span> {teamFouls.away >= 5 && "(BÓNUS)"}
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant border border-white/5">
-                Descontos: <span className="font-digital text-sm">{timeouts.away}</span>
+              <span className="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline-variant text-xs font-medium">
+                Descontos: <span className="font-mono tabular-nums">{timeouts.away}</span>
               </span>
             </div>
 
             {/* Quick Scoring Buttons for Away */}
             {canEdit && (
-              <div className="grid grid-cols-4 gap-2 w-full max-w-[260px] mt-6">
+              <div className="grid grid-cols-4 gap-1.5 w-full max-w-[260px] mt-6">
                 <button
                   onClick={() => handleScore("away", 1)}
-                  className="py-2.5 bg-surface-container hover:bg-primary/20 text-on-surface hover:text-primary font-mono font-black rounded-xl border border-white/10 transition-all text-sm"
+                  className="h-9 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-mono tabular-nums font-semibold rounded-lg border border-outline-variant transition-colors text-xs cursor-pointer"
                   title="Lance Livre (+1)"
                 >
                   +1
                 </button>
                 <button
                   onClick={() => handleScore("away", 2)}
-                  className="py-2.5 bg-primary-container hover:brightness-110 text-on-primary-container font-mono font-black rounded-xl shadow-lg shadow-primary/20 transition-all text-sm"
+                  className="h-9 bg-primary hover:bg-primary/90 text-on-primary font-mono tabular-nums font-semibold rounded-lg transition-colors text-xs cursor-pointer"
                   title="Cesto (+2)"
                 >
                   +2
                 </button>
                 <button
                   onClick={() => handleScore("away", 3)}
-                  className="py-2.5 bg-secondary hover:brightness-110 text-on-secondary font-mono font-black rounded-xl shadow-lg shadow-secondary/20 transition-all text-sm"
+                  className="h-9 bg-secondary hover:bg-secondary/90 text-on-secondary font-mono tabular-nums font-semibold rounded-lg transition-colors text-xs cursor-pointer"
                   title="Triplo (+3)"
                 >
                   +3
                 </button>
                 <button
                   onClick={() => handleScore("away", -1)}
-                  className="py-2.5 bg-surface-container-high hover:bg-rose-500/20 text-on-surface-variant hover:text-rose-400 font-mono font-bold rounded-xl border border-white/5 transition-all text-xs"
+                  className="h-9 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-rose-400 font-mono tabular-nums font-medium rounded-lg border border-outline-variant transition-colors text-xs cursor-pointer"
                   title="Corrigir (-1)"
                 >
                   -1
@@ -561,17 +561,17 @@ export default function BasketballScoreboard({
 
             {/* Foul & Timeout actions */}
             {canEdit && (
-              <div className="flex gap-2 mt-3">
+              <div className="flex gap-2 mt-2.5">
                 <button
                   onClick={() => addFoul("away")}
-                  className="px-3 py-1 bg-surface-container hover:bg-white/10 text-xs text-on-surface-variant rounded-lg border border-white/5"
+                  className="h-7 px-3 bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant transition-colors cursor-pointer"
                 >
                   + Falta
                 </button>
                 <button
                   onClick={() => useTimeout("away")}
                   disabled={timeouts.away <= 0}
-                  className="px-3 py-1 bg-surface-container hover:bg-white/10 text-xs text-on-surface-variant rounded-lg border border-white/5 disabled:opacity-40"
+                  className="h-7 px-3 bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer"
                 >
                   Desconto
                 </button>
@@ -582,26 +582,26 @@ export default function BasketballScoreboard({
       </div>
 
       {/* Quarter by Quarter Breakdown Table */}
-      <div className="w-full bg-surface-container-low rounded-2xl border border-white/5 overflow-hidden p-5 mb-6">
-        <h3 className="font-headline font-black text-xs uppercase tracking-wider text-on-surface-variant mb-4">
+      <div className="w-full bg-surface-container-low rounded-2xl border border-outline-variant overflow-hidden p-5 mb-6">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-4">
           Resumo por Período
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-center text-sm">
             <thead>
-              <tr className="border-b border-white/5 text-on-surface-variant/70 text-xs uppercase font-label">
-                <th className="py-2 px-4 text-left font-bold">Equipa</th>
-                <th className="py-2 px-3">Q1</th>
-                <th className="py-2 px-3">Q2</th>
-                <th className="py-2 px-3">Q3</th>
-                <th className="py-2 px-3">Q4</th>
-                {quarters.length > 4 && <th className="py-2 px-3">OT</th>}
-                <th className="py-2 px-4 font-black text-secondary">Total</th>
+              <tr className="border-b border-outline-variant text-on-surface-variant/80 text-xs font-medium">
+                <th className="py-2.5 px-4 text-left">Equipa</th>
+                <th className="py-2.5 px-3">Q1</th>
+                <th className="py-2.5 px-3">Q2</th>
+                <th className="py-2.5 px-3">Q3</th>
+                <th className="py-2.5 px-3">Q4</th>
+                {quarters.length > 4 && <th className="py-2.5 px-3">OT</th>}
+                <th className="py-2.5 px-4 font-semibold text-secondary">Total</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 font-digital text-base">
+            <tbody className="divide-y divide-outline-variant/60 font-mono tabular-nums text-sm">
               <tr>
-                <td className="py-3 px-4 text-left font-bold font-sans text-on-surface flex items-center gap-2">
+                <td className="py-3 px-4 text-left font-sans text-on-surface font-medium flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-primary" />
                   {teamHome}
                 </td>
@@ -610,10 +610,10 @@ export default function BasketballScoreboard({
                 <td className="py-3 px-3">{quarters[2]?.home ?? 0}</td>
                 <td className="py-3 px-3">{quarters[3]?.home ?? 0}</td>
                 {quarters.length > 4 && <td className="py-3 px-3">{quarters[4]?.home ?? 0}</td>}
-                <td className="py-3 px-4 font-black text-primary text-xl">{scores.home}</td>
+                <td className="py-3 px-4 font-semibold text-primary">{scores.home}</td>
               </tr>
               <tr>
-                <td className="py-3 px-4 text-left font-bold font-sans text-on-surface flex items-center gap-2">
+                <td className="py-3 px-4 text-left font-sans text-on-surface font-medium flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-secondary" />
                   {teamAway}
                 </td>
@@ -622,7 +622,7 @@ export default function BasketballScoreboard({
                 <td className="py-3 px-3">{quarters[2]?.away ?? 0}</td>
                 <td className="py-3 px-3">{quarters[3]?.away ?? 0}</td>
                 {quarters.length > 4 && <td className="py-3 px-3">{quarters[4]?.away ?? 0}</td>}
-                <td className="py-3 px-4 font-black text-secondary text-xl">{scores.away}</td>
+                <td className="py-3 px-4 font-semibold text-secondary">{scores.away}</td>
               </tr>
             </tbody>
           </table>
@@ -634,9 +634,9 @@ export default function BasketballScoreboard({
         <div className="w-full flex justify-end gap-3">
           <button
             onClick={handleFinalizeMatch}
-            className="px-5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2"
+            className="h-9 px-4 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5"
           >
-            <span className="material-symbols-outlined text-[16px]">check_circle</span>
+            <span className="material-symbols-outlined text-base">check_circle</span>
             Terminar Jogo
           </button>
         </div>

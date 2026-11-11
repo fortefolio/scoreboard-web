@@ -73,47 +73,47 @@ export default function GroupStandingsView({ tournamentId }: { tournamentId: str
     };
   }, [tournamentId]);
 
-  if (loading) return <div className="text-gray-500 animate-pulse p-8">Calculating Standings...</div>;
+  if (loading) return <div className="text-text-muted text-xs font-medium p-8">Calculating Standings...</div>;
 
   if (Object.keys(groups).length === 0) {
-    return <div className="text-center p-12 text-gray-500 italic">No group standings available for this tournament.</div>;
+    return <div className="text-center p-12 text-text-muted text-xs">No group standings available for this tournament.</div>;
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {Object.entries(groups).sort().map(([label, teams]) => (
-        <div key={label} className="bg-gray-900 rounded-2xl border border-gray-800 overflow-hidden">
-          <div className="bg-gray-800/50 px-4 py-3 border-b border-gray-800 flex justify-between items-center">
-            <h3 className="font-bold text-indigo-400">Group {label}</h3>
-            <span className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Standings</span>
+        <div key={label} className="bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
+          <div className="bg-surface-container-high/60 px-4 py-3 border-b border-outline-variant flex justify-between items-center">
+            <h3 className="font-medium text-sm text-text-primary">Group {label}</h3>
+            <span className="text-xs text-text-muted font-medium">Standings</span>
           </div>
           
           <div className="overflow-x-auto w-full">
-            <table className="w-full text-sm">
+            <table className="w-full text-xs">
               <thead>
-                <tr className="text-gray-500 text-[10px] uppercase">
-                  <th className="px-4 py-2 text-left">Team</th>
-                  <th className="px-2 py-2">P</th>
-                  <th className="px-2 py-2">W</th>
-                  <th className="px-2 py-2">L</th>
-                  <th className="px-2 py-2">Sets</th>
-                  <th className="px-2 py-2 text-right pr-4">+/-</th>
+                <tr className="text-text-muted text-xs border-b border-outline-variant">
+                  <th className="px-4 py-2.5 text-left font-medium">Team</th>
+                  <th className="px-2 py-2.5 text-center font-medium">P</th>
+                  <th className="px-2 py-2.5 text-center font-medium">W</th>
+                  <th className="px-2 py-2.5 text-center font-medium">L</th>
+                  <th className="px-2 py-2.5 text-center font-medium">Sets</th>
+                  <th className="px-3 py-2.5 text-right font-medium pr-4">+/-</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800">
+              <tbody className="divide-y divide-outline-variant font-mono tabular-nums">
                 {teams.map((team, idx) => (
-                  <tr key={team.team_name} className={idx < 2 ? "bg-indigo-500/5" : ""}>
-                    <td className="px-4 py-3 font-medium flex items-center gap-2">
-                      {idx < 2 && <div className="w-1.5 h-1.5 rounded-full bg-green-500" title="In Qualification Zone" />}
-                      {team.team_name}
+                  <tr key={team.team_name} className="hover:bg-surface-container-high/40 transition-colors">
+                    <td className="px-4 py-2.5 font-sans font-medium text-text-primary flex items-center gap-2">
+                      {idx < 2 && <div className="w-1.5 h-1.5 rounded-full bg-success shrink-0" title="Qualification Zone" />}
+                      <span className="truncate">{team.team_name}</span>
                     </td>
-                    <td className="px-2 py-3 text-center text-gray-400">{team.played}</td>
-                    <td className="px-2 py-3 text-center font-bold text-green-400">{team.wins}</td>
-                    <td className="px-2 py-3 text-center text-red-400">{team.losses}</td>
-                    <td className="px-2 py-3 text-center text-xs text-gray-500">
+                    <td className="px-2 py-2.5 text-center text-text-secondary">{team.played}</td>
+                    <td className="px-2 py-2.5 text-center font-semibold text-success">{team.wins}</td>
+                    <td className="px-2 py-2.5 text-center text-error">{team.losses}</td>
+                    <td className="px-2 py-2.5 text-center text-text-muted">
                       {team.total_sets_won}-{team.total_sets_lost}
                     </td>
-                    <td className="px-2 py-3 text-right pr-4 font-mono text-xs">
+                    <td className="px-3 py-2.5 text-right pr-4 text-text-secondary">
                       {team.point_diff > 0 ? `+${team.point_diff}` : team.point_diff}
                     </td>
                   </tr>
@@ -122,7 +122,7 @@ export default function GroupStandingsView({ tournamentId }: { tournamentId: str
             </table>
           </div>
           
-          <div className="p-3 bg-gray-950/50 text-[10px] text-gray-600 italic">
+          <div className="p-3 bg-surface-container-high/30 border-t border-outline-variant text-[11px] text-text-muted">
             * Top teams advance to Knockout Stage
           </div>
         </div>

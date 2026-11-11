@@ -94,23 +94,23 @@ export default function MatchCard({ match }: { match: any }) {
 
   return (
     <Link href={`/match/${match.id}`} className="w-full sm:max-w-[288px] group shrink-0">
-      <div className="bg-[#151b2d]/80 backdrop-blur-xl p-5 rounded-2xl border border-white/5 hover:border-primary/30 transition-all duration-500 shadow-2xl relative overflow-hidden flex flex-col h-full group-hover:scale-[1.01]">
-        {/* Header */}
-        <div className="flex justify-between items-center gap-2 mb-6 relative z-10 min-w-0">
+      <div className="bg-surface-container p-4 rounded-xl border border-outline-variant hover:border-outline hover:bg-surface-container-high/40 transition-colors relative flex flex-col h-full">
+        {/* Header: Sport & Status */}
+        <div className="flex justify-between items-center gap-2 mb-4 relative z-10 min-w-0">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <SportIcon sport={match.sport_type} className="text-primary text-[14px]" />
+            <SportIcon sport={match.sport_type} className="text-primary text-[15px] shrink-0" />
             <span 
-              className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/70 truncate block"
+              className="text-xs font-medium text-text-secondary truncate block"
               title={match.tournaments?.name || getSportTranslation(match.sport_type, t)}
             >
               {match.tournaments?.name || getSportTranslation(match.sport_type, t)}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {isOngoingDisplay ? (
-              <span className="text-[10px] font-black uppercase tracking-wider text-primary flex items-center gap-1.5 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+              <span className="text-xs font-medium text-success flex items-center gap-1.5 shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
                 {match.sport_type === 'Basketball'
                   ? (match.scores?.basketball?.period || t("status.live"))
                   : match.sport_type !== 'Football'
@@ -118,7 +118,7 @@ export default function MatchCard({ match }: { match: any }) {
                   : t("status.live")}
               </span>
             ) : (
-              <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/40 shrink-0">
+              <span className="text-xs text-text-muted shrink-0">
                 {match.status === 'completed' || isMatchFinished
                   ? t("status.final")
                   : match.status === 'scheduled'
@@ -126,33 +126,39 @@ export default function MatchCard({ match }: { match: any }) {
                   : match.status}
               </span>
             )}
-            <FollowButton entityId={match.id} entityType="match" variant="icon" className="w-7 h-7" />
+            <FollowButton entityId={match.id} entityType="match" variant="icon" className="w-7 h-7 text-text-muted hover:text-text-primary" />
           </div>
         </div>
 
         {/* Participants */}
-        <div className="space-y-4 flex-1 relative z-10">
+        <div className="space-y-3 flex-1 relative z-10">
           {[0, 1].map((i) => (
             <div key={i} className="flex items-center justify-between gap-3">
               {/* Left: Avatar + Team Name + Set Scores underneath */}
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                {/* Avatar */}
-                <div className={`relative w-8 h-8 shrink-0 rounded-lg bg-surface-container-high/40 flex items-center justify-center border border-white/5 group-hover:bg-primary/20 transition-all duration-500 ${isOngoingDisplay && !isPointsBased && match.scores?.serving_index === i ? 'after:absolute after:-bottom-1.5 after:left-1/2 after:-translate-x-1/2 after:w-4 after:h-0.5 after:bg-yellow-400 after:rounded-full after:shadow-[0_0_8px_rgba(250,204,21,0.6)]' : ''}`}>
-                  <span className="font-headline font-black text-[12px] text-on-surface-variant/70">
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                {/* Avatar with clean service dot indicator */}
+                <div className="relative w-7 h-7 shrink-0 rounded-md bg-surface-container-high flex items-center justify-center border border-outline-variant">
+                  <span className="font-sans font-medium text-[11px] text-text-secondary">
                     {getInitials(match.participants?.[i]?.name)}
                   </span>
+                  {isOngoingDisplay && !isPointsBased && match.scores?.serving_index === i && (
+                    <span 
+                      title="Serving"
+                      className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-warning border border-surface-container"
+                    />
+                  )}
                 </div>
 
                 {/* Name + Sets underneath */}
                 <div className="flex flex-col min-w-0 flex-1 justify-center">
-                  <span className="text-[11px] font-black uppercase tracking-wider text-on-surface truncate">
+                  <span className="text-sm font-medium text-text-primary truncate">
                     {formatTeamOrPlayerName(match.participants?.[i]?.name) || "TBD"}
                   </span>
 
                   {/* Set / Quarter scores under the team name */}
                   {match.sport_type === 'Basketball' ? (
                     match.scores?.basketball?.quarters?.length > 0 && (
-                      <div className="flex items-center gap-1.5 mt-0.5 font-mono text-[10px]">
+                      <div className="flex items-center gap-1.5 mt-0.5 font-mono tabular-nums text-xs">
                         {match.scores.basketball.quarters
                           .filter((q: any, idx: number) => {
                             const currentPeriod = match.scores?.basketball?.period || "Q4";
@@ -167,7 +173,7 @@ export default function MatchCard({ match }: { match: any }) {
                             return (
                               <span
                                 key={idx}
-                                className={pScore > oScore ? "font-bold text-on-surface" : "text-on-surface-variant/50"}
+                                className={pScore > oScore ? "font-medium text-text-primary" : "text-text-muted"}
                               >
                                 {pScore}
                               </span>
@@ -176,7 +182,7 @@ export default function MatchCard({ match }: { match: any }) {
                       </div>
                     )
                   ) : match.sport_type !== 'Football' && (
-                    <div className="flex items-center gap-2 mt-0.5 font-mono text-[10px]">
+                    <div className="flex items-center gap-2 mt-0.5 font-mono tabular-nums text-xs">
                       {/* Completed sets */}
                       {setScores.length > 0 && (
                         <div className="flex items-center gap-1.5">
@@ -188,8 +194,8 @@ export default function MatchCard({ match }: { match: any }) {
                                 key={idx}
                                 className={
                                   pScore > oScore
-                                    ? "font-bold text-on-surface"
-                                    : "text-on-surface-variant/50"
+                                    ? "font-medium text-text-primary"
+                                    : "text-text-muted"
                                 }
                               >
                                 {pScore}
@@ -201,9 +207,9 @@ export default function MatchCard({ match }: { match: any }) {
 
                       {/* Live current set points / tennis games & points when ongoing */}
                       {isOngoingDisplay && (
-                        <span className="font-bold text-primary flex items-center gap-1">
+                        <span className="font-medium text-primary flex items-center gap-1">
                           {setScores.length > 0 && (
-                            <span className="text-on-surface-variant/30">•</span>
+                            <span className="text-text-muted/60">/</span>
                           )}
                           {isRacketSport
                             ? `${currentGames[i]} (${renderPoints(i)})`
@@ -217,7 +223,7 @@ export default function MatchCard({ match }: { match: any }) {
 
               {/* Right: Main Match Score (Goals for Football, Sets Won for Volleyball/Tennis) */}
               <div className="flex items-center shrink-0">
-                <span className="text-xl font-headline font-black w-6 text-right text-on-surface">
+                <span className="text-lg font-mono tabular-nums font-semibold w-6 text-right text-text-primary">
                   {getMainScore(i)}
                 </span>
               </div>

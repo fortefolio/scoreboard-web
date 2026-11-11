@@ -44,10 +44,17 @@ export function AuthProvider({
       }
     });
 
-    // Validate stored token against current Supabase environment; clear if invalid or signature mismatched
+    // Validate stored token against current Supabase environment; clear only if token signature is invalid or revoked
     supabase.auth.getUser().then((res: UserResponse) => {
       const error = res.error;
-      if (error && error.name !== "AuthSessionMissingError") {
+      if (
+        error &&
+        error.name !== "AuthSessionMissingError" &&
+        (error.message?.toLowerCase().includes("signature") ||
+         error.message?.toLowerCase().includes("invalid jwt") ||
+         error.message?.toLowerCase().includes("invalid refresh token") ||
+         error.status === 401)
+      ) {
         console.warn("Invalid or mismatched session detected, clearing auth state:", error.message);
         supabase.auth.signOut();
       }

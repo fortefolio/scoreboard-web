@@ -311,45 +311,45 @@ export default function TennisScoreboard({
       )}
 
       {/* Top Banner / Match Info */}
-      <div className="w-full bg-surface-container-low rounded-2xl border border-white/5 p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="w-full bg-surface-container rounded-xl border border-outline-variant p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-            <SportIcon sport={isPadel ? "Padel" : "Tennis"} className="w-5 h-5 text-primary" />
+          <div className="w-9 h-9 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center">
+            <SportIcon sport={isPadel ? "Padel" : "Tennis"} className="w-4 h-4 text-text-primary" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-label font-bold uppercase tracking-widest text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
-                {isPadel ? "Padel Oficial" : "Ténis Oficial"}
+              <span className="text-xs font-medium text-text-secondary">
+                {isPadel ? "Padel" : "Tennis"}
               </span>
-              <span className="text-xs text-on-surface-variant font-medium">
-                {matchData?.tournaments?.name || "Partida Individual"}
+              <span className="text-xs text-text-muted">
+                • {matchData?.tournaments?.name || "Single Match"}
               </span>
             </div>
-            <h2 className="text-base font-bold text-white mt-0.5">
-              {formatTeamOrPlayerName(teamHome)} <span className="text-on-surface-variant/40 font-normal">vs</span> {formatTeamOrPlayerName(teamAway)}
+            <h2 className="text-sm font-semibold text-text-primary mt-0.5">
+              {formatTeamOrPlayerName(teamHome)} <span className="text-text-muted font-normal">vs</span> {formatTeamOrPlayerName(teamAway)}
             </h2>
           </div>
         </div>
 
         {/* Set Navigator Tabs */}
-        <div className="flex items-center gap-1.5 bg-surface-container p-1 rounded-xl border border-white/5">
+        <div className="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg border border-outline-variant">
           {Array.from({ length: defaultMaxSets }).map((_, i) => {
             const isCompletedSet = i < setHistory.length;
             const isCurrent = i === setHistory.length;
             return (
               <div
                 key={i}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
                   isCurrent
-                    ? "bg-primary text-on-primary shadow-md"
+                    ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
                     : isCompletedSet
-                    ? "bg-surface-container-highest text-on-surface"
-                    : "text-on-surface-variant/40"
+                    ? "text-text-secondary"
+                    : "text-text-muted/50"
                 }`}
               >
-                S{i + 1}
+                Set {i + 1}
                 {isCompletedSet && (
-                  <span className="ml-1.5 font-digital text-[11px] text-white/70">
+                  <span className="ml-1.5 font-mono text-xs tabular-nums text-text-muted">
                     {setHistory[i].home}-{setHistory[i].away}
                   </span>
                 )}
@@ -360,26 +360,26 @@ export default function TennisScoreboard({
       </div>
 
       {/* Main 3-Column Command Center Scoreboard */}
-      <div className="w-full bg-[#0d1424] rounded-2xl sm:rounded-3xl border border-white/10 p-4 sm:p-6 md:p-8 shadow-2xl relative overflow-hidden mb-6">
+      <div className="w-full bg-surface-container rounded-2xl border border-outline-variant p-6 mb-6 relative overflow-hidden">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           {/* Left Column: Home Player / Team */}
           <div className="flex flex-col items-center md:items-start text-center md:text-left order-2 md:order-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-primary"></span>
-              <span className="text-xl md:text-2xl font-black text-white tracking-tight">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-primary"></span>
+              <span className="text-lg md:text-xl font-semibold text-text-primary">
                 {formatTeamOrPlayerName(teamHome)}
               </span>
             </div>
 
             {/* Serving / Receiving Indicator */}
-            <div className="mb-2">
+            <div className="mb-3">
               {serverIdx === 0 ? (
-                <span className="inline-flex items-center gap-1.5 text-primary text-[10px] font-black uppercase tracking-widest bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 animate-pulse">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary bg-surface-container-high px-2 py-0.5 rounded-md border border-outline-variant">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
                   Serving
                 </span>
               ) : (
-                <span className="inline-flex items-center text-on-surface-variant/50 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1">
+                <span className="inline-flex items-center text-text-muted text-xs font-medium px-2 py-0.5">
                   Receiver
                 </span>
               )}
@@ -387,16 +387,16 @@ export default function TennisScoreboard({
 
             {/* Sets & Games Context Pills */}
             <div className="flex items-center gap-2 text-xs mb-3">
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant border border-white/5 font-bold">
-                Sets: <span className="font-digital text-sm text-primary">{homeSetsWon}</span>
+              <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+                Sets: <span className="font-mono tabular-nums text-text-primary font-semibold">{homeSetsWon}</span>
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant border border-white/5 font-bold">
-                Jogos: <span className="font-digital text-sm text-white">{games[0]}</span>
+              <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+                Games: <span className="font-mono tabular-nums text-text-primary font-semibold">{games[0]}</span>
               </span>
             </div>
 
-            {/* Home Big Point Score with Digital Font */}
-            <div className="text-7xl md:text-8xl font-digital text-primary tracking-tighter my-2 drop-shadow-[0_0_20px_rgba(99,102,241,0.2)]">
+            {/* Home Big Point Score */}
+            <div className="text-6xl md:text-8xl font-mono tabular-nums font-bold text-text-primary tracking-tight my-2">
               {formatPoint(0)}
             </div>
 
@@ -406,18 +406,18 @@ export default function TennisScoreboard({
                 <div className="flex gap-2">
                   <button
                     onClick={() => handlePoint(0)}
-                    className="flex-1 bg-primary hover:bg-primary-hover active:scale-95 text-on-primary py-2.5 px-3 rounded-xl font-bold text-xs transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-1 cursor-pointer"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
                   >
-                    <span className="material-symbols-outlined text-sm">add</span>
-                    + Ponto
+                    <span className="material-symbols-outlined text-[16px]">add</span>
+                    Point
                   </button>
                   <button
                     onClick={() => handleCorrectPoint(0)}
                     disabled={points[0] <= 0}
-                    className="bg-surface-container hover:bg-surface-container-high active:scale-95 text-on-surface-variant py-2.5 px-3 rounded-xl font-bold text-xs border border-white/5 transition-all disabled:opacity-30 cursor-pointer flex items-center gap-1"
-                    title="Corrigir / Subtrair Ponto"
+                    className="bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-2 px-3 rounded-lg font-medium text-xs border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1"
+                    title="Correct / Subtract Point"
                   >
-                    <span className="material-symbols-outlined text-sm">undo</span>
+                    <span className="material-symbols-outlined text-[16px]">undo</span>
                     -1
                   </button>
                 </div>
@@ -426,18 +426,18 @@ export default function TennisScoreboard({
                   <button
                     onClick={() => handleAce(0)}
                     disabled={serverIdx !== 0}
-                    className="flex-1 bg-surface-container hover:bg-surface-container-high active:scale-95 text-amber-300 py-2 px-2 rounded-xl font-bold text-[11px] border border-amber-400/20 transition-all disabled:opacity-30 cursor-pointer flex items-center justify-center gap-1"
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center justify-center gap-1"
                   >
-                    <span className="material-symbols-outlined text-xs">bolt</span>
-                    Ás (Ace)
+                    <span className="material-symbols-outlined text-[14px] text-amber-400">bolt</span>
+                    Ace
                   </button>
                   <button
                     onClick={() => handleDoubleFault(0)}
                     disabled={serverIdx !== 0}
-                    className="flex-1 bg-surface-container hover:bg-surface-container-high active:scale-95 text-rose-400 py-2 px-2 rounded-xl font-bold text-[11px] border border-rose-400/20 transition-all disabled:opacity-30 cursor-pointer flex items-center justify-center gap-1"
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center justify-center gap-1"
                   >
-                    <span className="material-symbols-outlined text-xs">close</span>
-                    Falta Dupla
+                    <span className="material-symbols-outlined text-[14px] text-rose-400">close</span>
+                    Double Fault
                   </button>
                 </div>
               </div>
@@ -447,47 +447,47 @@ export default function TennisScoreboard({
           {/* Center Column: Status, Games Board, Server Side & Technical Alerts */}
           <div className="flex flex-col items-center text-center order-1 md:order-2 py-4">
             {/* Set & Game Status */}
-            <div className="text-[11px] font-label uppercase tracking-widest text-on-surface-variant/80 font-bold mb-1">
+            <div className="text-xs font-medium text-text-muted mb-1.5">
               {isTiebreak ? (
-                <span className="text-amber-400 font-black">TIE-BREAK DECISIVO</span>
+                <span className="text-amber-400 font-semibold">Deciding Tie-Break</span>
               ) : (
-                `SET ${setHistory.length + 1} • JOGO ${totalGamesInSet + 1}`
+                `Set ${setHistory.length + 1} • Game ${totalGamesInSet + 1}`
               )}
             </div>
 
-            {/* Current Games Board in Digital Font */}
+            {/* Current Games Board */}
             <div className="flex items-center gap-3 my-2">
-              <div className="text-4xl md:text-5xl font-digital text-white tracking-widest py-2 px-6 rounded-2xl bg-surface-container/60 border border-white/10 shadow-inner">
+              <div className="text-3xl md:text-4xl font-mono tabular-nums font-semibold text-text-primary py-2 px-6 rounded-xl bg-surface-container-high border border-outline-variant">
                 {games[0]} - {games[1]}
               </div>
             </div>
 
             {/* Server Court Side Indicator */}
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-on-surface-variant/70 mt-1">
-              <span className="material-symbols-outlined text-sm text-primary">swap_horiz</span>
-              <span>Lado: <strong className="text-white">{isDeuceCourt ? "Direito (Deuce)" : "Esquerdo (Vantagem)"}</strong></span>
+            <div className="flex items-center gap-1.5 text-xs text-text-muted mt-1">
+              <span className="material-symbols-outlined text-[15px]">swap_horiz</span>
+              <span>Side: <strong className="text-text-secondary font-medium">{isDeuceCourt ? "Deuce (Right)" : "Advantage (Left)"}</strong></span>
             </div>
 
             {/* Technical Match Context Alerts */}
             <div className="flex flex-col gap-1.5 mt-3 w-full max-w-xs">
               {isBreakPoint && (
-                <div className="bg-rose-500/20 border border-rose-500/40 text-rose-300 py-1 px-3 rounded-lg text-[11px] font-black uppercase tracking-wider animate-pulse flex items-center justify-center gap-1.5">
-                  <span className="material-symbols-outlined text-xs">warning</span>
-                  PONTO DE BREAK!
+                <div className="bg-surface-container-high border border-rose-500/30 text-rose-400 py-1 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5">
+                  <span className="material-symbols-outlined text-[14px]">warning</span>
+                  Break Point
                 </div>
               )}
 
               {isDeuceAlert && (
-                <div className="bg-amber-500/20 border border-amber-500/40 text-amber-300 py-1 px-3 rounded-lg text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5">
-                  <span className="material-symbols-outlined text-xs">hourglass_empty</span>
-                  {isGoldenPoint ? "PONTO DE OURO (SUDDEN DEATH)" : "IGUALDADE (40 - 40)"}
+                <div className="bg-surface-container-high border border-amber-500/30 text-amber-400 py-1 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5">
+                  <span className="material-symbols-outlined text-[14px]">hourglass_empty</span>
+                  {isGoldenPoint ? "Golden Point (Sudden Death)" : "Deuce (40 - 40)"}
                 </div>
               )}
 
               {isChangeOfEnds && (
-                <div className="bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 py-1 px-3 rounded-lg text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5">
-                  <span className="material-symbols-outlined text-xs">sync_alt</span>
-                  TROCA DE CAMPO
+                <div className="bg-surface-container-high border border-outline-variant text-text-secondary py-1 px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5">
+                  <span className="material-symbols-outlined text-[14px]">sync_alt</span>
+                  Change of Ends
                 </div>
               )}
             </div>
@@ -496,32 +496,32 @@ export default function TennisScoreboard({
             {canEdit && (
               <button
                 onClick={toggleServer}
-                className="mt-4 text-xs font-bold text-on-surface-variant hover:text-white bg-surface-container px-3.5 py-1.5 rounded-xl border border-white/5 transition-all flex items-center gap-1.5 cursor-pointer"
+                className="mt-3 text-xs font-medium text-text-secondary hover:text-text-primary bg-surface-container-high px-3 py-1.5 rounded-lg border border-outline-variant transition-colors flex items-center gap-1.5 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-sm text-primary">sync</span>
-                Alternar Servidor
+                <span className="material-symbols-outlined text-[15px]">sync</span>
+                Switch Server
               </button>
             )}
           </div>
 
           {/* Right Column: Away Player / Team */}
           <div className="flex flex-col items-center md:items-end text-center md:text-right order-3">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xl md:text-2xl font-black text-white tracking-tight">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="text-lg md:text-xl font-semibold text-text-primary">
                 {formatTeamOrPlayerName(teamAway)}
               </span>
-              <span className="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+              <span className="w-2 h-2 rounded-full bg-secondary"></span>
             </div>
 
             {/* Serving / Receiving Indicator */}
-            <div className="mb-2">
+            <div className="mb-3">
               {serverIdx === 1 ? (
-                <span className="inline-flex items-center gap-1.5 text-secondary text-[10px] font-black uppercase tracking-widest bg-secondary/10 px-2.5 py-1 rounded-full border border-secondary/20 animate-pulse">
-                  <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary bg-surface-container-high px-2 py-0.5 rounded-md border border-outline-variant">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
                   Serving
                 </span>
               ) : (
-                <span className="inline-flex items-center text-on-surface-variant/50 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1">
+                <span className="inline-flex items-center text-text-muted text-xs font-medium px-2 py-0.5">
                   Receiver
                 </span>
               )}
@@ -529,16 +529,16 @@ export default function TennisScoreboard({
 
             {/* Sets & Games Context Pills */}
             <div className="flex items-center gap-2 text-xs mb-3">
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant border border-white/5 font-bold">
-                Jogos: <span className="font-digital text-sm text-white">{games[1]}</span>
+              <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+                Games: <span className="font-mono tabular-nums text-text-primary font-semibold">{games[1]}</span>
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant border border-white/5 font-bold">
-                Sets: <span className="font-digital text-sm text-secondary">{awaySetsWon}</span>
+              <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+                Sets: <span className="font-mono tabular-nums text-text-primary font-semibold">{awaySetsWon}</span>
               </span>
             </div>
 
-            {/* Away Big Point Score with Digital Font */}
-            <div className="text-7xl md:text-8xl font-digital text-secondary tracking-tighter my-2 drop-shadow-[0_0_20px_rgba(78,222,163,0.15)]">
+            {/* Away Big Point Score */}
+            <div className="text-6xl md:text-8xl font-mono tabular-nums font-bold text-text-primary tracking-tight my-2">
               {formatPoint(1)}
             </div>
 
@@ -549,18 +549,18 @@ export default function TennisScoreboard({
                   <button
                     onClick={() => handleCorrectPoint(1)}
                     disabled={points[1] <= 0}
-                    className="bg-surface-container hover:bg-surface-container-high active:scale-95 text-on-surface-variant py-2.5 px-3 rounded-xl font-bold text-xs border border-white/5 transition-all disabled:opacity-30 cursor-pointer flex items-center gap-1"
-                    title="Corrigir / Subtrair Ponto"
+                    className="bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-2 px-3 rounded-lg font-medium text-xs border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1"
+                    title="Correct / Subtract Point"
                   >
-                    <span className="material-symbols-outlined text-sm">undo</span>
+                    <span className="material-symbols-outlined text-[16px]">undo</span>
                     -1
                   </button>
                   <button
                     onClick={() => handlePoint(1)}
-                    className="flex-1 bg-secondary hover:bg-secondary/90 active:scale-95 text-on-secondary py-2.5 px-3 rounded-xl font-bold text-xs transition-all shadow-lg shadow-secondary/20 flex items-center justify-center gap-1 cursor-pointer"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
                   >
-                    <span className="material-symbols-outlined text-sm">add</span>
-                    + Ponto
+                    <span className="material-symbols-outlined text-[16px]">add</span>
+                    Point
                   </button>
                 </div>
 
@@ -568,18 +568,18 @@ export default function TennisScoreboard({
                   <button
                     onClick={() => handleDoubleFault(1)}
                     disabled={serverIdx !== 1}
-                    className="flex-1 bg-surface-container hover:bg-surface-container-high active:scale-95 text-rose-400 py-2 px-2 rounded-xl font-bold text-[11px] border border-rose-400/20 transition-all disabled:opacity-30 cursor-pointer flex items-center justify-center gap-1"
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center justify-center gap-1"
                   >
-                    <span className="material-symbols-outlined text-xs">close</span>
-                    Falta Dupla
+                    <span className="material-symbols-outlined text-[14px] text-rose-400">close</span>
+                    Double Fault
                   </button>
                   <button
                     onClick={() => handleAce(1)}
                     disabled={serverIdx !== 1}
-                    className="flex-1 bg-surface-container hover:bg-surface-container-high active:scale-95 text-amber-300 py-2 px-2 rounded-xl font-bold text-[11px] border border-amber-400/20 transition-all disabled:opacity-30 cursor-pointer flex items-center justify-center gap-1"
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center justify-center gap-1"
                   >
-                    <span className="material-symbols-outlined text-xs">bolt</span>
-                    Ás (Ace)
+                    <span className="material-symbols-outlined text-[14px] text-amber-400">bolt</span>
+                    Ace
                   </button>
                 </div>
               </div>

@@ -75,23 +75,23 @@ export default function TopNavBar() {
   }
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-slate-950/40 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 transition-all duration-300 ease-out border-b border-white/5">
-      <div className="flex justify-between items-center px-4 sm:px-8 py-3 sm:py-4 max-w-7xl mx-auto font-headline tracking-tight">
-        <Link href="/" className="text-2xl sm:text-3xl md:text-4xl font-digital text-white tracking-tighter hover:scale-105 transition-transform shrink-0">
+    <nav className="fixed top-0 w-full z-50 bg-[#0b0d14]/90 backdrop-blur-md border-b border-outline-variant">
+      <div className="flex justify-between items-center px-4 sm:px-8 py-3 max-w-7xl mx-auto font-sans tracking-tight">
+        <Link href="/" className="text-2xl sm:text-3xl font-digital text-text-primary tracking-tighter shrink-0">
           SCORE:BOARD
         </Link>
 
         {/* Navigation Links (Desktop only, hidden on mobile in favor of bottom tab bar) */}
-        <div className="hidden md:flex gap-8 items-center">
+        <div className="hidden md:flex gap-6 items-center">
           {hasMounted && (
             <>
               <Link
                 href="/?tab=matches"
                 scroll={false}
-                className={`transition-colors transition-all duration-300 ease-out active:scale-95 text-sm font-black uppercase tracking-widest ${
+                className={`text-sm font-medium transition-colors ${
                   isMatchesActive
-                    ? "text-white"
-                    : "text-slate-400 hover:text-white"
+                    ? "text-text-primary font-semibold"
+                    : "text-text-secondary hover:text-text-primary"
                 }`}
               >
                 {t("home.matchesTab")}
@@ -100,10 +100,10 @@ export default function TopNavBar() {
               <Link
                 href="/?tab=tournaments"
                 scroll={false}
-                className={`transition-colors transition-all duration-300 ease-out active:scale-95 text-sm font-black uppercase tracking-widest ${
+                className={`text-sm font-medium transition-colors ${
                   isTournamentsActive
-                    ? "text-white"
-                    : "text-slate-400 hover:text-white"
+                    ? "text-text-primary font-semibold"
+                    : "text-text-secondary hover:text-text-primary"
                 }`}
               >
                 {t("home.tournamentsTab")}
@@ -112,10 +112,10 @@ export default function TopNavBar() {
               <Link
                 href="/?tab=following"
                 scroll={false}
-                className={`transition-colors transition-all duration-300 ease-out active:scale-95 text-sm font-black uppercase tracking-widest ${
+                className={`text-sm font-medium transition-colors ${
                   isFollowingActive
-                    ? "text-white"
-                    : "text-slate-400 hover:text-white"
+                    ? "text-text-primary font-semibold"
+                    : "text-text-secondary hover:text-text-primary"
                 }`}
               >
                 {t("home.followingTab")}
@@ -124,7 +124,7 @@ export default function TopNavBar() {
           )}
         </div>
 
-        <div className="flex gap-2 sm:gap-4 md:gap-6 items-center shrink-0">
+        <div className="flex gap-2 sm:gap-4 items-center shrink-0">
           {hasMounted && <LanguageSelector />}
 
           {/* Notification bell on desktop (on mobile, it lives on the bottom tab bar) */}
@@ -139,65 +139,64 @@ export default function TopNavBar() {
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 aria-label="User menu"
-                className="flex items-center gap-1.5 sm:gap-2 group focus:outline-none"
+                className="flex items-center gap-1.5 group focus:outline-none cursor-pointer"
               >
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-300 font-black group-hover:border-indigo-400/50 transition-all overflow-hidden text-xs sm:text-sm">
+                <div className="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center text-text-secondary font-medium group-hover:border-outline transition-colors overflow-hidden text-xs">
                   {user.user_metadata?.avatar_url ? (
                     <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
                     user.email?.charAt(0).toUpperCase()
                   )}
                 </div>
-                <span className="material-symbols-outlined text-slate-400 group-hover:text-white transition-colors text-lg sm:text-2xl">
+                <span className="material-symbols-outlined text-text-muted group-hover:text-text-primary transition-colors text-lg">
                   {isMenuOpen ? 'expand_less' : 'expand_more'}
                 </span>
               </button>
 
               {isMenuOpen && (
-                <div className="absolute right-0 mt-3 w-52 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl z-[110] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="p-4 border-b border-slate-800 bg-slate-900/50">
-                    <div className="flex items-center justify-between gap-2 mb-1.5">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t("nav.signedInAs")}</p>
+                <div className="absolute right-0 mt-2 w-52 bg-surface-container border border-outline-variant rounded-xl shadow-xl z-[110] overflow-hidden">
+                  <div className="p-3 border-b border-outline-variant bg-surface-container-high/40">
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <p className="text-xs font-medium text-text-muted">{t("nav.signedInAs")}</p>
                       {subscriptionTier === "pro" ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-secondary/10 text-success border border-secondary/20">
                           PRO
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-surface-container-highest text-text-muted border border-outline-variant">
                           FREE
                         </span>
                       )}
                     </div>
-                    <p className="text-xs font-bold text-white truncate">{user.email}</p>
+                    <p className="text-xs font-medium text-text-primary truncate">{user.email}</p>
                   </div>
-                  <div className="p-2">
+                  <div className="p-1.5">
                     <button
                       onClick={() => { setIsMenuOpen(false); router.push('/settings'); }}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all"
+                      className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-container-high rounded-lg transition-colors cursor-pointer"
                     >
-                      <span className="material-symbols-outlined text-lg">settings</span>
+                      <span className="material-symbols-outlined text-base">settings</span>
                       {t("nav.settings")}
                     </button>
                     <button
                       onClick={() => { setIsMenuOpen(false); router.push('/my-matches'); }}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all mt-1"
+                      className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-container-high rounded-lg transition-colors cursor-pointer mt-0.5"
                     >
-                      <span className="material-symbols-outlined text-lg">sports_tennis</span>
+                      <span className="material-symbols-outlined text-base">sports_tennis</span>
                       {t("nav.myMatches")}
                     </button>
                     <button
                       onClick={() => { setIsMenuOpen(false); router.push('/my-tournaments'); }}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-all mt-1"
+                      className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-container-high rounded-lg transition-colors cursor-pointer mt-0.5"
                     >
-                      <span className="material-symbols-outlined text-lg">emoji_events</span>
+                      <span className="material-symbols-outlined text-base">emoji_events</span>
                       {t("nav.myTournaments")}
                     </button>
                     <button
                       onClick={handleSignOut}
-                      className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all mt-1"
+                      className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs font-medium text-error hover:bg-error/10 rounded-lg transition-colors cursor-pointer mt-0.5"
                     >
-                      <span className="material-symbols-outlined text-lg">logout</span>
+                      <span className="material-symbols-outlined text-base">logout</span>
                       {t("nav.signOut")}
                     </button>
                   </div>
@@ -205,16 +204,16 @@ export default function TopNavBar() {
               )}
             </div>
           ) : (
-            <div className="flex gap-2 sm:gap-4 items-center">
+            <div className="flex gap-2 sm:gap-3 items-center">
                <Link
                  href="/?auth=login"
-                 className="text-slate-400 hover:text-white px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] transition-all duration-300 ease-out active:scale-95 border border-white/5 sm:border-transparent"
+                 className="text-text-secondary hover:text-text-primary px-3 py-1.5 rounded-lg font-medium text-xs transition-colors"
                >
                  {t("nav.signIn")}
                </Link>
                <Link
                  href="/?auth=signup"
-                 className="hidden sm:inline-flex bg-primary-container text-on-primary-container px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-indigo-500/10 hover:text-indigo-300 transition-all duration-300 ease-out active:scale-95 shadow-lg shadow-indigo-500/20"
+                 className="hidden sm:inline-flex bg-primary hover:bg-primary/90 text-white px-3.5 py-1.5 rounded-lg font-medium text-xs transition-colors shadow-sm"
                >
                  {t("nav.getStarted")}
                </Link>

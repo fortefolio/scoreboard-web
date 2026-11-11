@@ -94,12 +94,12 @@ const CountdownTimer = ({ scheduledAt }: { scheduledAt?: string }) => {
 
   return (
     <div className="flex flex-col items-center">
-      <div className="font-label text-[10px] sm:text-[12px] md:text-[14px] font-black uppercase tracking-[0.4em] text-on-surface-variant/20 mb-1.5 sm:mb-3">vs</div>
-      <div className="bg-[#1a2035]/60 backdrop-blur-xl w-24 sm:w-44 md:w-56 py-2 sm:py-3 md:py-4 rounded-xl sm:rounded-[1.25rem] border border-white/5 flex flex-col items-center shadow-[0_0_40px_-12px_rgba(0,0,0,0.5)]">
-        <div className="font-label text-[7px] sm:text-[8px] font-black uppercase tracking-[0.3em] text-on-surface-variant/30 mb-0.5 sm:mb-1">
+      <div className="text-xs font-medium text-text-muted mb-2">vs</div>
+      <div className="bg-surface-container w-28 sm:w-48 py-2.5 sm:py-3 rounded-xl border border-outline-variant flex flex-col items-center">
+        <div className="text-[11px] font-medium text-text-muted mb-0.5">
           {timeLeft === "STARTING" ? t("match.soon") : t("match.startsIn")}
         </div>
-        <div className={`font-headline font-black tracking-tight text-on-surface ${timeLeft === "STARTING" ? "text-sm sm:text-xl pb-1" : "text-base sm:text-2xl md:text-4xl"}`}>
+        <div className="font-mono tabular-nums text-lg sm:text-2xl font-semibold text-text-primary">
           {timeLeft}
         </div>
       </div>
@@ -559,7 +559,7 @@ export default function MatchDetailClient() {
         <div className="mb-6">
           <Link
             href={match.tournament_id ? `/tournament/${match.tournament_id}?tab=${backTab}` : "/my-matches"}
-            className="font-label text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/60 hover:text-on-surface inline-flex items-center gap-2 transition-colors"
+            className="text-text-muted hover:text-text-primary text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
           >
             <span aria-hidden>←</span>
             {match.tournament_id ? "Back to Tournament" : "Back to My Matches"}
@@ -567,31 +567,15 @@ export default function MatchDetailClient() {
         </div>
 
         {/* HERO */}
-        <div className="relative bg-[#0c1324] rounded-2xl sm:rounded-[2.5rem] p-4 sm:p-8 md:p-12 overflow-hidden border border-white/5">
-          <div
-            aria-hidden
-            className="absolute inset-0 pointer-events-none"
-            style={{ 
-              background: `
-                radial-gradient(circle at 20% -10%, rgba(79,70,229,0.15), transparent 40%),
-                radial-gradient(circle at 80% -10%, rgba(16,185,129,0.1), transparent 40%),
-                radial-gradient(circle at 50% 110%, rgba(79,70,229,0.05), transparent 50%)
-              `
-            }}
-          />
-          
-          {/* Stadium Light Glows */}
-          <div className="absolute top-0 left-1/4 w-32 h-1 bg-white/20 blur-2xl rounded-full" />
-          <div className="absolute top-0 right-1/4 w-32 h-1 bg-white/20 blur-2xl rounded-full" />
-
+        <div className="relative bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant overflow-hidden">
           {/* Top Bar: Chips (Sport -> Author -> Status) & Options Menu */}
           <div className="relative z-20 flex items-start justify-between gap-3 mb-6 sm:mb-8">
             {/* Left Chips: Sport -> Author -> Status */}
             <div className="flex flex-wrap items-center gap-2">
               {/* 1. Sport Pill */}
-              <div className="h-7 px-3 rounded-full bg-white/5 backdrop-blur-md border border-white/10 shadow-sm inline-flex items-center gap-1.5">
-                <SportIcon sport={match.sport_type} className="text-secondary text-[13px] leading-none" />
-                <span className="font-label text-[10px] font-black uppercase tracking-widest text-on-surface-variant/90 leading-none">
+              <div className="h-6 px-2.5 rounded-md bg-surface-container-high border border-outline-variant inline-flex items-center gap-1.5">
+                <SportIcon sport={match.sport_type} className="text-text-secondary text-[13px] leading-none" />
+                <span className="text-xs font-medium text-text-secondary leading-none">
                   {getSportTranslation(match.sport_type || "Tennis", t)}
                 </span>
               </div>
@@ -600,31 +584,31 @@ export default function MatchDetailClient() {
               {(match.organizer?.username || match.organizer?.email) && (
                 <Link
                   href={`/user/${encodeURIComponent(match.organizer.username || match.organizer.email.split("@")[0])}`}
-                  className="h-7 px-3 rounded-full bg-white/[0.03] hover:bg-white/[0.08] backdrop-blur-sm border border-white/5 hover:border-white/15 text-on-surface-variant/70 hover:text-on-surface transition-all duration-300 inline-flex items-center gap-1.5 cursor-pointer shadow-sm group"
+                  className="h-6 px-2.5 rounded-md bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-muted hover:text-text-primary transition-colors inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer"
                   title={`@${match.organizer.username || match.organizer.email.split("@")[0]}`}
                 >
-                  <span className="material-symbols-outlined text-[13px] leading-none text-on-surface-variant/50 group-hover:text-primary transition-colors">person</span>
-                  <span className="font-label text-[10px] font-black uppercase tracking-widest leading-none group-hover:text-on-surface transition-colors">
+                  <span className="material-symbols-outlined text-[13px] leading-none text-text-muted">person</span>
+                  <span className="leading-none">
                     @{match.organizer.username || match.organizer.email.split("@")[0]}
                   </span>
                 </Link>
               )}
 
               {/* 3. Status Badge */}
-              <span
-                className={`h-7 px-3 rounded-full font-label text-[10px] font-black uppercase tracking-widest backdrop-blur-md border border-white/10 inline-flex items-center gap-1.5 shadow-sm leading-none ${
+              <div
+                className={`h-6 px-2.5 rounded-md border inline-flex items-center gap-1.5 text-xs font-medium leading-none ${
                   isCompleted
-                    ? "bg-secondary-container/20 text-secondary"
+                    ? "bg-surface-container-high text-text-muted border-outline-variant"
                     : match.status === "ongoing"
-                    ? "bg-primary-container/20 text-primary border-primary/30"
-                    : "bg-white/5 text-on-surface-variant"
+                    ? "bg-surface-container-high text-success border-success/30"
+                    : "bg-surface-container-high text-text-secondary border-outline-variant"
                 }`}
               >
                 {match.status === "ongoing" && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-success" />
                 )}
-                {getStatusTranslation(match.status, t)}
-              </span>
+                <span>{getStatusTranslation(match.status, t)}</span>
+              </div>
             </div>
 
             {/* Top-Right: Follow Button & 3-Dots Dropdown Menu */}
@@ -634,23 +618,23 @@ export default function MatchDetailClient() {
                 <button
                   onClick={() => setIsMenuOpen((prev) => !prev)}
                   title={t("match.options")}
-                  className="w-10 h-10 rounded-2xl bg-white/5 hover:bg-white/10 backdrop-blur-md text-on-surface-variant hover:text-on-surface border border-white/10 transition-all flex items-center justify-center cursor-pointer shadow-sm"
+                  className="w-8 h-8 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-text-primary border border-outline-variant transition-colors flex items-center justify-center cursor-pointer"
                   aria-haspopup="true"
                   aria-expanded={isMenuOpen}
                 >
-                  <span className="material-symbols-outlined text-[22px]">more_vert</span>
+                  <span className="material-symbols-outlined text-[18px]">more_vert</span>
                 </button>
 
               {isMenuOpen && (
-                <div className="absolute right-0 top-12 w-48 py-1.5 bg-[#151c2f]/95 backdrop-blur-xl rounded-2xl border border-white/10 shadow-2xl z-50 animate-in fade-in zoom-in-95 duration-150 overflow-hidden">
+                <div className="absolute right-0 top-10 w-48 py-1 bg-surface-container-high rounded-xl border border-outline-variant shadow-xl z-50 overflow-hidden">
                   <button
                     onClick={() => {
                       setIsMenuOpen(false);
                       handleShare();
                     }}
-                    className="w-full px-4 py-2.5 text-left text-xs font-bold text-on-surface hover:bg-white/10 flex items-center gap-2.5 transition-colors cursor-pointer"
+                    className="w-full px-3.5 py-2 text-left text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-container flex items-center gap-2 transition-colors cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[18px] text-primary">share</span>
+                    <span className="material-symbols-outlined text-[16px] text-text-muted">share</span>
                     {t("match.shareLink")}
                   </button>
 
@@ -659,12 +643,12 @@ export default function MatchDetailClient() {
                       setIsMenuOpen(false);
                       handleOpenStreamOverlay();
                     }}
-                    className="w-full px-4 py-2.5 text-left text-xs font-bold text-on-surface hover:bg-white/10 flex items-center gap-2.5 transition-colors cursor-pointer border-t border-white/5"
+                    className="w-full px-3.5 py-2 text-left text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-container flex items-center gap-2 transition-colors cursor-pointer border-t border-outline-variant"
                   >
-                    <span className="material-symbols-outlined text-[18px] text-indigo-400">podcasts</span>
+                    <span className="material-symbols-outlined text-[16px] text-primary">podcasts</span>
                     <span className="flex-1">{t("match.streamOverlay")}</span>
                     {subscriptionTier !== "pro" && !canManageOfficial && (
-                      <span className="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">
+                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
                         PRO
                       </span>
                     )}
@@ -675,11 +659,11 @@ export default function MatchDetailClient() {
                       <button
                         disabled
                         title={t("match.lockedTournamentMatch")}
-                        className="w-full px-4 py-2.5 text-left text-xs font-bold text-rose-400/40 cursor-not-allowed flex items-center gap-2.5 border-t border-white/5 select-none"
+                        className="w-full px-3.5 py-2 text-left text-xs font-medium text-text-muted/40 cursor-not-allowed flex items-center gap-2 border-t border-outline-variant select-none"
                       >
-                        <span className="material-symbols-outlined text-[18px] opacity-40">delete</span>
+                        <span className="material-symbols-outlined text-[16px] opacity-40">delete</span>
                         <span className="flex-1 opacity-50">{t("common.delete")}</span>
-                        <span className="material-symbols-outlined text-[14px] text-on-surface-variant/40" title={t("match.lockedTournamentMatch")}>lock</span>
+                        <span className="material-symbols-outlined text-[14px] text-text-muted/40" title={t("match.lockedTournamentMatch")}>lock</span>
                       </button>
                     ) : (
                       <button
@@ -687,9 +671,9 @@ export default function MatchDetailClient() {
                           setIsMenuOpen(false);
                           setIsDeleteModalOpen(true);
                         }}
-                        className="w-full px-4 py-2.5 text-left text-xs font-bold text-rose-400 hover:bg-rose-500/10 flex items-center gap-2.5 transition-colors cursor-pointer border-t border-white/5"
+                        className="w-full px-3.5 py-2 text-left text-xs font-medium text-rose-400 hover:bg-rose-500/10 flex items-center gap-2 transition-colors cursor-pointer border-t border-outline-variant"
                       >
-                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                        <span className="material-symbols-outlined text-[16px]">delete</span>
                         {t("match.deleteMatch")}
                       </button>
                     )
@@ -702,25 +686,25 @@ export default function MatchDetailClient() {
 
           {/* Tournament Pill (Centered) */}
           {match.tournaments?.name && (
-            <div className="relative flex justify-center mb-8 sm:mb-10">
+            <div className="relative flex justify-center mb-8">
               {match.tournament_id ? (
                 <Link
                   href={`/tournament/${match.tournament_id}`}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 hover:bg-primary/20 backdrop-blur-md border border-primary/20 hover:border-primary/40 text-primary transition-all duration-300 max-w-[85vw] sm:max-w-md shadow-sm group"
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant text-text-secondary hover:text-text-primary transition-colors max-w-[85vw] sm:max-w-md group"
                   title={match.tournaments.name}
                 >
-                  <span className="material-symbols-outlined text-[15px] text-primary shrink-0 group-hover:scale-110 transition-transform">emoji_events</span>
-                  <span className="font-label text-[11px] font-bold uppercase tracking-[0.15em] truncate">
+                  <span className="material-symbols-outlined text-[15px] text-primary shrink-0">emoji_events</span>
+                  <span className="text-xs font-medium truncate">
                     {match.tournaments.name}
                   </span>
                 </Link>
               ) : (
                 <div
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 backdrop-blur-md border border-primary/20 text-primary max-w-[85vw] sm:max-w-md shadow-sm"
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-text-secondary max-w-[85vw] sm:max-w-md"
                   title={match.tournaments.name}
                 >
                   <span className="material-symbols-outlined text-[15px] text-primary shrink-0">emoji_events</span>
-                  <span className="font-label text-[11px] font-bold uppercase tracking-[0.15em] truncate">
+                  <span className="text-xs font-medium truncate">
                     {match.tournaments.name}
                   </span>
                 </div>
@@ -731,19 +715,19 @@ export default function MatchDetailClient() {
           <div className="relative flex flex-col items-center">
             <div className="w-full max-w-xl sm:max-w-2xl grid grid-cols-[1fr_auto_1fr] gap-2 sm:gap-6 md:gap-8 items-center mb-4">
               {/* Left Team Box */}
-              <div className="flex flex-col items-center gap-2.5 sm:gap-6">
-                <div className="w-16 h-16 sm:w-32 sm:h-32 md:w-44 md:h-44 rounded-full bg-[#1a2035]/80 border-[3px] sm:border-[4px] border-[#c3c0ff]/20 flex items-center justify-center shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] transition-transform hover:scale-[1.02]">
+              <div className="flex flex-col items-center gap-2.5 sm:gap-4">
+                <div className="w-16 h-16 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-full bg-surface-container border border-outline flex items-center justify-center">
                   {match.status === "scheduled" ? (
-                    <span className="font-headline font-black text-xl sm:text-4xl md:text-7xl text-on-surface-variant/70 tracking-tight">
+                    <span className="font-sans font-medium text-lg sm:text-2xl md:text-3xl text-text-secondary">
                       {getInitials(match.participants?.[0]?.name)}
                     </span>
                   ) : (
-                    <span className="font-label font-black text-3xl sm:text-6xl md:text-8xl text-primary score-shadow-indigo">
+                    <span className="font-mono tabular-nums text-3xl sm:text-6xl md:text-7xl font-bold text-text-primary">
                       {sets[0]}
                     </span>
                   )}
                 </div>
-                <h2 className="font-headline font-black uppercase text-xs sm:text-2xl md:text-3xl text-center text-on-surface max-w-[100px] sm:max-w-[200px] md:max-w-[280px] leading-[1.1] tracking-tight">
+                <h2 className="font-sans font-medium text-xs sm:text-lg md:text-xl text-center text-text-primary max-w-[120px] sm:max-w-[200px] md:max-w-[280px] leading-tight">
                   {formatTeamOrPlayerName(match.participants?.[0]?.name) || "TBD"}
                 </h2>
               </div>
@@ -753,12 +737,12 @@ export default function MatchDetailClient() {
                 {match.status !== "ongoing" && match.status !== "completed" ? (
                   <CountdownTimer scheduledAt={match.scheduled_at} />
                 ) : (
-                  <div className="flex flex-col items-center gap-2 sm:gap-4">
-                    <div className="font-label text-[10px] sm:text-[11px] font-bold lowercase tracking-[0.3em] text-on-surface-variant/30">vs</div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="text-xs font-medium text-text-muted">vs</div>
                     {match.status === "ongoing" && (
-                      <div className="px-2.5 sm:px-4 py-1 sm:py-2 rounded-full bg-primary-container/20 border border-primary/20 backdrop-blur-md flex items-center gap-1.5 sm:gap-2.5">
-                        <span className="w-1.5 sm:w-2 h-1.5 sm:h-2 rounded-full bg-primary animate-pulse" />
-                        <span className="font-label text-[8px] sm:text-[10px] font-black uppercase tracking-[0.25em] text-primary">LIVE</span>
+                      <div className="px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                        <span className="text-[11px] font-medium text-success">{t("status.live")}</span>
                       </div>
                     )}
                   </div>
@@ -766,19 +750,19 @@ export default function MatchDetailClient() {
               </div>
 
               {/* Right Team Box */}
-              <div className="flex flex-col items-center gap-2.5 sm:gap-6">
-                <div className="w-16 h-16 sm:w-32 sm:h-32 md:w-44 md:h-44 rounded-full bg-[#1a2035]/80 border-[3px] sm:border-[4px] border-[#4edea3]/20 flex items-center justify-center shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] transition-transform hover:scale-[1.02]">
+              <div className="flex flex-col items-center gap-2.5 sm:gap-4">
+                <div className="w-16 h-16 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-full bg-surface-container border border-outline flex items-center justify-center">
                   {match.status === "scheduled" ? (
-                    <span className="font-headline font-black text-xl sm:text-4xl md:text-7xl text-secondary tracking-tight">
+                    <span className="font-sans font-medium text-lg sm:text-2xl md:text-3xl text-text-secondary">
                       {getInitials(match.participants?.[1]?.name)}
                     </span>
                   ) : (
-                    <span className="font-label font-black text-3xl sm:text-6xl md:text-8xl text-primary score-shadow-indigo">
+                    <span className="font-mono tabular-nums text-3xl sm:text-6xl md:text-7xl font-bold text-text-primary">
                       {sets[1]}
                     </span>
                   )}
                 </div>
-                <h2 className="font-headline font-black uppercase text-xs sm:text-2xl md:text-3xl text-center text-on-surface max-w-[100px] sm:max-w-[200px] md:max-w-[280px] leading-[1.1] tracking-tight">
+                <h2 className="font-sans font-medium text-xs sm:text-lg md:text-xl text-center text-text-primary max-w-[120px] sm:max-w-[200px] md:max-w-[280px] leading-tight">
                   {formatTeamOrPlayerName(match.participants?.[1]?.name) || "TBD"}
                 </h2>
               </div>
@@ -786,25 +770,25 @@ export default function MatchDetailClient() {
 
             {/* SCOREBOARD TABLE (QUARTERS FOR BASKETBALL, SETS FOR VOLLEYBALL/TENNIS) */}
             {match.sport_type === "Basketball" ? (
-              <div className="w-full mt-8 pt-6 border-t border-white/10">
-                <div className="bg-[#131b31]/80 backdrop-blur-md rounded-2xl border border-white/10 overflow-x-auto">
+              <div className="w-full mt-8 pt-6 border-t border-outline-variant">
+                <div className="bg-surface-container-high/30 rounded-xl border border-outline-variant overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="border-b border-white/5 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
+                    <thead className="bg-surface-container-high/60 border-b border-outline-variant text-[11px] font-medium text-text-muted">
                       <tr>
                         <th className="py-2.5 px-4 text-left font-normal">{t("common.team")}</th>
-                        <th className="py-2.5 px-3 text-center min-w-[44px]">Q1</th>
-                        <th className="py-2.5 px-3 text-center min-w-[44px]">Q2</th>
-                        <th className="py-2.5 px-3 text-center min-w-[44px]">Q3</th>
-                        <th className="py-2.5 px-3 text-center min-w-[44px]">Q4</th>
+                        <th className="py-2.5 px-3 text-center min-w-[44px] font-normal">Q1</th>
+                        <th className="py-2.5 px-3 text-center min-w-[44px] font-normal">Q2</th>
+                        <th className="py-2.5 px-3 text-center min-w-[44px] font-normal">Q3</th>
+                        <th className="py-2.5 px-3 text-center min-w-[44px] font-normal">Q4</th>
                         {(match.scores?.basketball?.quarters?.length || 0) > 4 && (
-                          <th className="py-2.5 px-3 text-center min-w-[44px]">OT</th>
+                          <th className="py-2.5 px-3 text-center min-w-[44px] font-normal">OT</th>
                         )}
-                        <th className="py-2.5 px-4 text-center text-secondary font-black min-w-[50px] bg-white/[0.03]">
+                        <th className="py-2.5 px-4 text-center font-semibold text-text-primary min-w-[50px] bg-surface-container-high/40">
                           {t("common.total")}
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-outline-variant">
                       {[0, 1].map((pIdx) => {
                         const playerName = formatTeamOrPlayerName(match.participants?.[pIdx]?.name) || t("common.teamDefault", { num: pIdx + 1 });
                         const bQuarters = match.scores?.basketball?.quarters || [];
@@ -813,28 +797,28 @@ export default function MatchDetailClient() {
                         const isMatchWinner = isCompleted && totalScore > oppTotal;
 
                         return (
-                          <tr key={pIdx} className={isMatchWinner ? "bg-white/[0.03]" : ""}>
-                            <td className="py-3.5 px-4 font-headline font-bold text-on-surface flex items-center gap-2.5">
-                              <span className={isMatchWinner ? "text-white font-black" : "text-on-surface/80"}>
+                          <tr key={pIdx} className={isMatchWinner ? "bg-surface-container-high/20" : ""}>
+                            <td className="py-3 px-4 font-medium text-text-primary flex items-center gap-2">
+                              <span className={isMatchWinner ? "font-semibold text-text-primary" : "text-text-secondary"}>
                                 {playerName}
                               </span>
                               {isMatchWinner && (
-                                <span className="material-symbols-outlined text-secondary text-[16px]" title="Winner">
+                                <span className="material-symbols-outlined text-primary text-[15px]" title="Winner">
                                   emoji_events
                                 </span>
                               )}
                             </td>
                             {[0, 1, 2, 3].map((qIdx) => (
-                              <td key={qIdx} className="py-3.5 px-3 text-center font-mono text-base font-medium text-on-surface-variant/80">
+                              <td key={qIdx} className="py-3 px-3 text-center font-mono tabular-nums text-sm text-text-secondary">
                                 {bQuarters[qIdx]?.[pIdx === 0 ? "home" : "away"] ?? 0}
                               </td>
                             ))}
                             {bQuarters.length > 4 && (
-                              <td className="py-3.5 px-3 text-center font-mono text-base font-medium text-on-surface-variant/80">
+                              <td className="py-3 px-3 text-center font-mono tabular-nums text-sm text-text-secondary">
                                 {bQuarters[4]?.[pIdx === 0 ? "home" : "away"] ?? 0}
                               </td>
                             )}
-                            <td className="py-3.5 px-4 text-center font-mono font-black text-base text-secondary bg-white/5">
+                            <td className="py-3 px-4 text-center font-mono tabular-nums font-semibold text-sm text-text-primary bg-surface-container-high/40">
                               {totalScore}
                             </td>
                           </tr>
@@ -845,10 +829,10 @@ export default function MatchDetailClient() {
                 </div>
               </div>
             ) : (setsData.length > 0 || match.status === "ongoing") && (
-              <div className="w-full mt-8 pt-6 border-t border-white/10">
-                <div className="bg-[#131b31]/80 backdrop-blur-md rounded-2xl border border-white/10 overflow-x-auto">
+              <div className="w-full mt-8 pt-6 border-t border-outline-variant">
+                <div className="bg-surface-container-high/30 rounded-xl border border-outline-variant overflow-x-auto">
                   <table className="w-full text-sm">
-                    <thead className="border-b border-white/5 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
+                    <thead className="bg-surface-container-high/60 border-b border-outline-variant text-[11px] font-medium text-text-muted">
                       <tr>
                         <th className="py-2.5 px-4 text-left font-normal">{t("common.team")}</th>
                         {setsData.map((_: any, idx: number) => (
@@ -859,47 +843,47 @@ export default function MatchDetailClient() {
                         {match.status === "ongoing" && (
                           (match.sport_type === "Tennis" || match.sport_type === "Padel") ? (
                             <>
-                              <th className="py-2.5 px-3 text-center text-indigo-400 font-bold min-w-[44px]">
+                              <th className="py-2.5 px-3 text-center text-text-secondary font-medium min-w-[44px]">
                                 {t("common.games")}
                               </th>
-                              <th className="py-2.5 px-3 text-center text-primary font-bold min-w-[44px] bg-primary/5">
+                              <th className="py-2.5 px-3 text-center text-primary font-medium min-w-[44px] bg-primary/5">
                                 {t("common.pointsLabel")}
                               </th>
                             </>
                           ) : (
-                            <th className="py-2.5 px-3 text-center text-primary font-bold min-w-[50px] bg-primary/5">
+                            <th className="py-2.5 px-3 text-center text-text-secondary font-medium min-w-[50px] bg-surface-container-high/40">
                               <span className="inline-flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-success" />
                                 Set {setsData.length + 1}
                               </span>
                             </th>
                           )
                         )}
-                        <th className="py-2.5 px-4 text-center text-secondary font-black min-w-[50px] bg-white/[0.03]">
+                        <th className="py-2.5 px-4 text-center font-semibold text-text-primary min-w-[50px] bg-surface-container-high/40">
                           Sets
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-outline-variant">
                       {[0, 1].map((pIdx) => {
                         const playerName = formatTeamOrPlayerName(match.participants?.[pIdx]?.name) || t("common.teamDefault", { num: pIdx + 1 });
                         const isServing = match.status === "ongoing" && match.scores?.serving_index === pIdx;
                         const isMatchWinner = isCompleted && sets[pIdx] > sets[pIdx === 0 ? 1 : 0];
 
                         return (
-                          <tr key={pIdx} className={isMatchWinner ? "bg-white/[0.03]" : ""}>
-                            <td className="py-3.5 px-4 font-headline font-bold text-on-surface flex items-center gap-2.5">
-                              <span className={isMatchWinner ? "text-white font-black" : "text-on-surface/80"}>
+                          <tr key={pIdx} className={isMatchWinner ? "bg-surface-container-high/20" : ""}>
+                            <td className="py-3 px-4 font-medium text-text-primary flex items-center gap-2">
+                              <span className={isMatchWinner ? "font-semibold text-text-primary" : "text-text-secondary"}>
                                 {playerName}
                               </span>
                               {isServing && (
                                 <span
-                                  className="w-2 h-2 rounded-full bg-secondary animate-pulse shrink-0"
+                                  className="w-1.5 h-1.5 rounded-full bg-primary shrink-0"
                                   title="Serving"
                                 />
                               )}
                               {isMatchWinner && (
-                                <span className="material-symbols-outlined text-secondary text-[16px]" title="Winner">
+                                <span className="material-symbols-outlined text-primary text-[15px]" title="Winner">
                                   emoji_events
                                 </span>
                               )}
@@ -917,13 +901,13 @@ export default function MatchDetailClient() {
                               return (
                                 <td
                                   key={sIdx}
-                                  className={`py-3.5 px-3 text-center font-mono text-base ${
-                                    wonSet ? "font-black text-white" : "font-medium text-on-surface-variant/60"
+                                  className={`py-3 px-3 text-center font-mono tabular-nums text-sm ${
+                                    wonSet ? "font-semibold text-text-primary" : "text-text-muted"
                                   }`}
                                 >
                                   <span>{pScore}</span>
                                   {tbVal !== null && tbVal !== undefined && (
-                                    <sup className="text-[10px] font-bold text-primary ml-0.5">{tbVal}</sup>
+                                    <sup className="text-[10px] font-medium text-primary ml-0.5">{tbVal}</sup>
                                   )}
                                 </td>
                               );
@@ -931,20 +915,20 @@ export default function MatchDetailClient() {
                             {match.status === "ongoing" && (
                               (match.sport_type === "Tennis" || match.sport_type === "Padel") ? (
                                 <>
-                                  <td className="py-3.5 px-3 text-center font-mono font-bold text-indigo-400">
+                                  <td className="py-3 px-3 text-center font-mono tabular-nums text-sm text-text-secondary">
                                     {match.scores?.tennis?.games?.[pIdx] ?? 0}
                                   </td>
-                                  <td className="py-3.5 px-3 text-center font-mono font-black text-primary bg-primary/5">
+                                  <td className="py-3 px-3 text-center font-mono tabular-nums font-semibold text-sm text-primary bg-primary/5">
                                     {renderLivePoint(match, pIdx)}
                                   </td>
                                 </>
                               ) : (
-                                <td className="py-3.5 px-3 text-center font-mono font-black text-base text-primary bg-primary/5">
+                                <td className="py-3 px-3 text-center font-mono tabular-nums font-semibold text-sm text-primary bg-primary/5">
                                   {match.scores?.current?.[pIdx === 0 ? "home" : "away"] ?? 0}
                                 </td>
                               )
                             )}
-                            <td className="py-3.5 px-4 text-center font-mono font-black text-base text-secondary bg-white/5">
+                            <td className="py-3 px-4 text-center font-mono tabular-nums font-semibold text-sm text-text-primary bg-surface-container-high/40">
                               {sets[pIdx]}
                             </td>
                           </tr>
@@ -959,43 +943,45 @@ export default function MatchDetailClient() {
         </div>
 
         {/* DETAIL TABS (Score Progress, Match Rules, Match Official) */}
-        <div className="flex items-center justify-center gap-2 mt-8 mb-4 border-b border-white/5 pb-3 overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setActiveDetailTab("progress")}
-            className={`px-5 py-2.5 rounded-full font-label text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
-              activeDetailTab === "progress"
-                ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
-                : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[18px]">analytics</span>
-            {t("match.scoreProgress")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveDetailTab("rules")}
-            className={`px-5 py-2.5 rounded-full font-label text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
-              activeDetailTab === "rules"
-                ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
-                : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[18px]">tune</span>
-            {t("match.matchRules")}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveDetailTab("official")}
-            className={`px-5 py-2.5 rounded-full font-label text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
-              activeDetailTab === "official"
-                ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
-                : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
-            }`}
-          >
-            <span className="material-symbols-outlined text-[18px]">gavel</span>
-            {t("match.matchOfficial")}
-          </button>
+        <div className="flex items-center justify-center mt-8 mb-6 overflow-x-auto">
+          <div className="inline-flex p-1 rounded-xl bg-surface-container border border-outline-variant gap-1">
+            <button
+              type="button"
+              onClick={() => setActiveDetailTab("progress")}
+              className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
+                activeDetailTab === "progress"
+                  ? "bg-surface-container-high text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-secondary"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">analytics</span>
+              {t("match.scoreProgress")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveDetailTab("rules")}
+              className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
+                activeDetailTab === "rules"
+                  ? "bg-surface-container-high text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-secondary"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">tune</span>
+              {t("match.matchRules")}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveDetailTab("official")}
+              className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
+                activeDetailTab === "official"
+                  ? "bg-surface-container-high text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-secondary"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px]">gavel</span>
+              {t("match.matchOfficial")}
+            </button>
+          </div>
         </div>
 
         {/* TAB 1: SCORE PROGRESS */}
@@ -1092,15 +1078,15 @@ export default function MatchDetailClient() {
           };
 
           return (
-            <div className="bg-surface-container-low rounded-3xl p-6 mt-4 border border-white/5">
-              <div className="flex items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-2.5">
-                  <span className="material-symbols-outlined text-secondary text-[20px]">analytics</span>
+            <div className="bg-surface-container rounded-2xl p-5 mt-4 border border-outline-variant">
+              <div className="flex items-center justify-between gap-4 mb-5">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[18px]">analytics</span>
                   <div>
-                    <h3 className="font-headline font-bold text-sm text-on-surface">
+                    <h3 className="font-semibold text-sm text-text-primary">
                       {t("match.quarterBreakdown")}
                     </h3>
-                    <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/60">
+                    <p className="text-xs text-text-muted">
                       {t("match.clickQuarterHint")}
                     </p>
                   </div>
@@ -1109,7 +1095,7 @@ export default function MatchDetailClient() {
                 <button
                   type="button"
                   onClick={toggleAllQuarters}
-                  className="font-label text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/80 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5 cursor-pointer"
+                  className="text-xs font-medium text-primary hover:underline transition-colors px-2 py-1 cursor-pointer"
                 >
                   {allExpanded ? t("match.collapseAll") : t("match.expandAll")}
                 </button>
@@ -1123,29 +1109,29 @@ export default function MatchDetailClient() {
                   return (
                     <div
                       key={q.quarterNumber}
-                      className="bg-surface-container rounded-2xl border border-white/5 overflow-hidden transition-all duration-300"
+                      className="bg-surface-container-high/60 rounded-xl border border-outline-variant overflow-hidden"
                     >
                       {/* Collapsed Quarter Header */}
                       <button
                         type="button"
                         onClick={() => toggleSetExpanded(q.quarterNumber)}
-                        className="w-full p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left hover:bg-white/[0.02] transition-colors cursor-pointer"
+                        className="w-full p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left hover:bg-surface-container-high transition-colors cursor-pointer"
                       >
                         {/* Left: Quarter and Score */}
-                        <div className="flex items-center gap-3">
-                          <span className="px-2.5 py-1 rounded-lg bg-surface-container-high font-mono text-xs font-black text-on-surface">
+                        <div className="flex items-center gap-2.5">
+                          <span className="px-2 py-0.5 rounded-md bg-surface-container font-mono text-xs font-semibold text-text-secondary border border-outline-variant">
                             {q.quarterLabel}
                           </span>
-                          <span className="font-headline text-xs font-bold text-on-surface-variant/80 uppercase">
+                          <span className="text-xs font-medium text-text-muted">
                             {q.quarterName}
                           </span>
-                          <span className="font-mono text-base font-black text-secondary">
+                          <span className="font-mono tabular-nums text-sm font-semibold text-text-primary">
                             {q.home} - {q.away}
                           </span>
                           {q.isLive && (
-                            <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-primary/20 text-primary border border-primary/30 flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
-                              LIVE
+                            <span className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-surface-container border border-success/30 text-success flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                              Live
                             </span>
                           )}
                         </div>
@@ -1365,17 +1351,17 @@ export default function MatchDetailClient() {
           };
 
           return (
-            <div className="bg-surface-container-low rounded-3xl p-6 mt-4 border border-white/5">
-              <div className="flex items-center justify-between gap-4 mb-6">
-                <div className="flex items-center gap-2.5">
-                  <span className="material-symbols-outlined text-primary text-[20px]">analytics</span>
+            <div className="bg-surface-container rounded-2xl p-5 mt-4 border border-outline-variant">
+              <div className="flex items-center justify-between gap-4 mb-5">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary text-[18px]">analytics</span>
                   <div>
-                    <h3 className="font-headline font-bold text-sm text-on-surface">
+                    <h3 className="font-semibold text-sm text-text-primary">
                       {isVolleyballLike
                         ? t("match.setBreakdown")
                         : t("match.setGameBreakdown")}
                     </h3>
-                    <p className="font-label text-[10px] uppercase tracking-widest text-on-surface-variant/60">
+                    <p className="text-xs text-text-muted">
                       {isVolleyballLike
                         ? t("match.clickSetHint")
                         : t("match.clickGameHint")}
@@ -1386,7 +1372,7 @@ export default function MatchDetailClient() {
                 <button
                   type="button"
                   onClick={toggleAll}
-                  className="font-label text-[10px] font-bold uppercase tracking-wider text-primary hover:text-primary/80 transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5 cursor-pointer"
+                  className="text-xs font-medium text-primary hover:underline transition-colors px-2 py-1 cursor-pointer"
                 >
                   {allExpanded ? t("match.collapseAll") : t("match.expandAll")}
                 </button>
@@ -1403,30 +1389,30 @@ export default function MatchDetailClient() {
                   return (
                     <div
                       key={s.setNumber}
-                      className="bg-surface-container rounded-2xl border border-white/5 overflow-hidden transition-all duration-300"
+                      className="bg-surface-container-high/60 rounded-xl border border-outline-variant overflow-hidden"
                     >
                       {/* Collapsed Set Header (Clickable) */}
                       <button
                         type="button"
                         onClick={() => toggleSetExpanded(s.setNumber)}
-                        className="w-full p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left hover:bg-white/[0.02] transition-colors cursor-pointer"
+                        className="w-full p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-left hover:bg-surface-container-high transition-colors cursor-pointer"
                       >
                         {/* Left: Set and Score */}
-                        <div className="flex items-center gap-3">
-                          <span className="px-2.5 py-1 rounded-lg bg-surface-container-high font-mono text-xs font-black text-on-surface">
+                        <div className="flex items-center gap-2.5">
+                          <span className="px-2 py-0.5 rounded-md bg-surface-container font-mono text-xs font-semibold text-text-secondary border border-outline-variant">
                             SET {s.setNumber}
                           </span>
-                          <span className="font-mono text-base font-black text-secondary">
+                          <span className="font-mono tabular-nums text-sm font-semibold text-text-primary">
                             {s.home} - {s.away}
                           </span>
                           {s.tiebreak && (
-                            <span className="text-[10px] font-mono text-primary">
+                            <span className="text-[11px] font-mono text-primary font-medium">
                               [{Math.min(s.tiebreak.home, s.tiebreak.away)}]
                             </span>
                           )}
                           {s.isLive && (
-                            <span className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary font-label text-[9px] font-black uppercase tracking-wider animate-pulse flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+                            <span className="px-2 py-0.5 rounded-md bg-surface-container border border-success/30 text-success text-[11px] font-medium flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
                               Live
                             </span>
                           )}
@@ -1620,18 +1606,18 @@ export default function MatchDetailClient() {
 
         {/* TAB 2: MATCH RULES */}
         {activeDetailTab === "rules" && (
-          <div className="bg-surface-container-low rounded-3xl p-6 sm:p-8 border border-white/5 shadow-xl">
+          <div className="bg-surface-container rounded-2xl p-6 border border-outline-variant">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[20px]">tune</span>
-                <h3 className="font-headline font-bold text-sm">{t("match.matchRules")}</h3>
+                <span className="material-symbols-outlined text-primary text-[18px]">tune</span>
+                <h3 className="font-semibold text-sm text-text-primary">{t("match.matchRules")}</h3>
               </div>
               {isOrganizer && !match.tournament_id && (
                 <button
                   onClick={() => setIsRuleModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface transition-all font-label text-[10px] font-black uppercase tracking-widest cursor-pointer"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-text-primary border border-outline-variant transition-colors text-xs font-medium cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[12px]">edit</span>
+                  <span className="material-symbols-outlined text-[14px]">edit</span>
                   {t("match.editRules")}
                 </button>
               )}
@@ -1639,78 +1625,78 @@ export default function MatchDetailClient() {
 
             {match.sport_type === "Basketball" ? (
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("common.format")}</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">
+                <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant">
+                  <p className="text-[11px] font-medium text-text-muted mb-1">{t("common.format")}</p>
+                  <p className="font-semibold text-sm text-text-primary">
                     {rules?.quarters_count || 4} Quarters ({rules?.quarter_minutes || 10} min)
                   </p>
                 </div>
-                <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.shotClock")}</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">
+                <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant">
+                  <p className="text-[11px] font-medium text-text-muted mb-1">{t("match.shotClock")}</p>
+                  <p className="font-semibold text-sm text-text-primary">
                     {t("match.secondsCount", { count: rules?.shot_clock_seconds || 24 })}
                   </p>
                 </div>
-                <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.overtime")}</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">
+                <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant">
+                  <p className="text-[11px] font-medium text-text-muted mb-1">{t("match.overtime")}</p>
+                  <p className="font-semibold text-sm text-text-primary">
                     {t("match.minutesCount", { count: rules?.overtime_minutes || 5 })}
                   </p>
                 </div>
-                <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.teamFoulsBonus")}</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">
+                <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant">
+                  <p className="text-[11px] font-medium text-text-muted mb-1">{t("match.teamFoulsBonus")}</p>
+                  <p className="font-semibold text-sm text-text-primary">
                     {t("match.foulsPerQuarter", { count: rules?.fouls_bonus || 5 })}
                   </p>
                 </div>
-                <div className="bg-surface-container rounded-2xl p-4 col-span-2">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.venueCourt")}</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">{match.court || "TBD"}</p>
+                <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant col-span-2">
+                  <p className="text-[11px] font-medium text-text-muted mb-1">{t("match.venueCourt")}</p>
+                  <p className="font-semibold text-sm text-text-primary">{match.court || "TBD"}</p>
                 </div>
               </div>
             ) : match.sport_type === "Football" ? (
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("common.format")}</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">
+                <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant">
+                  <p className="text-[11px] font-medium text-text-muted mb-1">{t("common.format")}</p>
+                  <p className="font-semibold text-sm text-text-primary">
                     {t("match.twoHalves", { min: rules?.half_minutes || 45 })}
                   </p>
                 </div>
-                <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.totalDuration")}</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">{t("match.stoppageDuration")}</p>
+                <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant">
+                  <p className="text-[11px] font-medium text-text-muted mb-1">{t("match.totalDuration")}</p>
+                  <p className="font-semibold text-sm text-text-primary">{t("match.stoppageDuration")}</p>
                 </div>
-                <div className="bg-surface-container rounded-2xl p-4 col-span-2">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.venueStadium")}</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">{match.court || "TBD"}</p>
+                <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant col-span-2">
+                  <p className="text-[11px] font-medium text-text-muted mb-1">{t("match.venueStadium")}</p>
+                  <p className="font-semibold text-sm text-text-primary">{match.court || "TBD"}</p>
                 </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("common.format")}</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">{t("match.bestOfSets", { count: rules?.max_sets || 3 })}</p>
+                <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant">
+                  <p className="text-[11px] font-medium text-text-muted mb-1">{t("common.format")}</p>
+                  <p className="font-semibold text-sm text-text-primary">{t("match.bestOfSets", { count: rules?.max_sets || 3 })}</p>
                 </div>
-                <div className="bg-surface-container rounded-2xl p-4">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.scoreTarget")}</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">
+                <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant">
+                  <p className="text-[11px] font-medium text-text-muted mb-1">{t("match.scoreTarget")}</p>
+                  <p className="font-semibold text-sm text-text-primary">
                     {match.sport_type === "Tennis" || match.sport_type === "Padel"
                       ? t("match.gamesCountTiebreak")
                       : t("match.pointsCount", { count: rules?.points_per_set || 21 })}
                   </p>
                 </div>
                 {(match.sport_type === "Padel" || rules?.no_ad !== undefined) && (
-                  <div className="bg-surface-container rounded-2xl p-4 col-span-2">
-                    <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.advantageRule")}</p>
-                    <p className="font-headline font-bold text-sm text-on-surface flex items-center gap-1.5 text-amber-400">
+                  <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant col-span-2">
+                    <p className="text-[11px] font-medium text-text-muted mb-1">{t("match.advantageRule")}</p>
+                    <p className="font-semibold text-sm text-primary flex items-center gap-1.5">
                       <span className="material-symbols-outlined text-[16px]">stars</span>
                       {rules?.no_ad ? t("match.goldenPoint") : t("match.standardAd")}
                     </p>
                   </div>
                 )}
-                <div className="bg-surface-container rounded-2xl p-4 col-span-2">
-                  <p className="font-label text-[9px] font-bold uppercase tracking-[0.18em] text-on-surface-variant/60 mb-1.5">{t("match.venueCourt")}</p>
-                  <p className="font-headline font-bold text-sm text-on-surface">{match.court || "TBD"}</p>
+                <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant col-span-2">
+                  <p className="text-[11px] font-medium text-text-muted mb-1">{t("match.venueCourt")}</p>
+                  <p className="font-semibold text-sm text-text-primary">{match.court || "TBD"}</p>
                 </div>
               </div>
             )}
@@ -1719,19 +1705,19 @@ export default function MatchDetailClient() {
 
         {/* TAB 3: MATCH OFFICIAL */}
         {activeDetailTab === "official" && (
-          <div className="w-full bg-surface-container-low rounded-3xl p-6 sm:p-8 border border-white/5 shadow-xl">
+          <div className="w-full bg-surface-container rounded-2xl p-6 border border-outline-variant">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[20px]">gavel</span>
-                <h3 className="font-headline font-bold text-sm">{t("match.matchOfficial")}</h3>
+                <span className="material-symbols-outlined text-primary text-[18px]">gavel</span>
+                <h3 className="font-semibold text-sm text-text-primary">{t("match.matchOfficial")}</h3>
               </div>
               {canManageOfficial && !isChangingUmpire && (
                 <button
                   type="button"
                   onClick={() => setIsChangingUmpire(true)}
-                  className="px-3.5 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 font-label text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  className="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-text-primary border border-outline-variant text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[16px]">swap_horiz</span>
+                  <span className="material-symbols-outlined text-[14px]">swap_horiz</span>
                   {t("match.changeReferee")}
                 </button>
               )}
@@ -1739,43 +1725,43 @@ export default function MatchDetailClient() {
 
             {/* Current Umpire Card */}
             {match.umpire ? (
-              <div className="bg-surface-container rounded-2xl p-4 flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full bg-primary-container/30 flex items-center justify-center shrink-0">
-                  <span className="material-symbols-outlined text-primary text-[22px]">person</span>
+              <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center shrink-0">
+                  <span className="material-symbols-outlined text-text-secondary text-[18px]">person</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-headline font-bold text-sm text-on-surface truncate">
+                  <p className="font-medium text-sm text-text-primary truncate">
                     {match.umpire.username || match.umpire.display_name || "Official"}
                   </p>
-                  <p className="font-label text-[9px] font-black uppercase tracking-[0.18em] text-on-surface-variant/60">
+                  <p className="text-[11px] font-medium text-text-muted">
                     {t("match.officialUmpire")}
                     {currentUser?.id === match.umpire.id && ` (${locale === "pt" ? "Você" : "You"})`}
                   </p>
                 </div>
-                <span className="material-symbols-outlined text-secondary text-[20px]" aria-hidden>check_circle</span>
+                <span className="material-symbols-outlined text-success text-[18px]" aria-hidden>check_circle</span>
                 {canManageOfficial && (
                   <button
                     type="button"
                     onClick={() => setIsChangingUmpire(!isChangingUmpire)}
-                    className="p-2 ml-1 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-all cursor-pointer"
+                    className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors cursor-pointer"
                     title={t("match.changeReferee")}
                   >
-                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                    <span className="material-symbols-outlined text-[16px]">edit</span>
                   </button>
                 )}
               </div>
             ) : (
-              <div className="bg-surface-container rounded-2xl p-5 text-center">
-                <p className="font-label text-[11px] font-bold uppercase tracking-[0.2em] text-on-surface-variant/60 mb-2">
+              <div className="bg-surface-container-high rounded-xl p-5 text-center border border-outline-variant">
+                <p className="text-xs font-medium text-text-muted mb-2">
                   {t("match.noUmpireAssigned")}
                 </p>
                 {canManageOfficial && !isChangingUmpire && (
                   <button
                     type="button"
                     onClick={() => setIsChangingUmpire(true)}
-                    className="mt-2 px-4 py-2 rounded-full bg-primary-container text-on-primary-container text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all inline-flex items-center gap-1.5 cursor-pointer shadow-md shadow-primary/20"
+                    className="mt-2 px-3.5 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-medium transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                   >
-                    <span className="material-symbols-outlined text-[16px]">person_add</span>
+                    <span className="material-symbols-outlined text-[15px]">person_add</span>
                     {t("match.appointOtherReferee")}
                   </button>
                 )}
@@ -1784,16 +1770,16 @@ export default function MatchDetailClient() {
 
             {/* CHANGE / APPOINT REFEREE PANEL */}
             {(isChangingUmpire || (!match.umpire && canManageOfficial)) && (
-              <div className="mt-4 p-5 rounded-2xl bg-surface-container/70 border border-outline-variant/10 space-y-4">
+              <div className="mt-4 p-4 rounded-xl bg-surface-container-high border border-outline-variant space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="font-label text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+                  <span className="text-xs font-medium text-text-secondary">
                     {t("match.appointOtherRefereeUpper")}
                   </span>
                   {match.umpire && (
                     <button
                       type="button"
                       onClick={() => setIsChangingUmpire(false)}
-                      className="text-xs text-on-surface-variant/60 hover:text-on-surface font-bold uppercase tracking-wider cursor-pointer"
+                      className="text-xs text-text-muted hover:text-text-primary font-medium cursor-pointer"
                     >
                       {locale === "pt" ? "Cancelar" : "Cancel"}
                     </button>
@@ -1810,49 +1796,49 @@ export default function MatchDetailClient() {
                         username: currentUser.user_metadata?.username || currentUser.email?.split("@")[0] || "Me",
                       })
                     }
-                    className="w-full py-2.5 px-4 rounded-xl bg-primary-container/20 hover:bg-primary-container/30 border border-primary/30 text-primary font-headline font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-[0.99]"
+                    className="w-full py-2 px-3.5 rounded-lg bg-surface-container hover:bg-surface-container-highest border border-outline-variant text-text-primary text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
                   >
-                    <span className="material-symbols-outlined text-[18px]">how_to_reg</span>
+                    <span className="material-symbols-outlined text-[16px]">how_to_reg</span>
                     {t("match.assignMyselfAsReferee")}
                   </button>
                 )}
 
                 {/* Search Umpires Input */}
                 <div className="relative">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40 text-[18px]">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-[16px]">
                     person_search
                   </span>
                   <input
                     type="text"
                     placeholder={t("match.searchUmpirePlaceholder")}
-                    className="w-full pl-11 pr-10 py-3 bg-surface-container rounded-2xl text-sm font-body text-on-surface outline-none placeholder:text-on-surface-variant/40 focus:ring-2 focus:ring-primary-container/50 transition-all border border-white/5"
+                    className="w-full pl-9 pr-8 py-2 bg-surface-container rounded-lg text-xs text-text-primary placeholder:text-text-muted outline-none border border-outline-variant focus:border-outline-focus transition-colors"
                     value={userSearch}
                     onChange={(e) => setUserSearch(e.target.value)}
                   />
                   {isSearching && (
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                      <div className="w-3 h-3 border-2 border-primary-container border-t-transparent rounded-full animate-spin" />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
 
                   {searchResults.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-surface-container-high rounded-2xl shadow-2xl shadow-black/50 border border-white/10 z-50 overflow-hidden divide-y divide-white/5">
+                    <div className="absolute top-full left-0 right-0 mt-1.5 bg-surface-container rounded-xl shadow-xl border border-outline-variant z-50 overflow-hidden divide-y divide-outline-variant">
                       {searchResults.map((u) => (
                         <button
                           key={u.id}
                           type="button"
                           onClick={() => appointUmpire(u)}
-                          className="w-full px-4 py-3 text-left hover:bg-primary-container/20 transition-colors flex items-center justify-between cursor-pointer"
+                          className="w-full px-3.5 py-2.5 text-left hover:bg-surface-container-high transition-colors flex items-center justify-between cursor-pointer"
                         >
                           <div className="flex flex-col">
-                            <span className="font-headline font-bold text-sm text-on-surface">
+                            <span className="font-medium text-xs text-text-primary">
                               {u.username || "No Name"}
                             </span>
-                            <span className="font-label text-[10px] font-bold uppercase tracking-widest text-on-surface-variant/60 truncate">
+                            <span className="text-[11px] text-text-muted truncate">
                               {u.email}
                             </span>
                           </div>
-                          <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                          <span className="text-xs font-medium text-primary">
                             Select
                           </span>
                         </button>
@@ -1863,13 +1849,13 @@ export default function MatchDetailClient() {
 
                 {/* Unassign Option */}
                 {match.umpire && (
-                  <div className="pt-2 border-t border-white/5 flex justify-end">
+                  <div className="pt-2 border-t border-outline-variant flex justify-end">
                     <button
                       type="button"
                       onClick={() => appointUmpire(null)}
-                      className="text-xs text-error hover:text-error/80 font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer py-1"
+                      className="text-xs text-rose-400 hover:text-rose-300 font-medium flex items-center gap-1.5 cursor-pointer py-1"
                     >
-                      <span className="material-symbols-outlined text-[16px]">person_remove</span>
+                      <span className="material-symbols-outlined text-[15px]">person_remove</span>
                       {t("match.unassignUmpire")}
                     </button>
                   </div>
@@ -1883,7 +1869,7 @@ export default function MatchDetailClient() {
           {canStart && !isCompleted ? (
             <button
               onClick={async () => {
-                const { error } = await supabase
+                const { error } = await activeSupabase
                   .from("matches")
                   .update({ status: "ongoing" })
                   .eq("id", matchIdStr);
@@ -1893,17 +1879,17 @@ export default function MatchDetailClient() {
                   router.push(`/match/${matchIdStr}/scoreboard`);
                 }
               }}
-              className="w-full py-5 rounded-full bg-primary-container hover:brightness-110 text-on-primary-container font-headline font-black uppercase tracking-[0.2em] text-sm transition-all active:scale-[0.99] flex items-center justify-center gap-3 shadow-[0_0_60px_-15px_rgba(79,70,229,0.6)] cursor-pointer"
+              className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
-              <span className="material-symbols-outlined text-[22px]">play_circle</span>
+              <span className="material-symbols-outlined text-[18px]">play_circle</span>
               {t("match.startScoreboard")}
             </button>
           ) : isCompleted ? (
-            <div className="w-full py-5 rounded-3xl bg-surface-container-low text-on-surface-variant text-center font-headline font-black uppercase tracking-[0.2em] text-sm">
+            <div className="w-full py-3 rounded-xl bg-surface-container border border-outline-variant text-text-muted text-center text-xs font-medium">
               {t("match.matchCompleted")}
             </div>
           ) : (
-            <div className="w-full py-5 rounded-3xl bg-surface-container-low text-on-surface-variant/60 text-center font-label font-bold uppercase tracking-[0.2em] text-xs px-6">
+            <div className="w-full py-3 rounded-xl bg-surface-container border border-outline-variant text-text-muted text-center text-xs font-medium px-4">
               {t("match.waitingUmpireStart")}
             </div>
           )}

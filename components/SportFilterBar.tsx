@@ -34,7 +34,7 @@ export default function SportFilterBar({
 
   return (
     <div
-      className={`w-full overflow-x-auto no-scrollbar scroll-smooth flex items-center gap-2 py-1 ${className}`}
+      className={`w-full overflow-x-auto no-scrollbar scroll-smooth flex items-center gap-1.5 py-1 ${className}`}
       style={{ WebkitOverflowScrolling: "touch" }}
     >
       {SPORTS.map((s) => {
@@ -44,16 +44,16 @@ export default function SportFilterBar({
             key={s.key}
             type="button"
             onClick={() => onSelectSport(s.key)}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all shrink-0 cursor-pointer border ${
+            className={`inline-flex items-center gap-1.5 h-8 px-3 rounded-lg text-xs font-medium whitespace-nowrap transition-colors shrink-0 cursor-pointer border ${
               isSelected
-                ? "bg-primary-container text-on-primary-container border-primary/40 shadow-sm shadow-primary/20"
-                : "bg-surface-container-low text-on-surface-variant/70 border-white/5 hover:border-white/15 hover:text-on-surface"
+                ? "bg-surface-container-highest text-text-primary border-outline shadow-sm"
+                : "bg-surface-container text-text-secondary border-outline-variant hover:text-text-primary hover:bg-surface-container-high/60"
             }`}
           >
             {s.sportType && (
               <SportIcon
                 sport={s.sportType}
-                className={`text-[13px] ${isSelected ? "text-primary" : "text-on-surface-variant/70"}`}
+                className={`text-[13px] ${isSelected ? "text-primary" : "text-text-muted"}`}
               />
             )}
             <span>{t(s.labelKey) || s.key}</span>

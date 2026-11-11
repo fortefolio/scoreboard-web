@@ -18,12 +18,10 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
 
   return (
     <Link href={`/match/${match.id}`} className="block group">
-      <div className="bg-surface-container-low border border-outline-variant/10 rounded-xl p-3 shadow-xl group-hover:border-primary/40 transition-all duration-300 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        
+      <div className="bg-surface-container border border-outline-variant rounded-xl p-3 hover:border-outline hover:bg-surface-container-high/40 transition-colors relative overflow-hidden">
         {roundDate && (
-          <div className="flex items-center gap-1 text-[7px] font-black uppercase tracking-[0.2em] text-secondary mb-2 relative z-10">
-            <span className="material-symbols-outlined text-[10px]">calendar_today</span>
+          <div className="flex items-center gap-1 text-[10px] font-medium text-text-secondary mb-2 relative z-10">
+            <span className="material-symbols-outlined text-[12px] text-text-muted">calendar_today</span>
             {new Date(roundDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
           </div>
         )}
@@ -36,11 +34,11 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
             return (
               <div key={i} className="flex justify-between items-center gap-4">
                 <div className="flex items-center gap-1.5 truncate max-w-[140px]">
-                  <span className={`text-xs font-bold tracking-tight truncate ${participant ? 'text-on-surface' : 'text-on-surface-variant opacity-50 italic'}`}>
+                  <span className={`text-xs font-medium truncate ${participant ? 'text-text-primary' : 'text-text-muted italic'}`}>
                     {participant?.name ? formatTeamOrPlayerName(participant.name) : (sourceMatch ? `Winner of Match ${sourceMatch.global_match_order}` : "TBD")}
                   </span>
                   {match.status === 'ongoing' && match.scores?.serving_index === i && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse flex-shrink-0" title="Serving"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-warning flex-shrink-0" title="Serving"></span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -51,37 +49,37 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
                     return (
                       <span
                         key={sIdx}
-                        className={`text-[11px] font-mono leading-none min-w-[14px] text-right ${
-                          pScore > oScore ? "font-black text-on-surface" : "text-on-surface-variant/60"
+                        className={`text-xs font-mono tabular-nums leading-none min-w-[14px] text-right ${
+                          pScore > oScore ? "font-semibold text-text-primary" : "text-text-muted"
                         }`}
                       >
                         {pScore}
                         {tbVal !== null && tbVal !== undefined && (
-                          <sup className="text-[7px] text-primary ml-0.5">{tbVal}</sup>
+                          <sup className="text-[9px] text-primary ml-0.5">{tbVal}</sup>
                         )}
                       </span>
                     );
                   })}
-                  <div className="flex items-center justify-end pl-1.5 border-l border-outline-variant/10 min-w-[16px]">
-                    <span className="text-[11px] font-black text-secondary leading-none">
+                  <div className="flex items-center justify-end pl-1.5 border-l border-outline-variant min-w-[16px]">
+                    <span className="text-xs font-mono tabular-nums font-semibold text-text-primary leading-none">
                       {countSetsWon(extractSetsData(match.scores), i as 0 | 1)}
                     </span>
                   </div>
                   {match.status === 'ongoing' && match.scores && (
                     <>
                       {match.sport_type === 'Tennis' && match.scores.tennis && (
-                        <span className="text-[11px] font-bold text-indigo-400 leading-none min-w-[12px] text-right">
+                        <span className="text-xs font-mono tabular-nums font-medium text-text-secondary leading-none min-w-[12px] text-right">
                           {match.scores.tennis.games?.[i] ?? 0}
                         </span>
                       )}
-                      <span className="text-[11px] font-bold text-primary leading-none min-w-[16px] text-right">
+                      <span className="text-xs font-mono tabular-nums font-semibold text-primary leading-none min-w-[16px] text-right">
                         {(() => {
                           if (match.sport_type === 'Tennis' && match.scores.tennis) {
                             const p = match.scores.tennis.points?.[i] ?? 0;
                             const opp = match.scores.tennis.points?.[i === 0 ? 1 : 0] ?? 0;
                             const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
                             if (p >= 3 && opp >= 3) {
-                              return p > opp ? "AD" : (p === opp ? "40" : "40");
+                              return p > opp ? "AD" : "40";
                             }
                             return TENNIS_POINTS[p] || "0";
                           }
@@ -95,25 +93,26 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
             );
           })}
         </div>
-        <div className="mt-2 pt-2 border-t border-outline-variant/5 text-[8px] text-on-surface-variant flex justify-between font-label uppercase tracking-widest relative z-10">
+        <div className="mt-2 pt-2 border-t border-outline-variant text-xs text-text-muted flex justify-between relative z-10">
           <div className="flex items-center gap-2">
-            <span className="opacity-50 font-black">Match {match.global_match_order}</span>
+            <span className="font-medium text-text-muted">Match {match.global_match_order}</span>
             {match.court && (
               <>
-                <span className="opacity-20">•</span>
-                <span className="text-indigo-400 font-black">{match.court}</span>
+                <span className="text-text-muted/40">•</span>
+                <span className="text-text-secondary font-medium">{match.court}</span>
               </>
             )}
           </div>
-          <span className={`px-1.5 py-0.5 rounded-full font-black ${
-            match.status === 'completed' ? 'bg-secondary/10 text-secondary' : 'bg-primary/10 text-primary'
-          }`}>
-            {match.status === 'completed'
-              ? t("status.final")
-              : match.status === 'ongoing'
-              ? t("status.live")
-              : t("status.scheduled")}
-          </span>
+          {match.status === 'ongoing' ? (
+            <span className="inline-flex items-center gap-1 font-medium text-success text-[11px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+              {t("status.live")}
+            </span>
+          ) : (
+            <span className="text-text-muted text-[11px]">
+              {match.status === 'completed' ? t("status.final") : t("status.scheduled")}
+            </span>
+          )}
         </div>
       </div>
     </Link>

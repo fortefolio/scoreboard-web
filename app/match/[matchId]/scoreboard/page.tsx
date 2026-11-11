@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/components/AuthProvider";
 import { toast } from "sonner";
 import OfflineSyncBadge from "@/components/OfflineSyncBadge";
 import { initOfflineNetworkSync } from "@/lib/offline/offlineQueue";
@@ -16,9 +17,10 @@ import StreamOverlayModal from "@/components/match/StreamOverlayModal";
 function ScoreboardContent() {
   const { matchId } = useParams();
   const router = useRouter();
+  const { user: authUser, supabase: authSupabase } = useAuth();
+  const activeSupabase = authSupabase || supabase;
   const [match, setMatch] = useState<any>(null);
   const [rules, setRules] = useState<any>(null);
-  const [user, setUser] = useState<any>(null);
   const [canEdit, setCanEdit] = useState(false);
   const [isStreamModalOpen, setIsStreamModalOpen] = useState(false);
 
@@ -26,10 +28,7 @@ function ScoreboardContent() {
 
   useEffect(() => {
     const fetchAll = async () => {
-      const { data: { user: currUser } } = await supabase.auth.getUser();
-      setUser(currUser);
-
-      const { data: mData } = await supabase
+      const { data: mData } = await activeSupabase
         .from("matches")
         .select("*, tournaments(*)")
         .eq("id", matchIdStr)
@@ -57,18 +56,18 @@ function ScoreboardContent() {
         }
         setRules(resolvedRules);
         
-        const isUmpire = currUser?.id === mData.umpire_id;
+        const isUmpire = authUser?.id === mData.umpire_id;
         // In local/demo or umpire match, allow editing if user is umpire or if umpire_id is not set
         setCanEdit(isUmpire || !mData.umpire_id);
       }
     };
     fetchAll();
 
-    const unsubSync = initOfflineNetworkSync(supabase);
+    const unsubSync = initOfflineNetworkSync(activeSupabase);
 
     let channel: any = null;
     try {
-      channel = supabase
+      channel = activeSupabase
         .channel(`match:${matchIdStr}`)
         .on("broadcast", { event: "score_update" }, (response: any) => {
           const payload = response?.payload;
@@ -104,10 +103,10 @@ function ScoreboardContent() {
     return () => {
       unsubSync();
       if (channel) {
-        try { supabase.removeChannel(channel); } catch {}
+        try { activeSupabase.removeChannel(channel); } catch {}
       }
     };
-  }, [matchIdStr]);
+  }, [matchIdStr, activeSupabase, authUser?.id]);
 
   useEffect(() => {
     if (match?.status === 'completed') {
@@ -131,7 +130,7 @@ function ScoreboardContent() {
       <div className="w-full max-w-5xl mb-6 flex items-center justify-between relative z-10">
         <button 
           onClick={() => router.push(`/match/${matchIdStr}`)}
-          className="text-slate-500 hover:text-indigo-300 text-xs font-black uppercase tracking-widest flex items-center gap-2 transition-all cursor-pointer"
+          className="text-text-muted hover:text-text-primary text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>
           Match Overview
@@ -139,7 +138,7 @@ function ScoreboardContent() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsStreamModalOpen(true)}
-            className="px-3 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+            className="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-text-primary border border-outline-variant text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
             title="OBS / vMix Overlay"
           >
             <span className="material-symbols-outlined text-[16px]">podcasts</span>

@@ -2,18 +2,24 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
-import { countSetsWon } from "@/lib/scoring/sets";
 import MatchCard from "@/components/MatchCard";
+import MatchListItem from "@/components/MatchListItem";
+import SportIcon from "@/components/SportIcon";
 import ConfirmationModal from "@/components/ConfirmationModal";
+import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 function MyMatchesContent() {
+  const router = useRouter();
   const { user, supabase } = useAuth();
+  const { t } = useTranslation();
   const [matches, setMatches] = useState<any[]>([]);
   const [userTournaments, setUserTournaments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "cards">("list");
 
   const [showModal, setShowModal] = useState(false);
   const [team1, setTeam1] = useState("");
@@ -88,7 +94,7 @@ function MyMatchesContent() {
       toast.error("You must be logged in to create a match");
       return;
     }
-    if (!team1 || !team2) {
+    if (!team1.trim() || !team2.trim()) {
       toast.error("Please enter both team names");
       return;
     }
@@ -109,7 +115,7 @@ function MyMatchesContent() {
       const { error } = await supabase.from("matches").insert({
         organizer_id: user.id,
         sport_type: sportType,
-        participants: [{ name: team1 }, { name: team2 }],
+        participants: [{ name: team1.trim() }, { name: team2.trim() }],
         tournament_id: selectedTournamentId || null,
         status: "scheduled",
         scheduled_at: finalDate,
@@ -120,6 +126,7 @@ function MyMatchesContent() {
         setShowModal(false);
         setTeam1("");
         setTeam2("");
+        setMatchDate("");
         fetchMyMatches(user.id);
       } else {
         toast.error(`Error creating match: ${error.message}`);
@@ -131,12 +138,28 @@ function MyMatchesContent() {
     }
   };
 
+  const getStatusTranslation = (status: string) => {
+    switch (status) {
+      case "completed":
+        return t("status.completed");
+      case "ongoing":
+        return t("status.live");
+      case "scheduled":
+      case "pending":
+        return t("status.scheduled");
+      case "cancelled":
+        return t("status.cancelled");
+      default:
+        return status;
+    }
+  };
+
   if (loading && !user) {
     return (
       <div className="min-h-screen bg-background text-on-background p-8 pt-24 max-w-7xl mx-auto flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="font-black uppercase tracking-widest text-xs opacity-60">Initializing your account...</p>
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
+          <p className="text-xs text-text-muted">Initializing account...</p>
         </div>
       </div>
     );
@@ -146,65 +169,219 @@ function MyMatchesContent() {
 
   return (
     <div className="min-h-screen bg-background text-on-background p-4 sm:p-8 pt-20 sm:pt-24 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-8 sm:mb-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="font-headline text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter leading-none mb-2 sm:mb-4">
-            My <span className="text-primary">Matches</span>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary">
+            My Matches
           </h1>
-          <p className="text-on-surface-variant text-sm sm:text-xl max-w-xl">Matches assigned to you for scoring or participation.</p>
+          <p className="text-xs sm:text-sm text-text-muted mt-1">
+            Matches assigned to you for scoring or participation.
+          </p>
         </div>
-        <button 
-          onClick={() => setShowModal(true)}
-          className="relative z-10 bg-primary-container text-on-primary-container px-6 sm:px-8 py-3 sm:py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-2 self-stretch sm:self-auto justify-center"
-        >
-          <span className="material-symbols-outlined">add</span>
-          New Match
-        </button>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          {/* View Mode Toggle (Defaults to list) */}
+          <div className="inline-flex p-1 rounded-xl bg-surface-container border border-outline-variant gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              title={t("common.viewList")}
+              className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
+                viewMode === "list"
+                  ? "bg-surface-container-highest text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-primary"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">view_list</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("cards")}
+              title={t("common.viewCards")}
+              className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
+                viewMode === "cards"
+                  ? "bg-surface-container-highest text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-primary"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">grid_view</span>
+            </button>
+          </div>
+
+          <button 
+            onClick={() => setShowModal(true)}
+            className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[16px]">add</span>
+            New Match
+          </button>
+        </div>
       </div>
 
       {loading ? (
         <div className="py-20 text-center">
-          <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-on-surface-variant font-label uppercase tracking-widest text-[10px]">Synchronizing Matches...</p>
+          <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-3 text-text-muted text-xs">Loading matches...</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      ) : matches.length === 0 ? (
+        <div className="border border-dashed border-outline-variant rounded-2xl p-16 flex flex-col items-center justify-center text-center bg-surface-container">
+          <span className="material-symbols-outlined text-4xl mb-3 text-text-muted opacity-40">sports_tennis</span>
+          <p className="font-semibold text-sm text-text-primary mb-1">No matches found</p>
+          <p className="text-xs text-text-muted mb-4 max-w-sm">You haven't created or been assigned to any matches yet.</p>
+          <button
+            onClick={() => setShowModal(true)}
+            className="px-3.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-text-primary text-xs font-medium border border-outline-variant transition-colors cursor-pointer"
+          >
+            Create Match
+          </button>
+        </div>
+      ) : viewMode === "cards" ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {matches.map((match) => (
             <div key={match.id} className="relative group/card flex justify-center">
               <MatchCard match={match} />
             </div>
           ))}
-          
-          {matches.length === 0 && (
-            <div className="col-span-full border-2 border-dashed border-outline-variant/20 rounded-[2.5rem] p-20 flex flex-col items-center justify-center text-on-surface-variant bg-surface-container-low/30">
-              <span className="material-symbols-outlined text-5xl mb-6 opacity-20">sports_tennis</span>
-              <p className="font-black uppercase tracking-widest text-sm mb-2">No matches found</p>
-              <p className="text-[10px] uppercase font-bold tracking-tighter opacity-60">You haven't been assigned to any matches yet.</p>
-            </div>
-          )}
         </div>
+      ) : (
+        <>
+          {/* Mobile List View */}
+          <div className="md:hidden divide-y divide-outline-variant rounded-xl border border-outline-variant bg-surface-container overflow-hidden">
+            {matches.map((match) => (
+              <MatchListItem key={match.id} match={match} />
+            ))}
+          </div>
+
+          {/* Desktop Data Table View */}
+          <div className="hidden md:block w-full bg-surface-container rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+            <div className="w-full overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead className="border-b border-outline-variant bg-surface-container-high/60 text-[11px] font-medium text-text-muted">
+                  <tr>
+                    <th className="py-3 px-6">{t("common.match")}</th>
+                    <th className="py-3 px-4">{t("common.sport")}</th>
+                    <th className="py-3 px-4">{t("common.tournament")}</th>
+                    <th className="py-3 px-4 text-center">{t("common.status")}</th>
+                    <th className="py-3 px-6 text-right font-mono">{t("common.score")}</th>
+                    <th className="py-3 px-4 text-right">{t("common.date")}</th>
+                    <th className="py-3 px-4 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-outline-variant text-sm font-sans">
+                  {matches.map((m) => (
+                    <tr
+                      key={m.id}
+                      onClick={() => router.push(`/match/${m.id}`)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          router.push(`/match/${m.id}`);
+                        }
+                      }}
+                      className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
+                    >
+                      <td className="py-3.5 px-6">
+                        <div className="font-medium text-sm text-text-primary group-hover:text-primary transition-colors flex items-center gap-2">
+                          <span>{m.participants?.[0]?.name || "TBD"}</span>
+                          <span className="text-text-muted text-xs font-normal">vs</span>
+                          <span>{m.participants?.[1]?.name || "TBD"}</span>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+                          <SportIcon sport={m.sport_type} className="text-text-muted text-[16px]" />
+                          <span>{getSportTranslation(m.sport_type, t)}</span>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 text-xs text-text-muted">
+                        {m.tournaments?.name || "-"}
+                      </td>
+                      <td className="py-3.5 px-4 text-center">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
+                            m.status === "completed"
+                              ? "bg-surface-container-high text-text-muted border-outline-variant"
+                              : m.status === "ongoing"
+                              ? "bg-surface-container-high text-success border-success/30"
+                              : "bg-surface-container-high text-text-secondary border-outline-variant"
+                          }`}
+                        >
+                          {m.status === "ongoing" && <span className="w-1.5 h-1.5 rounded-full bg-success" />}
+                          <span>{getStatusTranslation(m.status)}</span>
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-6 text-right font-mono tabular-nums text-sm font-semibold text-text-primary">
+                        {m.scores?.sets ? `${m.scores.sets[0]} - ${m.scores.sets[1]}` : m.scores?.current ? `${m.scores.current.home} - ${m.scores.current.away}` : "-"}
+                      </td>
+                      <td className="py-3.5 px-4 text-right text-xs text-text-muted">
+                        {m.scheduled_at
+                          ? new Date(m.scheduled_at).toLocaleDateString(undefined, {
+                              day: "numeric",
+                              month: "short",
+                            })
+                          : "-"}
+                      </td>
+                      <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Link
+                            href={`/match/${m.id}/scoreboard`}
+                            title="Open Scoreboard"
+                            className="p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-container-highest transition-colors"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">scoreboard</span>
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => setMatchToDelete(m)}
+                            title="Delete Match"
+                            className="p-1.5 rounded-lg text-text-muted hover:text-rose-400 hover:bg-surface-container-highest transition-colors cursor-pointer"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
       )}
 
       {/* CREATE MATCH MODAL */}
       {showModal && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
-          <div className="bg-surface-container-high rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 max-w-xl w-full shadow-2xl border border-outline-variant/20 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl sm:text-3xl font-headline font-black mb-6 sm:mb-8 italic tracking-tighter text-white">NEW MATCH</h2>
-            <div className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+          <div className="bg-surface-container rounded-2xl p-6 sm:p-8 max-w-lg w-full border border-outline-variant shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-text-primary">New Match</h2>
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container-high transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Team 1</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">Team 1</label>
                   <input 
-                    className="w-full p-4 bg-surface-container rounded-xl border border-outline-variant/20 text-on-surface font-bold outline-none focus:border-primary transition-colors" 
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors" 
                     placeholder="Team Alpha"
                     value={team1}
                     onChange={e => setTeam1(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Team 2</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">Team 2</label>
                   <input 
-                    className="w-full p-4 bg-surface-container rounded-xl border border-outline-variant/20 text-on-surface font-bold outline-none focus:border-primary transition-colors" 
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors" 
                     placeholder="Team Beta"
                     value={team2}
                     onChange={e => setTeam2(e.target.value)}
@@ -212,11 +389,11 @@ function MyMatchesContent() {
                 </div>
               </div>
               
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Sport Type</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">Sport Type</label>
                   <select 
-                    className="w-full p-4 bg-surface-container rounded-xl border border-outline-variant/20 text-on-surface font-bold outline-none focus:border-primary transition-colors appearance-none"
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
                     value={sportType}
                     onChange={e => setSportType(e.target.value)}
                   >
@@ -229,9 +406,9 @@ function MyMatchesContent() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Tournament (Optional)</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">Tournament (Optional)</label>
                   <select 
-                    className="w-full p-4 bg-surface-container rounded-xl border border-outline-variant/20 text-on-surface font-bold outline-none focus:border-primary transition-colors appearance-none"
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
                     value={selectedTournamentId}
                     onChange={e => setSelectedTournamentId(e.target.value)}
                   >
@@ -244,29 +421,31 @@ function MyMatchesContent() {
               </div>
 
               <div>
-                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Match Date</label>
+                <label className="block text-xs font-medium text-text-muted mb-1.5">Match Date</label>
                 <input 
                   type="datetime-local"
-                  className="w-full p-4 bg-surface-container rounded-xl border border-outline-variant/20 text-on-surface font-bold outline-none focus:border-primary transition-colors"
+                  className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
                   value={matchDate}
                   onChange={e => setMatchDate(e.target.value)}
                 />
               </div>
 
-              <div className="flex gap-4 pt-6">
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-outline-variant">
                 <button 
+                  type="button"
                   onClick={() => setShowModal(false)} 
-                  className="flex-1 py-4 text-on-surface-variant font-black uppercase tracking-widest text-xs hover:text-on-surface transition-colors"
+                  className="px-4 py-2 rounded-lg text-text-muted hover:text-text-primary text-xs font-medium transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
+                  type="button"
                   onClick={handleCreateMatch} 
                   disabled={isSubmitting}
-                  className="flex-1 bg-primary-container text-on-primary-container py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   {isSubmitting ? (
-                    <div className="w-4 h-4 border-2 border-on-primary-container border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                   ) : (
                     "Create Match"
                   )}
@@ -304,8 +483,8 @@ export default function MyMatchesPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-4 text-on-surface-variant font-label uppercase tracking-widest text-[10px]">Synchronizing Matches...</p>
+        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-3 text-text-muted text-xs">Loading matches...</p>
       </div>
     }>
       <MyMatchesContent />

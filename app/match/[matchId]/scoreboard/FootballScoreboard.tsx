@@ -255,29 +255,29 @@ export default function FootballScoreboard({
   return (
     <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
       {/* Top Banner / Match Info */}
-      <div className="w-full flex items-center justify-between py-3 px-6 bg-surface-container-low rounded-2xl border border-white/5 mb-6">
-        <div className="flex items-center gap-2.5">
-          <SportIcon sport="Football" className="text-secondary text-[20px]" />
+      <div className="w-full flex items-center justify-between py-3 px-5 bg-surface-container-low rounded-2xl border border-outline-variant mb-6">
+        <div className="flex items-center gap-3">
+          <SportIcon sport="Football" className="text-secondary text-lg" />
           <div>
-            <span className="text-[10px] font-label font-black uppercase tracking-widest text-secondary block">
+            <span className="text-[11px] font-medium text-on-surface-variant block">
               Futebol Oficial
             </span>
-            <span className="text-sm font-bold text-on-surface">
+            <span className="text-sm font-semibold text-on-surface">
               {matchData.tournaments?.name || "Jogo Isolado"}
             </span>
           </div>
         </div>
 
         {/* Period Selector Tabs */}
-        <div className="flex items-center gap-1.5 bg-surface-container p-1 rounded-xl border border-white/5">
+        <div className="flex items-center gap-1 bg-surface-container-high/60 p-1 rounded-xl border border-outline-variant">
           {["1ª Parte", "Intervalo", "2ª Parte", "Prolongamento", "Penáltis", "Fim"].map((p) => (
             <button
               key={p}
               onClick={() => changePeriod(p)}
               disabled={!canEdit}
-              className={`px-3 py-1 rounded-lg text-xs font-black transition-all ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
                 period === p
-                  ? "bg-primary text-on-primary shadow-md"
+                  ? "bg-primary text-on-primary"
                   : "text-on-surface-variant hover:text-on-surface"
               } ${!canEdit ? "cursor-default" : "cursor-pointer"}`}
             >
@@ -288,39 +288,39 @@ export default function FootballScoreboard({
       </div>
 
       {/* Main Scoreboard Display (3 Columns) */}
-      <div className="w-full bg-[#0d1424] rounded-3xl border border-white/10 p-6 md:p-8 shadow-2xl relative overflow-hidden mb-6">
+      <div className="w-full bg-surface-container rounded-2xl border border-outline-variant p-6 md:p-8 relative overflow-hidden mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           
           {/* HOME TEAM */}
           <div className="flex flex-col items-center text-center">
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-3 h-3 rounded-full bg-primary" />
-              <h2 className="text-xl md:text-2xl font-headline font-black text-white truncate max-w-[240px]">
+              <span className="w-2.5 h-2.5 rounded-full bg-primary" />
+              <h2 className="text-lg md:text-xl font-headline font-semibold text-on-surface truncate max-w-[240px]">
                 {teamHome}
               </h2>
             </div>
 
             {/* Home Score (Goals) */}
-            <div className="text-7xl md:text-8xl font-digital text-white tracking-tighter my-2 drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+            <div className="text-6xl md:text-7xl font-mono tabular-nums font-semibold text-on-surface tracking-tight my-2">
               {goals.home}
             </div>
 
             {/* Home Discipline Pills */}
             <div className="flex items-center gap-2 text-xs mt-2">
               {yellowCards.home > 0 && (
-                <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold flex items-center gap-1">
-                  <span className="w-2.5 h-3.5 bg-amber-400 rounded-xs inline-block" />
-                  <span className="font-digital text-sm">{yellowCards.home}</span>
+                <span className="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-xs font-medium flex items-center gap-1">
+                  <span className="w-2 h-3 bg-amber-400 rounded-xs inline-block" />
+                  <span className="font-mono tabular-nums">{yellowCards.home}</span>
                 </span>
               )}
               {redCards.home > 0 && (
-                <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold flex items-center gap-1 animate-pulse">
-                  <span className="w-2.5 h-3.5 bg-rose-500 rounded-xs inline-block" />
-                  <span className="font-digital text-sm">{redCards.home}</span>
+                <span className="px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30 text-xs font-medium flex items-center gap-1">
+                  <span className="w-2 h-3 bg-rose-500 rounded-xs inline-block" />
+                  <span className="font-mono tabular-nums">{redCards.home}</span>
                 </span>
               )}
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant border border-white/5 text-[11px]">
-                Cantos: <span className="font-digital text-sm">{corners.home}</span> • Faltas: <span className="font-digital text-sm">{fouls.home}</span>
+              <span className="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline-variant text-[11px] font-medium">
+                Cantos: <span className="font-mono tabular-nums">{corners.home}</span> • Faltas: <span className="font-mono tabular-nums">{fouls.home}</span>
               </span>
             </div>
 
@@ -330,15 +330,15 @@ export default function FootballScoreboard({
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => handleGoal("home", 1)}
-                    className="py-2.5 bg-primary-container hover:brightness-110 text-on-primary-container font-black rounded-xl shadow-lg shadow-primary/20 transition-all text-sm flex items-center justify-center gap-1.5"
+                    className="h-10 bg-primary hover:bg-primary/90 text-on-primary font-medium rounded-lg transition-colors text-xs flex items-center justify-center gap-1.5 cursor-pointer"
                     title="Registar Golo (+1)"
                   >
-                    <span className="material-symbols-outlined text-sm">sports_soccer</span>
-                    +1 Golo
+                    <span className="material-symbols-outlined text-base">sports_soccer</span>
+                    Golo
                   </button>
                   <button
                     onClick={() => handleGoal("home", -1)}
-                    className="py-2.5 bg-surface-container-high hover:bg-rose-500/20 text-on-surface-variant hover:text-rose-400 font-bold rounded-xl border border-white/5 transition-all text-xs"
+                    className="h-10 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-rose-400 font-medium rounded-lg border border-outline-variant transition-colors text-xs cursor-pointer"
                     title="Anular Golo (-1)"
                   >
                     -1 Corrigir
@@ -348,28 +348,28 @@ export default function FootballScoreboard({
                 <div className="grid grid-cols-4 gap-1.5">
                   <button
                     onClick={() => handleCard("home", "yellow")}
-                    className="py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-lg text-[11px] font-bold"
+                    className="h-8 bg-surface-container-high hover:bg-amber-500/20 text-amber-300 border border-outline-variant rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
                     title="Cartão Amarelo"
                   >
                     Amarelo
                   </button>
                   <button
                     onClick={() => handleCard("home", "red")}
-                    className="py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-lg text-[11px] font-bold"
+                    className="h-8 bg-surface-container-high hover:bg-rose-500/20 text-rose-300 border border-outline-variant rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
                     title="Cartão Vermelho"
                   >
                     Vermelho
                   </button>
                   <button
                     onClick={() => handleStat("home", "corner")}
-                    className="py-1.5 bg-surface-container hover:bg-white/10 text-on-surface-variant rounded-lg border border-white/5 text-[11px]"
+                    className="h-8 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant text-[11px] font-medium transition-colors cursor-pointer"
                     title="+1 Canto"
                   >
                     + Canto
                   </button>
                   <button
                     onClick={() => handleStat("home", "foul")}
-                    className="py-1.5 bg-surface-container hover:bg-white/10 text-on-surface-variant rounded-lg border border-white/5 text-[11px]"
+                    className="h-8 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant text-[11px] font-medium transition-colors cursor-pointer"
                     title="+1 Falta"
                   >
                     + Falta
@@ -380,18 +380,18 @@ export default function FootballScoreboard({
           </div>
 
           {/* CENTER: MATCH CLOCK & PERIOD */}
-          <div className="flex flex-col items-center justify-center py-4 border-y md:border-y-0 md:border-x border-white/10 px-4">
-            <span className="text-secondary font-label text-xs font-black uppercase tracking-[0.3em] mb-2">
+          <div className="flex flex-col items-center justify-center py-4 border-y md:border-y-0 md:border-x border-outline-variant px-4">
+            <span className="text-on-surface-variant text-xs font-medium mb-2">
               {period}
             </span>
 
-            {/* Match Clock in Digital Font */}
+            {/* Match Clock */}
             <div
               onClick={toggleClock}
-              className={`text-5xl md:text-6xl font-digital tracking-tight cursor-pointer select-none py-2 px-5 rounded-2xl border transition-all ${
+              className={`text-4xl md:text-5xl font-mono tabular-nums font-semibold tracking-tight cursor-pointer select-none py-2 px-5 rounded-xl border transition-colors ${
                 isClockRunning
-                  ? "text-secondary border-secondary/40 bg-secondary/10 shadow-[0_0_20px_rgba(78,222,163,0.2)] animate-pulse"
-                  : "text-white border-white/10 bg-surface-container/60 hover:border-white/30"
+                  ? "text-secondary border-secondary/40 bg-secondary/10"
+                  : "text-on-surface border-outline-variant bg-surface-container-high/60 hover:border-outline-variant/80"
               }`}
               title="Clique para Iniciar/Pausar o Cronómetro"
             >
@@ -400,8 +400,8 @@ export default function FootballScoreboard({
 
             {/* Stoppage Time Badge */}
             {stoppageMinutes > 0 && (
-              <span className="mt-2 text-xs font-digital text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-                +{stoppageMinutes} MIN COMPENSAÇÃO
+              <span className="mt-2 text-xs font-mono tabular-nums text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-md border border-amber-500/20">
+                +{stoppageMinutes} min compensação
               </span>
             )}
 
@@ -410,13 +410,13 @@ export default function FootballScoreboard({
               <div className="flex items-center gap-2 mt-4">
                 <button
                   onClick={toggleClock}
-                  className={`px-4 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
+                  className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
                     isClockRunning
                       ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                      : "bg-primary text-on-primary shadow-md"
+                      : "bg-primary text-on-primary hover:bg-primary/90"
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[16px]">
+                  <span className="material-symbols-outlined text-sm">
                     {isClockRunning ? "pause" : "play_arrow"}
                   </span>
                   {isClockRunning ? "Pausar" : "Iniciar"}
@@ -428,7 +428,7 @@ export default function FootballScoreboard({
                     setStoppageMinutes(nextStoppage);
                     persistFootballState({ stoppageMinutes: nextStoppage });
                   }}
-                  className="px-2.5 py-1.5 bg-surface-container hover:bg-white/10 text-on-surface-variant text-xs rounded-xl border border-white/5"
+                  className="h-8 px-2.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface text-xs font-medium rounded-lg border border-outline-variant transition-colors cursor-pointer"
                   title="Ajustar Minutos de Compensação"
                 >
                   +1m
@@ -440,10 +440,10 @@ export default function FootballScoreboard({
                     setElapsedSeconds(baseSecs);
                     persistFootballState({ elapsedSeconds: baseSecs });
                   }}
-                  className="px-2.5 py-1.5 bg-surface-container hover:bg-white/10 text-on-surface-variant text-xs rounded-xl border border-white/5"
+                  className="h-8 px-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant transition-colors cursor-pointer flex items-center justify-center"
                   title="Repor Tempo Base"
                 >
-                  <span className="material-symbols-outlined text-[16px]">restart_alt</span>
+                  <span className="material-symbols-outlined text-base">restart_alt</span>
                 </button>
               </div>
             )}
@@ -452,33 +452,33 @@ export default function FootballScoreboard({
           {/* AWAY TEAM */}
           <div className="flex flex-col items-center text-center">
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-3 h-3 rounded-full bg-secondary" />
-              <h2 className="text-xl md:text-2xl font-headline font-black text-white truncate max-w-[240px]">
+              <span className="w-2.5 h-2.5 rounded-full bg-secondary" />
+              <h2 className="text-lg md:text-xl font-headline font-semibold text-on-surface truncate max-w-[240px]">
                 {teamAway}
               </h2>
             </div>
 
             {/* Away Score (Goals) */}
-            <div className="text-7xl md:text-8xl font-digital text-secondary tracking-tighter my-2 drop-shadow-[0_0_20px_rgba(78,222,163,0.15)]">
+            <div className="text-6xl md:text-7xl font-mono tabular-nums font-semibold text-on-surface tracking-tight my-2">
               {goals.away}
             </div>
 
             {/* Away Discipline Pills */}
             <div className="flex items-center gap-2 text-xs mt-2">
               {yellowCards.away > 0 && (
-                <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold flex items-center gap-1">
-                  <span className="w-2.5 h-3.5 bg-amber-400 rounded-xs inline-block" />
-                  <span className="font-digital text-sm">{yellowCards.away}</span>
+                <span className="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-xs font-medium flex items-center gap-1">
+                  <span className="w-2 h-3 bg-amber-400 rounded-xs inline-block" />
+                  <span className="font-mono tabular-nums">{yellowCards.away}</span>
                 </span>
               )}
               {redCards.away > 0 && (
-                <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold flex items-center gap-1 animate-pulse">
-                  <span className="w-2.5 h-3.5 bg-rose-500 rounded-xs inline-block" />
-                  <span className="font-digital text-sm">{redCards.away}</span>
+                <span className="px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30 text-xs font-medium flex items-center gap-1">
+                  <span className="w-2 h-3 bg-rose-500 rounded-xs inline-block" />
+                  <span className="font-mono tabular-nums">{redCards.away}</span>
                 </span>
               )}
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant border border-white/5 text-[11px]">
-                Cantos: <span className="font-digital text-sm">{corners.away}</span> • Faltas: <span className="font-digital text-sm">{fouls.away}</span>
+              <span className="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline-variant text-[11px] font-medium">
+                Cantos: <span className="font-mono tabular-nums">{corners.away}</span> • Faltas: <span className="font-mono tabular-nums">{fouls.away}</span>
               </span>
             </div>
 
@@ -488,15 +488,15 @@ export default function FootballScoreboard({
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => handleGoal("away", 1)}
-                    className="py-2.5 bg-secondary hover:brightness-110 text-on-secondary font-black rounded-xl shadow-lg shadow-secondary/20 transition-all text-sm flex items-center justify-center gap-1.5"
+                    className="h-10 bg-secondary hover:bg-secondary/90 text-on-secondary font-medium rounded-lg transition-colors text-xs flex items-center justify-center gap-1.5 cursor-pointer"
                     title="Registar Golo (+1)"
                   >
-                    <span className="material-symbols-outlined text-sm">sports_soccer</span>
-                    +1 Golo
+                    <span className="material-symbols-outlined text-base">sports_soccer</span>
+                    Golo
                   </button>
                   <button
                     onClick={() => handleGoal("away", -1)}
-                    className="py-2.5 bg-surface-container-high hover:bg-rose-500/20 text-on-surface-variant hover:text-rose-400 font-bold rounded-xl border border-white/5 transition-all text-xs"
+                    className="h-10 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-rose-400 font-medium rounded-lg border border-outline-variant transition-colors text-xs cursor-pointer"
                     title="Anular Golo (-1)"
                   >
                     -1 Corrigir
@@ -506,28 +506,28 @@ export default function FootballScoreboard({
                 <div className="grid grid-cols-4 gap-1.5">
                   <button
                     onClick={() => handleCard("away", "yellow")}
-                    className="py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-lg text-[11px] font-bold"
+                    className="h-8 bg-surface-container-high hover:bg-amber-500/20 text-amber-300 border border-outline-variant rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
                     title="Cartão Amarelo"
                   >
                     Amarelo
                   </button>
                   <button
                     onClick={() => handleCard("away", "red")}
-                    className="py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-lg text-[11px] font-bold"
+                    className="h-8 bg-surface-container-high hover:bg-rose-500/20 text-rose-300 border border-outline-variant rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
                     title="Cartão Vermelho"
                   >
                     Vermelho
                   </button>
                   <button
                     onClick={() => handleStat("away", "corner")}
-                    className="py-1.5 bg-surface-container hover:bg-white/10 text-on-surface-variant rounded-lg border border-white/5 text-[11px]"
+                    className="h-8 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant text-[11px] font-medium transition-colors cursor-pointer"
                     title="+1 Canto"
                   >
                     + Canto
                   </button>
                   <button
                     onClick={() => handleStat("away", "foul")}
-                    className="py-1.5 bg-surface-container hover:bg-white/10 text-on-surface-variant rounded-lg border border-white/5 text-[11px]"
+                    className="h-8 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant text-[11px] font-medium transition-colors cursor-pointer"
                     title="+1 Falta"
                   >
                     + Falta
@@ -540,44 +540,44 @@ export default function FootballScoreboard({
       </div>
 
       {/* Match Statistics & Summary Table */}
-      <div className="w-full bg-surface-container-low rounded-2xl border border-white/5 overflow-hidden p-5 mb-6">
-        <h3 className="font-headline font-black text-xs uppercase tracking-wider text-on-surface-variant mb-4">
+      <div className="w-full bg-surface-container-low rounded-2xl border border-outline-variant overflow-hidden p-5 mb-6">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-4">
           Estatísticas Oficiais do Encontro
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-center text-sm">
             <thead>
-              <tr className="border-b border-white/5 text-on-surface-variant/70 text-xs uppercase font-label">
-                <th className="py-2 px-4 text-left font-bold">Equipa</th>
-                <th className="py-2 px-3">Golos</th>
-                <th className="py-2 px-3">Amarelos</th>
-                <th className="py-2 px-3">Vermelhos</th>
-                <th className="py-2 px-3">Cantos</th>
-                <th className="py-2 px-3">Faltas</th>
+              <tr className="border-b border-outline-variant text-on-surface-variant/80 text-xs font-medium">
+                <th className="py-2.5 px-4 text-left">Equipa</th>
+                <th className="py-2.5 px-3">Golos</th>
+                <th className="py-2.5 px-3">Amarelos</th>
+                <th className="py-2.5 px-3">Vermelhos</th>
+                <th className="py-2.5 px-3">Cantos</th>
+                <th className="py-2.5 px-3">Faltas</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 font-digital text-base">
+            <tbody className="divide-y divide-outline-variant/60 font-mono tabular-nums text-sm">
               <tr>
-                <td className="py-3 px-4 text-left font-bold font-sans text-on-surface flex items-center gap-2">
+                <td className="py-3 px-4 text-left font-sans text-on-surface font-medium flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-primary" />
                   {teamHome}
                 </td>
-                <td className="py-3 px-3 text-primary text-xl font-black">{goals.home}</td>
+                <td className="py-3 px-3 text-primary font-semibold text-base">{goals.home}</td>
                 <td className="py-3 px-3 text-amber-400">{yellowCards.home}</td>
                 <td className="py-3 px-3 text-rose-400">{redCards.home}</td>
-                <td className="py-3 px-3">{corners.home}</td>
-                <td className="py-3 px-3">{fouls.home}</td>
+                <td className="py-3 px-3 text-on-surface-variant">{corners.home}</td>
+                <td className="py-3 px-3 text-on-surface-variant">{fouls.home}</td>
               </tr>
               <tr>
-                <td className="py-3 px-4 text-left font-bold font-sans text-on-surface flex items-center gap-2">
+                <td className="py-3 px-4 text-left font-sans text-on-surface font-medium flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-secondary" />
                   {teamAway}
                 </td>
-                <td className="py-3 px-3 text-secondary text-xl font-black">{goals.away}</td>
+                <td className="py-3 px-3 text-secondary font-semibold text-base">{goals.away}</td>
                 <td className="py-3 px-3 text-amber-400">{yellowCards.away}</td>
                 <td className="py-3 px-3 text-rose-400">{redCards.away}</td>
-                <td className="py-3 px-3">{corners.away}</td>
-                <td className="py-3 px-3">{fouls.away}</td>
+                <td className="py-3 px-3 text-on-surface-variant">{corners.away}</td>
+                <td className="py-3 px-3 text-on-surface-variant">{fouls.away}</td>
               </tr>
             </tbody>
           </table>
@@ -589,9 +589,9 @@ export default function FootballScoreboard({
         <div className="w-full flex justify-end gap-3">
           <button
             onClick={handleFinalizeMatch}
-            className="px-5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2"
+            className="h-9 px-4 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5"
           >
-            <span className="material-symbols-outlined text-[16px]">check_circle</span>
+            <span className="material-symbols-outlined text-base">check_circle</span>
             Terminar Jogo
           </button>
         </div>

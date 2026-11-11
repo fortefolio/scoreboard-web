@@ -167,32 +167,32 @@ export default function MatchOverlayClient() {
   return (
     <div className={`fixed inset-0 pointer-events-none bg-transparent flex justify-center ${positionClasses} font-sans select-none overflow-hidden z-[9999]`}>
       <div className={`transition-transform duration-300 ${scaleClasses}`}>
-        {/* Main Broadcast Scoreboard Glass Container */}
-        <div className="bg-[#0b101e]/92 backdrop-blur-md border border-white/15 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.7)] text-white overflow-hidden flex flex-col min-w-[540px] max-w-[720px]">
-          {/* Top Subtle Info Strip */}
-          <div className="flex items-center justify-between px-4 py-1.5 bg-black/40 border-b border-white/10 text-[10px] font-black uppercase tracking-wider">
+        {/* Main Broadcast Scoreboard Container */}
+        <div className="bg-[#0b0d14]/95 border border-outline-variant rounded-xl text-text-primary overflow-hidden flex flex-col min-w-[500px] max-w-[700px]">
+          {/* Top Info Strip */}
+          <div className="flex items-center justify-between px-4 py-1.5 bg-surface-container-high/60 border-b border-outline-variant text-xs font-medium">
             <div className="flex items-center gap-2">
               {isLive ? (
-                <span className="flex items-center gap-1.5 text-red-400 font-black">
-                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                <span className="flex items-center gap-1.5 text-success font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success" />
                   LIVE
                 </span>
               ) : (
-                <span className="text-slate-400 font-bold uppercase tracking-widest">
+                <span className="text-text-muted font-medium">
                   {match.status}
                 </span>
               )}
               {match.tournaments?.name && (
-                <span className="text-slate-400 truncate max-w-[240px]">
+                <span className="text-text-muted truncate max-w-[240px]">
                   • {match.tournaments.name}
                 </span>
               )}
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-indigo-400 font-black tracking-widest">{sport}</span>
+              <span className="text-text-secondary font-medium">{sport}</span>
               {showBranding && (
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-container-highest text-text-secondary font-medium border border-outline-variant">
                   ScoreBoard
                 </span>
               )}
@@ -200,60 +200,60 @@ export default function MatchOverlayClient() {
           </div>
 
           {/* Teams & Scores Row */}
-          <div className="flex flex-col divide-y divide-white/10">
+          <div className="flex flex-col divide-y divide-outline-variant">
             {/* Team 1 Row */}
-            <div className="flex items-center justify-between px-4 py-2 hover:bg-white/[0.02]">
+            <div className="flex items-center justify-between px-4 py-2 hover:bg-surface-container-high/20">
               <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-3">
                 {serverIdx === 0 && (
-                  <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0 shadow-[0_0_8px_rgba(251,191,36,0.8)]" title="Serving" />
+                  <span className="w-2 h-2 rounded-full bg-warning shrink-0" title="Serving" />
                 )}
                 {isVolleyball && volleyServer === "team1" && (
-                  <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0 shadow-[0_0_8px_rgba(251,191,36,0.8)]" title="Serving" />
+                  <span className="w-2 h-2 rounded-full bg-warning shrink-0" title="Serving" />
                 )}
-                <span className="font-black text-sm text-white tracking-tight truncate">
+                <span className="font-medium text-sm text-text-primary truncate">
                   {team1Name}
                 </span>
               </div>
 
               {/* Scores Cluster */}
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0 font-mono tabular-nums">
                 {/* Sets won (for racket/volleyball) */}
                 {(isTennisOrPadel || isVolleyball) && (
-                  <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center font-bold text-xs text-indigo-300">
+                  <div className="w-7 h-7 rounded-md bg-surface-container-high flex items-center justify-center font-medium text-xs text-text-secondary border border-outline-variant">
                     {isTennisOrPadel ? team1SetsWon : team1SetsWon}
                   </div>
                 )}
 
                 {/* Tennis/Padel current games */}
                 {isTennisOrPadel && (
-                  <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-black text-sm shadow-md">
+                  <div className="w-8 h-8 rounded-md bg-surface-container-highest text-text-primary flex items-center justify-center font-semibold text-sm border border-outline-variant">
                     {currentGames[0]}
                   </div>
                 )}
 
                 {/* Tennis/Padel live points */}
                 {isTennisOrPadel && (
-                  <div className="w-9 h-8 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center font-black text-sm shadow-md">
+                  <div className="w-9 h-8 rounded-md bg-warning text-[#0b0d14] flex items-center justify-center font-bold text-sm">
                     {point1}
                   </div>
                 )}
 
                 {/* Volleyball current set points */}
                 {isVolleyball && (
-                  <div className="w-10 h-8 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-base shadow-md">
+                  <div className="w-9 h-8 rounded-md bg-success text-[#0b0d14] flex items-center justify-center font-bold text-sm">
                     {volleyPoints[0]}
                   </div>
                 )}
 
                 {/* Basketball / Football score */}
                 {isBasketball && (
-                  <div className="w-12 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-black text-base">
+                  <div className="w-11 h-8 rounded-md bg-warning text-[#0b0d14] flex items-center justify-center font-bold text-sm">
                     {basketballScore[0]}
                   </div>
                 )}
 
                 {isFootball && (
-                  <div className="w-10 h-8 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-base">
+                  <div className="w-9 h-8 rounded-md bg-success text-[#0b0d14] flex items-center justify-center font-bold text-sm">
                     {footballScore[0]}
                   </div>
                 )}
@@ -261,53 +261,53 @@ export default function MatchOverlayClient() {
             </div>
 
             {/* Team 2 Row */}
-            <div className="flex items-center justify-between px-4 py-2 hover:bg-white/[0.02]">
+            <div className="flex items-center justify-between px-4 py-2 hover:bg-surface-container-high/20">
               <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-3">
                 {serverIdx === 1 && (
-                  <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0 shadow-[0_0_8px_rgba(251,191,36,0.8)]" title="Serving" />
+                  <span className="w-2 h-2 rounded-full bg-warning shrink-0" title="Serving" />
                 )}
                 {isVolleyball && volleyServer === "team2" && (
-                  <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0 shadow-[0_0_8px_rgba(251,191,36,0.8)]" title="Serving" />
+                  <span className="w-2 h-2 rounded-full bg-warning shrink-0" title="Serving" />
                 )}
-                <span className="font-black text-sm text-white tracking-tight truncate">
+                <span className="font-medium text-sm text-text-primary truncate">
                   {team2Name}
                 </span>
               </div>
 
               {/* Scores Cluster */}
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0 font-mono tabular-nums">
                 {(isTennisOrPadel || isVolleyball) && (
-                  <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center font-bold text-xs text-indigo-300">
+                  <div className="w-7 h-7 rounded-md bg-surface-container-high flex items-center justify-center font-medium text-xs text-text-secondary border border-outline-variant">
                     {isTennisOrPadel ? team2SetsWon : team2SetsWon}
                   </div>
                 )}
 
                 {isTennisOrPadel && (
-                  <div className="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-black text-sm shadow-md">
+                  <div className="w-8 h-8 rounded-md bg-surface-container-highest text-text-primary flex items-center justify-center font-semibold text-sm border border-outline-variant">
                     {currentGames[1]}
                   </div>
                 )}
 
                 {isTennisOrPadel && (
-                  <div className="w-9 h-8 rounded-lg bg-amber-400 text-slate-950 flex items-center justify-center font-black text-sm shadow-md">
+                  <div className="w-9 h-8 rounded-md bg-warning text-[#0b0d14] flex items-center justify-center font-bold text-sm">
                     {point2}
                   </div>
                 )}
 
                 {isVolleyball && (
-                  <div className="w-10 h-8 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-base shadow-md">
+                  <div className="w-9 h-8 rounded-md bg-success text-[#0b0d14] flex items-center justify-center font-bold text-sm">
                     {volleyPoints[1]}
                   </div>
                 )}
 
                 {isBasketball && (
-                  <div className="w-12 h-8 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-black text-base">
+                  <div className="w-11 h-8 rounded-md bg-warning text-[#0b0d14] flex items-center justify-center font-bold text-sm">
                     {basketballScore[1]}
                   </div>
                 )}
 
                 {isFootball && (
-                  <div className="w-10 h-8 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center font-black text-base">
+                  <div className="w-9 h-8 rounded-md bg-success text-[#0b0d14] flex items-center justify-center font-bold text-sm">
                     {footballScore[1]}
                   </div>
                 )}

@@ -48,24 +48,24 @@ export default function MatchListItem({ match }: { match: any }) {
   const isCompleted = match.status === "completed";
 
   return (
-    <div className="w-full bg-[#151b2d]/80 backdrop-blur-md rounded-2xl border border-white/5 p-3.5 flex items-center justify-between gap-3 hover:border-primary/30 transition-all duration-300 shadow-md">
+    <div className="w-full bg-surface-container rounded-xl border border-outline-variant p-3 flex items-center justify-between gap-3 hover:bg-surface-container-high/40 transition-colors">
       <Link href={`/match/${match.id}`} className="flex items-center gap-3 min-w-0 flex-1">
         {/* Sport Icon Box */}
-        <div className="w-10 h-10 rounded-xl bg-surface-container-high/40 border border-white/5 flex items-center justify-center shrink-0">
-          <SportIcon sport={match.sport_type} className="text-primary text-[16px]" />
+        <div className="w-9 h-9 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center shrink-0">
+          <SportIcon sport={match.sport_type} className="text-primary text-[15px]" />
         </div>
 
         {/* Teams and Scores Column */}
-        <div className="flex flex-col gap-1.5 min-w-0 flex-1">
+        <div className="flex flex-col gap-1 min-w-0 flex-1">
           {/* Team 0 */}
           <div className="flex items-center justify-between gap-2 min-w-0">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-              <span className="text-xs font-bold text-on-surface truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary/70 shrink-0" />
+              <span className="text-xs sm:text-sm font-medium text-text-primary truncate">
                 {name0}
               </span>
             </div>
-            <span className="font-mono text-sm font-black text-on-surface pl-2">
+            <span className="font-mono tabular-nums text-sm font-semibold text-text-primary pl-2">
               {score0}
             </span>
           </div>
@@ -73,12 +73,12 @@ export default function MatchListItem({ match }: { match: any }) {
           {/* Team 1 */}
           <div className="flex items-center justify-between gap-2 min-w-0">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-              <span className="text-xs font-bold text-on-surface truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-secondary/70 shrink-0" />
+              <span className="text-xs sm:text-sm font-medium text-text-primary truncate">
                 {name1}
               </span>
             </div>
-            <span className="font-mono text-sm font-black text-on-surface pl-2">
+            <span className="font-mono tabular-nums text-sm font-semibold text-text-primary pl-2">
               {score1}
             </span>
           </div>
@@ -86,23 +86,18 @@ export default function MatchListItem({ match }: { match: any }) {
       </Link>
 
       {/* Right: Status Pill & Follow Button */}
-      <div className="flex items-center gap-1.5 shrink-0 pl-1 border-l border-white/5">
-        <span
-          className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-            isOngoing
-              ? "bg-primary/20 text-primary border border-primary/30 animate-pulse"
-              : isCompleted
-              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-              : "bg-white/5 text-on-surface-variant/70 border border-white/10"
-          }`}
-        >
-          {isOngoing
-            ? t("status.live")
-            : isCompleted
-            ? t("status.completed")
-            : t("status.scheduled")}
-        </span>
-        <FollowButton entityId={match.id} entityType="match" variant="icon" className="w-7 h-7" />
+      <div className="flex items-center gap-2 shrink-0 pl-2 border-l border-outline-variant">
+        {isOngoing ? (
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
+            <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+            {t("status.live")}
+          </span>
+        ) : (
+          <span className="text-xs text-text-muted">
+            {isCompleted ? t("status.completed") : t("status.scheduled")}
+          </span>
+        )}
+        <FollowButton entityId={match.id} entityType="match" variant="icon" className="w-7 h-7 text-text-muted hover:text-text-primary" />
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
+import SportIcon from "@/components/SportIcon";
 
 export default function MyTournamentsPage() {
   const router = useRouter();
@@ -14,6 +15,7 @@ export default function MyTournamentsPage() {
   const { t: tr } = useTranslation();
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<"list" | "cards">("list");
 
   const [showModal, setShowModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -86,7 +88,7 @@ export default function MyTournamentsPage() {
       setShowUpgradeModal(true);
       return;
     }
-    if (!newName) {
+    if (!newName.trim()) {
       toast.error("Please enter a tournament name");
       return;
     }
@@ -131,7 +133,7 @@ export default function MyTournamentsPage() {
     };
 
     const { data, error } = await supabase.from("tournaments").insert({
-      name: newName,
+      name: newName.trim(),
       sport_type: newSport,
       organizer_id: user.id,
       status: "pending",
@@ -155,8 +157,8 @@ export default function MyTournamentsPage() {
     return (
       <div className="min-h-screen bg-background text-on-background p-8 pt-24 max-w-7xl mx-auto flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="font-black uppercase tracking-widest text-xs opacity-60">Initializing your account...</p>
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
+          <p className="text-xs text-text-muted">Loading your events...</p>
         </div>
       </div>
     );
@@ -166,68 +168,215 @@ export default function MyTournamentsPage() {
 
   return (
     <div className="min-h-screen bg-background text-on-background p-4 sm:p-8 pt-20 sm:pt-24 max-w-7xl mx-auto">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6 mb-8 sm:mb-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="font-headline text-3xl sm:text-5xl md:text-6xl font-black tracking-tighter leading-none mb-2 sm:mb-4">
-            My <span className="text-primary">Tournaments</span>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary">
+            My Tournaments
           </h1>
-          <p className="text-on-surface-variant text-sm sm:text-xl max-w-xl">Manage your active events and create new competitions.</p>
+          <p className="text-xs sm:text-sm text-text-muted mt-1">
+            Manage your active events and create new competitions.
+          </p>
         </div>
-        <button 
-          onClick={handleOpenCreate}
-          className="bg-primary-container text-on-primary-container px-6 sm:px-8 py-3 sm:py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20 active:scale-95 flex items-center gap-2 cursor-pointer self-stretch sm:self-auto justify-center"
-        >
-          <span className="material-symbols-outlined">add</span>
-          New Tournament
-        </button>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          {/* View Mode Toggle (Defaults to list) */}
+          <div className="inline-flex p-1 rounded-xl bg-surface-container border border-outline-variant gap-1 shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode("list")}
+              title={tr("common.viewList")}
+              className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
+                viewMode === "list"
+                  ? "bg-surface-container-highest text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-primary"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">view_list</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("cards")}
+              title={tr("common.viewCards")}
+              className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
+                viewMode === "cards"
+                  ? "bg-surface-container-highest text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-primary"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">grid_view</span>
+            </button>
+          </div>
+
+          <button 
+            onClick={handleOpenCreate}
+            className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+          >
+            <span className="material-symbols-outlined text-[16px]">add</span>
+            New Tournament
+          </button>
+        </div>
       </div>
 
       {loading ? (
         <div className="py-20 text-center">
-          <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-on-surface-variant font-label uppercase tracking-widest text-[10px]">Loading your events...</p>
+          <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-3 text-text-muted text-xs">Loading tournaments...</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      ) : tournaments.length === 0 ? (
+        <div 
+          onClick={handleOpenCreate}
+          className="border border-dashed border-outline-variant rounded-2xl p-16 flex flex-col items-center justify-center text-center bg-surface-container hover:border-outline-focus transition-colors cursor-pointer"
+        >
+          <span className="material-symbols-outlined text-4xl mb-3 text-text-muted opacity-40">emoji_events</span>
+          <p className="font-semibold text-sm text-text-primary mb-1">No tournaments found</p>
+          <p className="text-xs text-text-muted mb-4 max-w-sm">Click here to create and manage your first competition.</p>
+          <span className="px-3.5 py-1.5 rounded-lg bg-surface-container-high text-text-primary text-xs font-medium border border-outline-variant">
+            Create Tournament
+          </span>
+        </div>
+      ) : viewMode === "cards" ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tournaments.map((t) => (
-            <div key={t.id} className="bg-surface-container-low p-8 rounded-[2.5rem] border border-outline-variant/10 hover:border-primary/40 transition-all duration-500 group shadow-xl flex flex-col justify-between h-full">
+            <div 
+              key={t.id} 
+              className="bg-surface-container p-6 rounded-xl border border-outline-variant hover:border-outline-focus transition-colors flex flex-col justify-between group"
+            >
               <div>
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <p className="text-secondary font-label text-[10px] font-black uppercase tracking-[0.2em] mb-2">{getSportTranslation(t.sport_type, tr)}</p>
-                    <h3 className="text-2xl font-black group-hover:text-primary transition-colors leading-tight">{t.name}</h3>
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-2">
+                    <SportIcon sport={t.sport_type} className="text-text-muted text-[16px]" />
+                    <span className="text-xs font-medium text-text-muted">{getSportTranslation(t.sport_type, tr)}</span>
                   </div>
-                  <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                    t.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
-                    t.status === 'scheduled' ? 'bg-indigo-500/10 text-indigo-500' :
-                    'bg-emerald-500/10 text-emerald-500'
+                  <span className={`px-2 py-0.5 rounded-md text-[11px] font-medium border ${
+                    t.status === 'completed'
+                      ? 'bg-surface-container-high text-text-muted border-outline-variant'
+                      : t.status === 'ongoing'
+                      ? 'bg-surface-container-high text-success border-success/30'
+                      : 'bg-surface-container-high text-text-secondary border-outline-variant'
                   }`}>
-                    {t.status === 'pending' || t.status === 'scheduled' ? tr("status.scheduled") : tr("status.completed")}
+                    {t.status === 'completed' ? tr("status.completed") : t.status === 'ongoing' ? tr("status.live") : tr("status.scheduled")}
                   </span>
                 </div>
+
+                <h3 className="text-base font-semibold text-text-primary group-hover:text-primary transition-colors leading-snug mb-2">
+                  {t.name}
+                </h3>
+
+                <p className="text-xs text-text-muted">
+                  {t.settings?.stage_1?.type === "groups"
+                    ? tr("tournament.groupStage")
+                    : t.settings?.stage_1?.type === "double_elimination"
+                    ? tr("tournament.doubleElimination")
+                    : tr("tournament.singleElimination")} • {t.settings?.max_teams || 16} teams
+                </p>
               </div>
               
-              <div className="mt-12">
-                <Link href={`/tournament/${t.id}`} className="w-full">
-                  <button className="w-full bg-primary-container text-on-primary-container py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20">
-                    <span className="material-symbols-outlined text-lg">visibility</span>
-                    View Dashboard
-                  </button>
+              <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
+                <span className="font-mono text-xs text-text-muted">
+                  {t.start_date
+                    ? new Date(t.start_date).toLocaleDateString(undefined, {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })
+                    : tr("home.tbdDate")}
+                </span>
+                <Link 
+                  href={`/tournament/${t.id}`}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                >
+                  View Dashboard
+                  <span className="material-symbols-outlined text-[14px]">chevron_right</span>
                 </Link>
               </div>
             </div>
           ))}
-          
-          {tournaments.length === 0 && (
-            <div 
-              onClick={handleOpenCreate}
-              className="border-2 border-dashed border-outline-variant/20 rounded-[2.5rem] p-12 flex flex-col items-center justify-center text-on-surface-variant hover:border-primary/40 hover:text-primary transition-all bg-surface-container-low/30 cursor-pointer h-full min-h-[300px]"
-            >
-              <span className="material-symbols-outlined text-4xl mb-4">add_circle</span>
-              <p className="font-black uppercase tracking-widest text-sm">No tournaments found</p>
-              <p className="text-[10px] uppercase font-bold tracking-tighter opacity-60">Click to create your first event</p>
-            </div>
-          )}
+        </div>
+      ) : (
+        /* Desktop & Mobile Data Table */
+        <div className="w-full bg-surface-container rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+          <div className="w-full overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead className="border-b border-outline-variant bg-surface-container-high/60 text-[11px] font-medium text-text-muted">
+                <tr>
+                  <th className="py-3 px-6">{tr("common.event")}</th>
+                  <th className="py-3 px-4">{tr("common.sport")}</th>
+                  <th className="py-3 px-4">{tr("common.format")}</th>
+                  <th className="py-3 px-4 text-center">{tr("common.status")}</th>
+                  <th className="py-3 px-6 text-right">{tr("common.date")}</th>
+                  <th className="py-3 px-4 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-outline-variant text-sm font-sans">
+                {tournaments.map((tItem) => (
+                  <tr
+                    key={tItem.id}
+                    onClick={() => router.push(`/tournament/${tItem.id}`)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        router.push(`/tournament/${tItem.id}`);
+                      }
+                    }}
+                    className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
+                  >
+                    <td className="py-3.5 px-6">
+                      <div className="font-medium text-sm text-text-primary group-hover:text-primary transition-colors">
+                        {tItem.name}
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+                        <SportIcon sport={tItem.sport_type} className="text-text-muted text-[16px]" />
+                        <span>{getSportTranslation(tItem.sport_type, tr)}</span>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4 text-xs text-text-muted">
+                      {tItem.settings?.stage_1?.type === "groups"
+                        ? tr("tournament.groupStage")
+                        : tItem.settings?.stage_1?.type === "double_elimination"
+                        ? tr("tournament.doubleElimination")
+                        : tr("tournament.singleElimination")}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
+                          tItem.status === "completed"
+                            ? "bg-surface-container-high text-text-muted border-outline-variant"
+                            : tItem.status === "ongoing"
+                            ? "bg-surface-container-high text-success border-success/30"
+                            : "bg-surface-container-high text-text-secondary border-outline-variant"
+                        }`}
+                      >
+                        <span>{tItem.status === "completed" ? tr("status.completed") : tItem.status === "ongoing" ? tr("status.live") : tr("status.scheduled")}</span>
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-6 text-right font-mono text-xs text-text-muted">
+                      {tItem.start_date
+                        ? new Date(tItem.start_date).toLocaleDateString(undefined, {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "-"}
+                    </td>
+                    <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                      <Link
+                        href={`/tournament/${tItem.id}`}
+                        className="p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-container-highest transition-colors inline-flex"
+                        title="View Dashboard"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">visibility</span>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
@@ -243,25 +392,38 @@ export default function MyTournamentsPage() {
 
       {/* CREATE MODAL */}
       {showModal && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
-          <div className="bg-surface-container-high rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 max-w-xl w-full shadow-2xl border border-outline-variant/20 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl sm:text-3xl font-headline font-black mb-6 sm:mb-8 italic tracking-tighter">NEW TOURNAMENT</h2>
-            <div className="space-y-6">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
+          <div className="bg-surface-container rounded-2xl p-6 sm:p-8 max-w-lg w-full border border-outline-variant shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-semibold text-text-primary">New Tournament</h2>
+              <button
+                type="button"
+                onClick={() => {
+                  resetForm();
+                  setShowModal(false);
+                }}
+                className="p-1 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container-high transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            <div className="space-y-4">
               <div>
-                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Tournament Name</label>
+                <label className="block text-xs font-medium text-text-muted mb-1.5">Tournament Name</label>
                 <input 
-                  className="w-full p-4 bg-surface-container rounded-xl border border-outline-variant/20 text-on-surface font-bold outline-none focus:border-primary transition-colors" 
+                  className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors" 
                   placeholder="e.g. Summer Open 2026"
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
                 />
               </div>
               
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Sport Type</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">Sport Type</label>
                   <select 
-                    className="w-full p-4 bg-surface-container rounded-xl border border-outline-variant/20 text-on-surface font-bold outline-none focus:border-primary transition-colors appearance-none"
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
                     value={newSport}
                     onChange={e => setNewSport(e.target.value)}
                   >
@@ -274,56 +436,45 @@ export default function MyTournamentsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Initial Format</label>
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={() => setStage1Type('bracket')}
-                      className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${stage1Type === 'bracket' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
-                    >
-                      BRACKET
-                    </button>
-                    <button 
-                      onClick={() => setStage1Type('double_elimination')}
-                      className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${stage1Type === 'double_elimination' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
-                    >
-                      DOUBLE ELIM
-                    </button>
-                    <button 
-                      onClick={() => setStage1Type('groups')}
-                      className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${stage1Type === 'groups' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
-                    >
-                      GROUPS
-                    </button>
-                  </div>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">Initial Format</label>
+                  <select
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
+                    value={stage1Type}
+                    onChange={(e) => setStage1Type(e.target.value as any)}
+                  >
+                    <option value="bracket">Single Elimination (Bracket)</option>
+                    <option value="double_elimination">Double Elimination</option>
+                    <option value="groups">Groups + Playoffs</option>
+                  </select>
                 </div>
               </div>
 
-              <div className="p-6 bg-surface-container rounded-2xl border border-outline-variant/10">
-                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-2">Max teams</label>
+              <div>
+                <label className="block text-xs font-medium text-text-muted mb-1.5">Max Teams</label>
                 <input 
                   type="number" 
                   value={maxTeams} 
                   onChange={(e) => setMaxTeams(e.target.value === "" ? "" : parseInt(e.target.value))}
-                  placeholder="e.g. 16"
-                  className="w-full bg-transparent text-3xl font-black text-on-surface outline-none italic tracking-tighter"
+                  placeholder="16"
+                  className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs font-mono tabular-nums outline-none focus:border-outline-focus transition-colors"
                 />
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Start Date</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">Start Date</label>
                   <input 
                     type="date"
-                    className="w-full p-4 bg-surface-container rounded-xl border border-outline-variant/20 text-on-surface font-bold outline-none focus:border-primary transition-colors"
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
                     value={startDate}
                     onChange={e => setStartDate(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">End Date</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">End Date</label>
                   <input 
                     type="date"
-                    className="w-full p-4 bg-surface-container rounded-xl border border-outline-variant/20 text-on-surface font-bold outline-none focus:border-primary transition-colors"
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
                     value={endDate}
                     onChange={e => setEndDate(e.target.value)}
                   />
@@ -331,28 +482,31 @@ export default function MyTournamentsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-black text-on-surface-variant uppercase tracking-widest mb-3">Tournament Visibility</label>
-                <div className="flex gap-2">
+                <label className="block text-xs font-medium text-text-muted mb-1.5">Tournament Visibility</label>
+                <div className="grid grid-cols-3 gap-2">
                   <button 
+                    type="button"
                     onClick={() => setVisibility('public')}
-                    className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${visibility === 'public' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
+                    className={`py-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${visibility === 'public' ? 'bg-surface-container-high text-text-primary border-primary/50' : 'bg-surface-container text-text-muted border-outline-variant'}`}
                   >
-                    PUBLIC
+                    Public
                   </button>
                   <button 
+                    type="button"
                     onClick={() => setVisibility('unlisted')}
-                    className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${visibility === 'unlisted' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
+                    className={`py-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${visibility === 'unlisted' ? 'bg-surface-container-high text-text-primary border-primary/50' : 'bg-surface-container text-text-muted border-outline-variant'}`}
                   >
-                    UNLISTED
+                    Unlisted
                   </button>
                   <button 
+                    type="button"
                     onClick={() => setVisibility('private')}
-                    className={`flex-1 py-4 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all ${visibility === 'private' ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20' : 'bg-surface-container text-on-surface-variant border-outline-variant/20'}`}
+                    className={`py-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${visibility === 'private' ? 'bg-surface-container-high text-text-primary border-primary/50' : 'bg-surface-container text-text-muted border-outline-variant'}`}
                   >
-                    PRIVATE
+                    Private
                   </button>
                 </div>
-                <p className="mt-2 text-[9px] text-on-surface-variant opacity-60 uppercase font-bold tracking-tight">
+                <p className="mt-1.5 text-[11px] text-text-muted">
                   {visibility === 'public'
                     ? 'Visible to everyone on the landing page'
                     : visibility === 'unlisted'
@@ -361,21 +515,23 @@ export default function MyTournamentsPage() {
                 </p>
               </div>
 
-              <div className="flex gap-4 pt-6">
+              <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-outline-variant">
                 <button 
+                  type="button"
                   onClick={() => {
                     resetForm();
                     setShowModal(false);
                   }} 
-                  className="flex-1 py-4 text-on-surface-variant font-black uppercase tracking-widest text-xs hover:text-on-surface transition-colors"
+                  className="px-4 py-2 rounded-lg text-text-muted hover:text-text-primary text-xs font-medium transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
+                  type="button"
                   onClick={handleCreate} 
-                  className="flex-1 bg-primary-container text-on-primary-container py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-indigo-500/20"
+                  className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-medium transition-colors cursor-pointer shadow-sm"
                 >
-                  Create Event
+                  Create Tournament
                 </button>
               </div>
             </div>
