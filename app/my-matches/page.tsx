@@ -10,6 +10,7 @@ import MatchListItem from "@/components/MatchListItem";
 import SportIcon from "@/components/SportIcon";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
+import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 
 function MyMatchesContent() {
   const router = useRouter();
@@ -211,7 +212,7 @@ function MyMatchesContent() {
 
           <button 
             onClick={() => setShowModal(true)}
-            className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+            className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
           >
             <span className="material-symbols-outlined text-[16px]">add</span>
             New Match
@@ -269,82 +270,109 @@ function MyMatchesContent() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant text-sm font-sans">
-                  {matches.map((m) => (
-                    <tr
-                      key={m.id}
-                      onClick={() => router.push(`/match/${m.id}`)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          router.push(`/match/${m.id}`);
-                        }
-                      }}
-                      className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
-                    >
-                      <td className="py-3.5 px-6">
-                        <div className="font-medium text-sm text-text-primary group-hover:text-primary transition-colors flex items-center gap-2">
-                          <span>{m.participants?.[0]?.name || "TBD"}</span>
-                          <span className="text-text-muted text-xs font-normal">vs</span>
-                          <span>{m.participants?.[1]?.name || "TBD"}</span>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-                          <SportIcon sport={m.sport_type} className="text-text-muted text-[16px]" />
-                          <span>{getSportTranslation(m.sport_type, t)}</span>
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-xs text-text-muted">
-                        {m.tournaments?.name || "-"}
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
-                            m.status === "completed"
-                              ? "bg-surface-container-high text-text-muted border-outline-variant"
-                              : m.status === "ongoing"
-                              ? "bg-surface-container-high text-success border-success/30"
-                              : "bg-surface-container-high text-text-secondary border-outline-variant"
-                          }`}
-                        >
-                          {m.status === "ongoing" && <span className="w-1.5 h-1.5 rounded-full bg-success" />}
-                          <span>{getStatusTranslation(m.status)}</span>
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-6 text-right font-mono tabular-nums text-sm font-semibold text-text-primary">
-                        {m.scores?.sets ? `${m.scores.sets[0]} - ${m.scores.sets[1]}` : m.scores?.current ? `${m.scores.current.home} - ${m.scores.current.away}` : "-"}
-                      </td>
-                      <td className="py-3.5 px-4 text-right text-xs text-text-muted">
-                        {m.scheduled_at
-                          ? new Date(m.scheduled_at).toLocaleDateString(undefined, {
-                              day: "numeric",
-                              month: "short",
-                            })
-                          : "-"}
-                      </td>
-                      <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-center gap-1.5">
-                          <Link
-                            href={`/match/${m.id}/scoreboard`}
-                            title="Open Scoreboard"
-                            className="p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-container-highest transition-colors"
+                  {matches.map((m) => {
+                    const rawSetData = extractSetsData(m.scores);
+                    const isTimedOrPointsSport = m.sport_type === "Football" || m.sport_type === "Basketball";
+                    const setsWon0 = countSetsWon(rawSetData, 0);
+                    const setsWon1 = countSetsWon(rawSetData, 1);
+                    const mainScore0 = m.sport_type === "Football"
+                      ? (m.scores?.football?.goals?.[0] ?? m.scores?.goals?.[0] ?? m.scores?.current?.home ?? 0)
+                      : m.sport_type === "Basketball"
+                      ? (m.scores?.basketball?.total_points?.[0] ?? m.scores?.total_points?.[0] ?? m.scores?.current?.home ?? 0)
+                      : setsWon0;
+                    const mainScore1 = m.sport_type === "Football"
+                      ? (m.scores?.football?.goals?.[1] ?? m.scores?.goals?.[1] ?? m.scores?.current?.away ?? 0)
+                      : m.sport_type === "Basketball"
+                      ? (m.scores?.basketball?.total_points?.[1] ?? m.scores?.total_points?.[1] ?? m.scores?.current?.away ?? 0)
+                      : setsWon1;
+
+                    const setScores = Array.isArray(rawSetData)
+                      ? rawSetData.map((s: any) => ({
+                          t1: s.team1 ?? s.home ?? 0,
+                          t2: s.team2 ?? s.away ?? 0,
+                        }))
+                      : [];
+
+                    return (
+                      <tr
+                        key={m.id}
+                        onClick={() => router.push(`/match/${m.id}`)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            router.push(`/match/${m.id}`);
+                          }
+                        }}
+                        className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
+                      >
+                        <td className="py-3.5 px-6">
+                          <div className="font-medium text-sm text-text-primary group-hover:text-primary transition-colors flex items-center gap-2">
+                            <span>{m.participants?.[0]?.name || "TBD"}</span>
+                            <span className="text-text-muted text-xs font-normal">vs</span>
+                            <span>{m.participants?.[1]?.name || "TBD"}</span>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-1.5 text-xs text-text-secondary">
+                            <SportIcon sport={m.sport_type} className="text-text-muted text-[16px]" />
+                            <span>{getSportTranslation(m.sport_type, t)}</span>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-xs text-text-muted">
+                          {m.tournaments?.name || "-"}
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
+                              m.status === "completed"
+                                ? "bg-surface-container-high text-text-muted border-outline-variant"
+                                : m.status === "ongoing"
+                                ? "bg-surface-container-high text-success border-success/30"
+                                : "bg-surface-container-high text-text-secondary border-outline-variant"
+                            }`}
                           >
-                            <span className="material-symbols-outlined text-[18px]">scoreboard</span>
-                          </Link>
-                          <button
-                            type="button"
-                            onClick={() => setMatchToDelete(m)}
-                            title="Delete Match"
-                            className="p-1.5 rounded-lg text-text-muted hover:text-rose-400 hover:bg-surface-container-highest transition-colors cursor-pointer"
-                          >
-                            <span className="material-symbols-outlined text-[18px]">delete</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                            {m.status === "ongoing" && <span className="w-1.5 h-1.5 rounded-full bg-success" />}
+                            <span>{getStatusTranslation(m.status)}</span>
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-6 text-right">
+                          <div className="inline-flex flex-col items-end">
+                            <span className="font-mono tabular-nums text-sm font-semibold text-text-primary">
+                              {mainScore0} - {mainScore1}
+                            </span>
+                            {!isTimedOrPointsSport && setScores.length > 0 && (
+                              <span className="font-mono tabular-nums text-[11px] text-text-muted">
+                                ({setScores.map((s: any) => `${s.t1}-${s.t2}`).join(", ")})
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-right text-xs text-text-muted">
+                          {m.scheduled_at ? new Date(m.scheduled_at).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : "-"}
+                        </td>
+                        <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              onClick={() => router.push(`/match/${m.id}/scoreboard`)}
+                              className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors cursor-pointer"
+                              title="Score Match"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">scoreboard</span>
+                            </button>
+                            <button
+                              onClick={() => setMatchToDelete(m)}
+                              className="p-1.5 rounded-lg text-text-muted hover:text-error hover:bg-error/10 transition-colors cursor-pointer"
+                              title="Delete Match"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -442,10 +470,10 @@ function MyMatchesContent() {
                   type="button"
                   onClick={handleCreateMatch} 
                   disabled={isSubmitting}
-                  className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  className="px-4 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest text-xs font-medium transition-colors disabled:opacity-40 flex items-center gap-1.5 cursor-pointer"
                 >
                   {isSubmitting ? (
-                    <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-3.5 h-3.5 border-2 border-surface-container-lowest border-t-transparent rounded-full animate-spin"></div>
                   ) : (
                     "Create Match"
                   )}

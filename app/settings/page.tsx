@@ -380,12 +380,12 @@ export default function SettingsPage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-background text-on-background flex flex-col items-center justify-center p-6">
-        <h1 className="text-3xl font-black mb-4 uppercase tracking-tight">Access Restricted</h1>
-        <p className="text-secondary mb-6 font-bold">Please sign in to access your account settings.</p>
+      <div className="min-h-screen bg-background text-text-primary flex flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-xl font-semibold mb-2">Access Restricted</h1>
+        <p className="text-text-muted mb-6 text-xs">Please sign in to access your account settings.</p>
         <Link
           href="/"
-          className="bg-primary text-on-primary px-8 py-3 rounded-full font-black uppercase tracking-widest text-xs hover:brightness-110"
+          className="bg-text-primary text-surface-container-lowest px-5 py-2 rounded-lg font-medium text-xs hover:bg-white transition-colors"
         >
           Return Home
         </Link>
@@ -394,37 +394,38 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-on-background font-body p-6 md:p-12 pt-24">
+    <div className="min-h-screen bg-background text-text-primary font-sans p-4 sm:p-8 pt-20 sm:pt-24">
       <div className="max-w-4xl mx-auto">
         {/* Navigation Breadcrumb / Back Link */}
         <div className="mb-6">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-secondary hover:text-primary transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-text-primary transition-colors"
           >
-            ← {locale === "pt" ? "Voltar ao Início" : "Back to Home"}
+            <span className="material-symbols-outlined text-[16px] leading-none">arrow_back</span>
+            <span>{locale === "pt" ? "Voltar ao Início" : "Back to Home"}</span>
           </Link>
         </div>
 
         {/* Page Header */}
-        <header className="mb-10">
-          <p className="text-secondary font-label text-xs uppercase tracking-[0.25em] mb-2">
+        <header className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary">
+            {t("settings.title")}
+          </h1>
+          <p className="text-xs sm:text-sm text-text-muted mt-1">
             {t("settings.subtitle")}
           </p>
-          <h1 className="text-4xl md:text-5xl font-headline font-black tracking-tight text-on-surface">
-            {t("settings.title").toUpperCase()}
-          </h1>
         </header>
 
         {/* Tab Selection Bar */}
-        <div className="flex border-b border-outline-variant/20 mb-8 overflow-x-auto no-scrollbar gap-2">
+        <div className="flex bg-surface-container-low p-1 rounded-xl border border-outline-variant mb-8 overflow-x-auto no-scrollbar gap-1 max-w-full">
           <button
             type="button"
             onClick={() => setActiveTab("profile")}
-            className={`pb-4 px-4 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${
+            className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
               activeTab === "profile"
-                ? "border-primary text-primary"
-                : "border-transparent text-secondary hover:text-on-surface"
+                ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
+                : "text-text-muted hover:text-text-primary"
             }`}
           >
             {t("settings.tabs.profile")}
@@ -432,10 +433,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab("preferences")}
-            className={`pb-4 px-4 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${
+            className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
               activeTab === "preferences"
-                ? "border-primary text-primary"
-                : "border-transparent text-secondary hover:text-on-surface"
+                ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
+                : "text-text-muted hover:text-text-primary"
             }`}
           >
             {t("settings.tabs.preferences")}
@@ -443,10 +444,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab("security")}
-            className={`pb-4 px-4 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${
+            className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
               activeTab === "security"
-                ? "border-primary text-primary"
-                : "border-transparent text-secondary hover:text-on-surface"
+                ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
+                : "text-text-muted hover:text-text-primary"
             }`}
           >
             {t("settings.tabs.security")}
@@ -454,10 +455,10 @@ export default function SettingsPage() {
           <button
             type="button"
             onClick={() => setActiveTab("danger")}
-            className={`pb-4 px-4 text-xs font-black uppercase tracking-widest transition-all border-b-2 whitespace-nowrap ${
+            className={`px-4 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap cursor-pointer ${
               activeTab === "danger"
-                ? "border-error text-error"
-                : "border-transparent text-secondary hover:text-error/80"
+                ? "bg-error/15 text-error border border-error/30 shadow-sm"
+                : "text-text-muted hover:text-error"
             }`}
           >
             {t("settings.tabs.danger")}
@@ -466,32 +467,32 @@ export default function SettingsPage() {
 
         {/* TAB 1: Profile & Identity */}
         {activeTab === "profile" && (
-          <div className="bg-surface-container-low rounded-3xl p-6 md:p-10 border border-outline-variant/10 shadow-2xl">
-            <h2 className="text-xl font-bold text-on-surface mb-2">{t("settings.tabs.profile")}</h2>
-            <p className="text-xs text-secondary mb-8">
+          <div className="bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant">
+            <h2 className="text-lg font-semibold text-text-primary mb-1">{t("settings.tabs.profile")}</h2>
+            <p className="text-xs text-text-muted mb-6">
               {locale === "pt"
                 ? "Gere o teu identificador público e informações visíveis em torneios e tabelas classificativas."
                 : "Manage your public handle and display information visible across tournaments and scoreboards."}
             </p>
 
-            <form onSubmit={handleSaveProfile} className="space-y-6">
+            <form onSubmit={handleSaveProfile} className="space-y-5">
               {/* Email Address (View only) */}
               <div>
-                <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                <label className="block text-xs font-medium text-text-secondary mb-1.5">
                   {t("settings.profile.email")}
                 </label>
                 <input
                   type="email"
                   disabled
                   value={user?.email || ""}
-                  className="w-full px-5 py-3.5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface-variant font-bold opacity-60 cursor-not-allowed"
+                  className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-muted font-medium text-xs opacity-60 cursor-not-allowed"
                 />
-                <p className="text-[11px] text-secondary mt-1.5">{t("settings.profile.emailNotice")}</p>
+                <p className="text-[11px] text-text-muted mt-1">{t("settings.profile.emailNotice")}</p>
               </div>
 
               {/* Username */}
               <div>
-                <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                <label className="block text-xs font-medium text-text-secondary mb-1.5">
                   {t("settings.profile.username")}
                 </label>
                 <input
@@ -500,13 +501,13 @@ export default function SettingsPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder={t("settings.profile.usernamePlaceholder")}
-                  className="w-full px-5 py-3.5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                  className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-xs outline-none focus:border-outline transition-colors"
                 />
               </div>
 
               {/* Display Name */}
               <div>
-                <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                <label className="block text-xs font-medium text-text-secondary mb-1.5">
                   {t("settings.profile.displayName")}
                 </label>
                 <input
@@ -514,24 +515,24 @@ export default function SettingsPage() {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder={t("settings.profile.displayNamePlaceholder")}
-                  className="w-full px-5 py-3.5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                  className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-xs outline-none focus:border-outline transition-colors"
                 />
               </div>
 
               {/* Subscription Tier */}
               <div>
-                <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                <label className="block text-xs font-medium text-text-secondary mb-1.5">
                   {t("settings.profile.tier")}
                 </label>
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="inline-flex items-center gap-3 px-5 py-3 bg-surface-container rounded-2xl border border-outline-variant/10">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-container-high rounded-lg border border-outline-variant">
                     <span
-                      className={`w-2.5 h-2.5 rounded-full ${
-                        subscriptionTier === "pro" ? "bg-emerald-400" : "bg-indigo-400"
+                      className={`w-2 h-2 rounded-full ${
+                        subscriptionTier === "pro" ? "bg-emerald-400" : "bg-text-muted"
                       }`}
                     />
-                    <span className="text-xs font-black uppercase tracking-widest text-on-surface">
-                      {subscriptionTier.toUpperCase()} PLAN
+                    <span className="text-xs font-medium text-text-primary uppercase tracking-wide">
+                      {subscriptionTier} Plan
                     </span>
                   </div>
 
@@ -539,29 +540,30 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={() => setShowUpgradeModal(true)}
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black uppercase tracking-widest px-5 py-3 rounded-2xl shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
+                      className="bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-primary text-xs font-medium px-3.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
                     >
-                      ⭐ {locale === "pt" ? "Aderir ao Pro Organizer (€3.99/mês)" : "Upgrade to Pro (€3.99/mo)"}
+                      <span className="material-symbols-outlined text-[15px] text-amber-400">star</span>
+                      <span>{locale === "pt" ? "Aderir ao Pro Organizer (€3.99/mês)" : "Upgrade to Pro (€3.99/mo)"}</span>
                     </button>
                   ) : subDetails?.provider === "stripe" ? (
                     <button
                       type="button"
                       onClick={handleOpenBillingPortal}
                       disabled={openingPortal}
-                      className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold uppercase tracking-wider px-5 py-3 rounded-2xl border border-slate-700 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 active:scale-95"
+                      className="bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-primary text-xs font-medium px-3.5 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                     >
                       {openingPortal ? (
-                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <div className="w-3.5 h-3.5 border-2 border-text-muted border-t-text-primary rounded-full animate-spin" />
                       ) : (
-                        <span>💳 {locale === "pt" ? "Gerir Faturação / Cancelar" : "Manage Billing & Cards"}</span>
+                        <span>{locale === "pt" ? "Gerir Faturação / Cancelar" : "Manage Billing & Cards"}</span>
                       )}
                     </button>
                   ) : subDetails?.provider === "voucher" ? (
-                    <div className="flex items-center gap-3 bg-surface-container/60 px-4 py-2.5 rounded-2xl border border-emerald-500/20">
-                      <div className="text-xs">
-                        <span className="text-emerald-400 font-bold">🎟️ {locale === "pt" ? "Ativo via Voucher" : "Active via Club Voucher"}</span>
+                    <div className="flex items-center gap-2.5 bg-surface-container-high px-3 py-1.5 rounded-lg border border-outline-variant">
+                      <div className="text-xs font-medium text-text-primary">
+                        <span>{locale === "pt" ? "Ativo via Voucher" : "Active via Club Voucher"}</span>
                         {subDetails.current_period_end && (
-                          <span className="block text-[10px] text-slate-400">
+                          <span className="block text-[10px] text-text-muted">
                             {locale === "pt" ? "Válido até: " : "Valid until: "}
                             {new Date(subDetails.current_period_end).toLocaleDateString()}
                           </span>
@@ -570,23 +572,23 @@ export default function SettingsPage() {
                       <button
                         type="button"
                         onClick={() => setShowUpgradeModal(true)}
-                        className="text-[11px] text-indigo-400 hover:text-indigo-300 underline font-medium cursor-pointer ml-2"
+                        className="text-xs text-text-muted hover:text-text-primary underline cursor-pointer ml-1"
                       >
                         {locale === "pt" ? "Ativar outro" : "Redeem another"}
                       </button>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3 bg-surface-container/60 px-4 py-2.5 rounded-2xl border border-indigo-500/20">
-                      <div className="text-xs">
-                        <span className="text-indigo-300 font-bold">⭐ {locale === "pt" ? "Acesso Pro Ativo" : "Active Pro Organizer"}</span>
-                        <span className="block text-[10px] text-slate-400">
+                    <div className="flex items-center gap-2.5 bg-surface-container-high px-3 py-1.5 rounded-lg border border-outline-variant">
+                      <div className="text-xs font-medium text-text-primary">
+                        <span>{locale === "pt" ? "Acesso Pro Ativo" : "Active Pro Organizer"}</span>
+                        <span className="block text-[10px] text-text-muted">
                           {locale === "pt" ? "Todas as ferramentas de torneios desbloqueadas" : "Full tournament & referee tools unlocked"}
                         </span>
                       </div>
                       <button
                         type="button"
                         onClick={() => setShowUpgradeModal(true)}
-                        className="text-[11px] text-indigo-400 hover:text-indigo-300 underline font-medium cursor-pointer ml-2"
+                        className="text-xs text-text-muted hover:text-text-primary underline cursor-pointer ml-1"
                       >
                         {locale === "pt" ? "Resgatar voucher" : "Redeem voucher"}
                       </button>
@@ -596,11 +598,11 @@ export default function SettingsPage() {
               </div>
 
               {/* Submit Button */}
-              <div className="pt-4">
+              <div className="pt-2">
                 <button
                   type="submit"
                   disabled={savingProfile}
-                  className="bg-primary text-on-primary px-8 py-3.5 rounded-full font-black uppercase tracking-widest text-xs hover:brightness-110 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 active:scale-95 cursor-pointer"
+                  className="bg-text-primary hover:bg-white text-surface-container-lowest px-5 py-2.5 rounded-lg font-medium text-xs transition-colors disabled:opacity-40 cursor-pointer"
                 >
                   {savingProfile ? t("settings.profile.saving") : t("settings.profile.saveChanges")}
                 </button>
@@ -611,54 +613,54 @@ export default function SettingsPage() {
 
         {/* TAB 2: Preferences */}
         {activeTab === "preferences" && (
-          <div className="bg-surface-container-low rounded-3xl p-6 md:p-10 border border-outline-variant/10 shadow-2xl">
-            <h2 className="text-xl font-bold text-on-surface mb-2">{t("settings.preferences.title")}</h2>
-            <p className="text-xs text-secondary mb-8">{t("settings.preferences.description")}</p>
+          <div className="bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant">
+            <h2 className="text-lg font-semibold text-text-primary mb-1">{t("settings.preferences.title")}</h2>
+            <p className="text-xs text-text-muted mb-6">{t("settings.preferences.description")}</p>
 
-            <form onSubmit={handleSavePreferences} className="space-y-6">
+            <form onSubmit={handleSavePreferences} className="space-y-5">
               {/* Language Selection */}
               <div>
-                <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                <label className="block text-xs font-medium text-text-secondary mb-1.5">
                   {t("settings.preferences.language")}
                 </label>
-                <div className="grid grid-cols-2 gap-4 max-w-md">
+                <div className="grid grid-cols-2 gap-3 max-w-md">
                   <button
                     type="button"
                     onClick={() => setSelectedLanguage("en")}
-                    className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${
+                    className={`p-3 rounded-lg border flex items-center justify-between transition-colors cursor-pointer text-xs font-medium ${
                       selectedLanguage === "en"
-                        ? "border-primary bg-primary/10 text-on-surface"
-                        : "border-outline-variant/10 bg-surface-container text-secondary hover:border-outline-variant/30"
+                        ? "border-outline-variant bg-surface-container-high text-text-primary shadow-sm"
+                        : "border-outline-variant bg-surface-container text-text-muted hover:text-text-primary"
                     }`}
                   >
-                    <span className="font-bold text-sm">English</span>
-                    <span className="text-xs font-black uppercase px-2 py-0.5 rounded bg-surface-container-high">EN</span>
+                    <span>English</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface-container-highest text-text-muted">EN</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setSelectedLanguage("pt")}
-                    className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${
+                    className={`p-3 rounded-lg border flex items-center justify-between transition-colors cursor-pointer text-xs font-medium ${
                       selectedLanguage === "pt"
-                        ? "border-primary bg-primary/10 text-on-surface"
-                        : "border-outline-variant/10 bg-surface-container text-secondary hover:border-outline-variant/30"
+                        ? "border-outline-variant bg-surface-container-high text-text-primary shadow-sm"
+                        : "border-outline-variant bg-surface-container text-text-muted hover:text-text-primary"
                     }`}
                   >
-                    <span className="font-bold text-sm">Português</span>
-                    <span className="text-xs font-black uppercase px-2 py-0.5 rounded bg-surface-container-high">PT</span>
+                    <span>Português</span>
+                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface-container-highest text-text-muted">PT</span>
                   </button>
                 </div>
               </div>
 
               {/* Default Sport Filter */}
               <div>
-                <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                <label className="block text-xs font-medium text-text-secondary mb-1.5">
                   {t("settings.preferences.defaultSport")}
                 </label>
                 <select
                   value={defaultSport}
                   onChange={(e) => setDefaultSport(e.target.value)}
-                  className="w-full max-w-md px-5 py-3.5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold outline-none focus:border-primary transition-all"
+                  className="w-full max-w-md px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-xs outline-none focus:border-outline transition-colors"
                 >
                   <option value="all">{t("settings.preferences.allSports")}</option>
                   <option value="volleyball">Volleyball</option>
@@ -671,13 +673,13 @@ export default function SettingsPage() {
               </div>
 
               {/* Sound Feedback */}
-              <div className="pt-2">
-                <div className="flex items-center justify-between max-w-md p-4 bg-surface-container rounded-2xl border border-outline-variant/10">
+              <div>
+                <div className="flex items-center justify-between max-w-md p-3.5 bg-surface-container-high rounded-lg border border-outline-variant">
                   <div>
-                    <span className="block text-sm font-bold text-on-surface">
+                    <span className="block text-xs font-medium text-text-primary">
                       {t("settings.preferences.soundEffects")}
                     </span>
-                    <span className="block text-xs text-secondary mt-0.5">
+                    <span className="block text-[11px] text-text-muted mt-0.5">
                       {t("settings.preferences.soundDesc")}
                     </span>
                   </div>
@@ -685,17 +687,17 @@ export default function SettingsPage() {
                     type="checkbox"
                     checked={soundEnabled}
                     onChange={(e) => setSoundEnabled(e.target.checked)}
-                    className="w-5 h-5 accent-primary rounded cursor-pointer"
+                    className="w-4 h-4 rounded border-outline-variant text-text-primary cursor-pointer accent-text-primary"
                   />
                 </div>
               </div>
 
               {/* Submit Button */}
-              <div className="pt-4">
+              <div className="pt-2">
                 <button
                   type="submit"
                   disabled={savingPreferences}
-                  className="bg-primary text-on-primary px-8 py-3.5 rounded-full font-black uppercase tracking-widest text-xs hover:brightness-110 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 active:scale-95 cursor-pointer"
+                  className="bg-text-primary hover:bg-white text-surface-container-lowest px-5 py-2.5 rounded-lg font-medium text-xs transition-colors disabled:opacity-40 cursor-pointer"
                 >
                   {savingPreferences ? t("settings.profile.saving") : t("settings.preferences.savePreferences")}
                 </button>
@@ -706,19 +708,19 @@ export default function SettingsPage() {
 
         {/* TAB 3: Security & Credentials */}
         {activeTab === "security" && (
-          <div className="space-y-8">
+          <div className="space-y-6">
             {/* Change Password Card */}
-            <div className="bg-surface-container-low rounded-3xl p-6 md:p-10 border border-outline-variant/10 shadow-2xl">
-              <h2 className="text-xl font-bold text-on-surface mb-2">{t("settings.security.changePassword")}</h2>
-              <p className="text-xs text-secondary mb-8">
+            <div className="bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant">
+              <h2 className="text-lg font-semibold text-text-primary mb-1">{t("settings.security.changePassword")}</h2>
+              <p className="text-xs text-text-muted mb-6">
                 {locale === "pt"
                   ? "Atualiza as tuas credenciais de início de sessão de forma segura."
                   : "Update your login credentials securely."}
               </p>
 
-              <form onSubmit={handleUpdatePassword} className="space-y-6 max-w-md">
+              <form onSubmit={handleUpdatePassword} className="space-y-4 max-w-md">
                 <div>
-                  <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                  <label className="block text-xs font-medium text-text-secondary mb-1.5">
                     {t("settings.security.currentPassword")}
                   </label>
                   <input
@@ -727,12 +729,12 @@ export default function SettingsPage() {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full px-5 py-3.5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold outline-none focus:border-primary transition-all"
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-xs outline-none focus:border-outline transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                  <label className="block text-xs font-medium text-text-secondary mb-1.5">
                     {t("settings.security.newPassword")}
                   </label>
                   <input
@@ -741,12 +743,12 @@ export default function SettingsPage() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full px-5 py-3.5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold outline-none focus:border-primary transition-all"
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-xs outline-none focus:border-outline transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest mb-2">
+                  <label className="block text-xs font-medium text-text-secondary mb-1.5">
                     {t("settings.security.confirmPassword")}
                   </label>
                   <input
@@ -755,15 +757,15 @@ export default function SettingsPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full px-5 py-3.5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold outline-none focus:border-primary transition-all"
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-xs outline-none focus:border-outline transition-colors"
                   />
                 </div>
 
-                <div>
+                <div className="pt-2">
                   <button
                     type="submit"
                     disabled={savingPassword}
-                    className="bg-primary text-on-primary px-8 py-3.5 rounded-full font-black uppercase tracking-widest text-xs hover:brightness-110 transition-all shadow-xl shadow-primary/20 disabled:opacity-50 active:scale-95 cursor-pointer"
+                    className="bg-text-primary hover:bg-white text-surface-container-lowest px-5 py-2.5 rounded-lg font-medium text-xs transition-colors disabled:opacity-40 cursor-pointer"
                   >
                     {savingPassword ? t("settings.profile.saving") : t("settings.security.updatePassword")}
                   </button>
@@ -772,9 +774,9 @@ export default function SettingsPage() {
             </div>
 
             {/* GDPR Data Portability Card */}
-            <div className="bg-surface-container-low rounded-3xl p-6 md:p-10 border border-outline-variant/10 shadow-2xl">
-              <h2 className="text-xl font-bold text-on-surface mb-2">{t("settings.security.exportTitle")}</h2>
-              <p className="text-xs text-secondary mb-6 leading-relaxed max-w-2xl">
+            <div className="bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant">
+              <h2 className="text-lg font-semibold text-text-primary mb-1">{t("settings.security.exportTitle")}</h2>
+              <p className="text-xs text-text-muted mb-5 leading-relaxed max-w-2xl">
                 {t("settings.security.exportDesc")}
               </p>
 
@@ -782,11 +784,9 @@ export default function SettingsPage() {
                 type="button"
                 onClick={handleExportData}
                 disabled={exportingData}
-                className="bg-surface-container hover:bg-surface-container-high border border-outline-variant/20 text-on-surface px-6 py-3.5 rounded-full font-black uppercase tracking-widest text-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
+                className="bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-primary px-4 py-2.5 rounded-lg font-medium text-xs transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-40"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
+                <span className="material-symbols-outlined text-[16px]">download</span>
                 {exportingData ? t("settings.security.exporting") : t("settings.security.downloadData")}
               </button>
             </div>
@@ -795,23 +795,23 @@ export default function SettingsPage() {
 
         {/* TAB 4: Danger Zone */}
         {activeTab === "danger" && (
-          <div className="bg-error-container/10 border border-error/30 rounded-3xl p-6 md:p-10 shadow-2xl">
-            <h2 className="text-xl font-bold text-error mb-2">{t("settings.danger.title")}</h2>
-            <p className="text-xs text-on-surface mb-4 leading-relaxed max-w-2xl">
+          <div className="bg-error/5 border border-error/20 rounded-2xl p-6 sm:p-8">
+            <h2 className="text-lg font-semibold text-error mb-1">{t("settings.danger.title")}</h2>
+            <p className="text-xs text-text-muted mb-2 leading-relaxed max-w-2xl">
               {t("settings.danger.deleteWarning")}
             </p>
-            <p className="text-xs text-error font-bold mb-6 max-w-2xl">
+            <p className="text-xs text-error font-medium mb-5 max-w-2xl">
               {t("settings.danger.deleteConsequence")}
             </p>
 
             {deleteErrorMessage && (
-              <div className="p-4 mb-6 rounded-2xl bg-error/20 border border-error/40 text-error text-xs font-bold">
-                ⚠️ {deleteErrorMessage}
+              <div className="p-3 mb-5 rounded-lg bg-error/10 border border-error/20 text-error text-xs font-medium">
+                {deleteErrorMessage}
               </div>
             )}
 
             <div className="max-w-md space-y-4">
-              <label className="block text-[11px] font-black text-on-surface-variant uppercase tracking-widest">
+              <label className="block text-xs font-medium text-text-secondary">
                 {t("settings.danger.confirmPrompt")}
               </label>
               <input
@@ -819,14 +819,14 @@ export default function SettingsPage() {
                 value={deleteConfirmation}
                 onChange={(e) => setDeleteConfirmation(e.target.value)}
                 placeholder="DELETE"
-                className="w-full px-5 py-3.5 bg-surface-container rounded-2xl border border-error/40 text-on-surface font-mono font-bold tracking-widest outline-none focus:border-error focus:ring-1 focus:ring-error transition-all"
+                className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-error/30 text-text-primary font-mono text-xs outline-none focus:border-error transition-colors"
               />
 
               <button
                 type="button"
                 onClick={handleDeleteAccount}
                 disabled={isDeleting || deleteConfirmation.trim().toUpperCase() !== "DELETE"}
-                className="bg-error hover:bg-error/90 text-on-error px-8 py-3.5 rounded-full font-black uppercase tracking-widest text-xs transition-all shadow-xl shadow-error/20 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 cursor-pointer"
+                className="bg-error hover:bg-error/90 text-white px-5 py-2.5 rounded-lg font-medium text-xs transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
               >
                 {isDeleting ? t("settings.danger.deleting") : t("settings.danger.confirmButton")}
               </button>
@@ -835,9 +835,9 @@ export default function SettingsPage() {
         )}
 
         {/* Footer Legal Link */}
-        <div className="mt-8 pt-4 border-t border-outline-variant/10 flex justify-between items-center text-xs text-secondary">
+        <div className="mt-8 pt-4 border-t border-outline-variant flex justify-between items-center text-xs text-text-muted">
           <span>ScoreBoard</span>
-          <Link href="/terms" target="_blank" className="hover:text-primary transition-colors underline">
+          <Link href="/terms" target="_blank" className="hover:text-text-primary transition-colors underline">
             {locale === "pt" ? "Termos & Condições / Política RGPD" : "Terms & Conditions / GDPR Policy"}
           </Link>
         </div>

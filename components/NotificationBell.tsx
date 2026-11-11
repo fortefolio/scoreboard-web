@@ -52,31 +52,32 @@ export default function NotificationBell() {
     <div className="relative" ref={dropdownRef}>
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 text-slate-400 hover:text-indigo-400 transition-colors focus:outline-none"
+        className="relative p-2 text-text-muted hover:text-text-primary transition-colors focus:outline-none cursor-pointer"
+        aria-label="Notifications"
       >
-        <span className="material-symbols-outlined text-2xl">notifications</span>
+        <span className="material-symbols-outlined text-[20px]">notifications</span>
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-black flex items-center justify-center rounded-full border-2 border-slate-950">
+          <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-error text-white text-[10px] font-semibold flex items-center justify-center rounded-full border border-background">
             {unreadCount}
           </span>
         )}
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-4 w-[360px] bg-[#0c1324] border border-white/5 rounded-3xl shadow-2xl z-[100] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="p-6 flex justify-between items-center bg-[#0c1324]/50 backdrop-blur-md">
-            <h3 className="text-xl font-headline font-black text-white italic uppercase tracking-tight">{t("notifications.title")}</h3>
+        <div className="absolute right-0 mt-3 w-[360px] bg-surface-container border border-outline-variant rounded-2xl shadow-2xl z-[100] overflow-hidden animate-in fade-in duration-200">
+          <div className="p-4 px-5 flex justify-between items-center border-b border-outline-variant bg-surface-container-high/40">
+            <h3 className="text-sm font-semibold text-text-primary">{t("notifications.title")}</h3>
             {unreadCount > 0 && (
               <button 
                 onClick={markAllAsRead}
-                className="text-[10px] font-black text-primary hover:text-primary/80 transition-colors uppercase tracking-[0.15em]"
+                className="text-xs font-medium text-text-muted hover:text-text-primary transition-colors cursor-pointer"
               >
                 {t("notifications.markAllAsRead")}
               </button>
             )}
           </div>
 
-          <div className="max-h-[480px] overflow-y-auto px-4 pb-4 space-y-3">
+          <div className="max-h-[460px] overflow-y-auto p-3 space-y-2.5">
             {notifications.length > 0 ? (
               notifications.map((n) => {
                 const data = n.data || {};
@@ -84,44 +85,52 @@ export default function NotificationBell() {
                 const type = data.type || '';
                 const isInvitation = type.includes('umpire') && (type.includes('invitation') || type.includes('assignment'));
                 const matchDetails = data.match_details || {};
+                const isUnread = !n.read_at;
                 
                 return (
                   <div 
                     key={n.id} 
-                    className={`p-4 rounded-2xl border border-white/5 bg-[#151b2d]/40 transition-all relative group ${!n.read_at ? 'ring-1 ring-primary/20 bg-[#151b2d]/80 shadow-lg shadow-primary/5' : 'opacity-60'}`}
+                    className={`p-3.5 rounded-xl border transition-colors ${
+                      isUnread 
+                        ? 'border-outline-variant bg-surface-container-high' 
+                        : 'border-outline-variant/60 bg-surface-container-high/40 opacity-70 hover:opacity-100'
+                    }`}
                   >
                     {/* Top Row: Badge & Action Icons */}
-                    <div className="flex justify-between items-center mb-3">
-                      <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${isInvitation ? 'bg-primary/20 text-primary border border-primary/20' : 'bg-slate-700/30 text-slate-400 border border-white/5'}`}>
-                        {isInvitation ? t("notifications.umpireInvitation") : t("notifications.matchUpdate")}
-                      </span>
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center gap-1.5">
+                        {isUnread && <span className="w-1.5 h-1.5 rounded-full bg-success shrink-0" />}
+                        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-surface-container text-text-secondary border border-outline-variant">
+                          {isInvitation ? t("notifications.umpireInvitation") : t("notifications.matchUpdate")}
+                        </span>
+                      </div>
                       
-                      <div className="flex items-center gap-2">
-                        {isInvitation && !n.read_at && (
+                      <div className="flex items-center gap-1.5">
+                        {isInvitation && isUnread && (
                           <>
                             <button 
                               onClick={() => handleInvitation(n.id, matchId, 'accept')}
                               title={t("notifications.accept")}
-                              className="w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center transition-all hover:bg-emerald-500 hover:text-white border border-emerald-500/20"
+                              className="w-6 h-6 rounded-md bg-success/10 text-success flex items-center justify-center transition-colors hover:bg-success hover:text-white border border-success/20 cursor-pointer"
                             >
-                              <span className="material-symbols-outlined text-[14px]">check</span>
+                              <span className="material-symbols-outlined text-[13px]">check</span>
                             </button>
                             <button 
                               onClick={() => handleInvitation(n.id, matchId, 'refuse')}
                               title={t("notifications.decline")}
-                              className="w-6 h-6 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center transition-all hover:bg-rose-500 hover:text-white border border-rose-500/20"
+                              className="w-6 h-6 rounded-md bg-error/10 text-error flex items-center justify-center transition-colors hover:bg-error hover:text-white border border-error/20 cursor-pointer"
                             >
-                              <span className="material-symbols-outlined text-[14px]">close</span>
+                              <span className="material-symbols-outlined text-[13px]">close</span>
                             </button>
                           </>
                         )}
-                        {!isInvitation && !n.read_at && (
+                        {!isInvitation && isUnread && (
                           <button 
                             onClick={() => markAsRead(n.id)}
-                            className="w-6 h-6 rounded-full bg-white/5 text-slate-500 flex items-center justify-center hover:text-white hover:bg-white/10 transition-colors"
+                            className="w-6 h-6 rounded-md text-text-muted hover:text-text-primary hover:bg-surface-container-highest flex items-center justify-center transition-colors cursor-pointer"
                             title={t("notifications.markAsRead")}
                           >
-                            <span className="material-symbols-outlined text-[14px]">done</span>
+                            <span className="material-symbols-outlined text-[13px]">done</span>
                           </button>
                         )}
                         <button 
@@ -129,25 +138,25 @@ export default function NotificationBell() {
                             e.stopPropagation();
                             deleteNotification(n.id);
                           }}
-                          className="w-6 h-6 rounded-full bg-white/5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 flex items-center justify-center transition-colors border border-transparent hover:border-rose-500/20"
+                          className="w-6 h-6 rounded-md text-text-muted hover:text-error hover:bg-error/10 flex items-center justify-center transition-colors cursor-pointer"
                           title={t("notifications.deleteNotif")}
                           aria-label={t("notifications.deleteNotif")}
                         >
-                          <span className="material-symbols-outlined text-[14px]">delete</span>
+                          <span className="material-symbols-outlined text-[13px]">delete</span>
                         </button>
                       </div>
                     </div>
 
                     {/* Middle Row: Content */}
-                    <h4 className="text-[15px] font-black text-white leading-tight mb-2 tracking-tight">
+                    <h4 className="text-xs font-semibold text-text-primary leading-tight mb-2">
                       {formatVersusTitle(isInvitation ? (matchDetails.teams || n.title) : n.title)}
                     </h4>
 
                     {/* Bottom Row: Info & CTA */}
-                    <div className="flex justify-between items-end">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-slate-500 tracking-wider">
-                          <span className="material-symbols-outlined text-[12px]">{isInvitation ? 'calendar_today' : 'schedule'}</span>
+                    <div className="flex justify-between items-center pt-1 border-t border-outline-variant/50">
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-text-muted">
+                        <span className="material-symbols-outlined text-[13px]">{isInvitation ? 'calendar_today' : 'schedule'}</span>
+                        <span>
                           {isInvitation 
                             ? (matchDetails.scheduled_at 
                                 ? new Date(matchDetails.scheduled_at).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) 
@@ -155,7 +164,7 @@ export default function NotificationBell() {
                               )
                             : getRelativeTime(n.created_at)
                           }
-                        </div>
+                        </span>
                       </div>
                       
                       {matchId && (
@@ -165,7 +174,7 @@ export default function NotificationBell() {
                             if (!n.read_at) markAsRead(n.id);
                             setIsOpen(false);
                           }}
-                          className="text-[9px] font-black uppercase tracking-[0.2em] text-primary hover:text-primary/80 transition-colors bg-primary/5 px-3 py-1 rounded-md border border-primary/10"
+                          className="text-[11px] font-medium text-text-primary hover:text-white transition-colors bg-surface-container px-2.5 py-1 rounded-md border border-outline-variant"
                         >
                           {isInvitation ? t("notifications.details") : t("notifications.liveFeed")}
                         </Link>
@@ -175,19 +184,19 @@ export default function NotificationBell() {
                 );
               })
             ) : (
-              <div className="py-20 text-center">
-                <span className="material-symbols-outlined text-5xl text-white/5 mb-3">notifications_off</span>
-                <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.3em]">{t("notifications.quietDesc")}</p>
+              <div className="py-16 text-center">
+                <span className="material-symbols-outlined text-3xl text-text-muted/40 mb-2 block">notifications_off</span>
+                <p className="text-xs text-text-muted">{t("notifications.quietDesc")}</p>
               </div>
             )}
           </div>
 
           {notifications.length > 0 && (
-            <div className="p-6 bg-[#0c1324]/80 backdrop-blur-md border-t border-white/5 text-center">
+            <div className="p-3 bg-surface-container-high/30 border-t border-outline-variant text-center">
                <Link 
                  href="/notifications" 
                  onClick={() => setIsOpen(false)}
-                 className="text-[11px] text-slate-400 hover:text-white font-black uppercase tracking-[0.3em] transition-colors"
+                 className="text-xs text-text-secondary hover:text-text-primary font-medium transition-colors"
                >
                  View all notifications
                </Link>
