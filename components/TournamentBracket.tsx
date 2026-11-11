@@ -72,7 +72,7 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
                           {match.scores.tennis.games?.[i] ?? 0}
                         </span>
                       )}
-                      <span className="text-xs font-mono tabular-nums font-semibold text-primary leading-none min-w-[16px] text-right">
+                      <span className="text-xs font-digital font-semibold text-primary leading-none min-w-[16px] text-right">
                         {(() => {
                           if (match.sport_type === 'Tennis' && match.scores.tennis) {
                             const p = match.scores.tennis.points?.[i] ?? 0;
