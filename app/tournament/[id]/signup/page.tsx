@@ -115,31 +115,35 @@ function SignupContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container flex flex-col items-center justify-center p-6">
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-container/10 rounded-full blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-secondary-container/5 rounded-full blur-[120px]"></div>
-      </div>
-
+    <div className="min-h-screen bg-background text-on-background font-sans selection:bg-primary selection:text-white flex flex-col items-center justify-center p-4 sm:p-6">
       <main className="w-full max-w-md relative z-10">
-        <header className="text-center mb-12">
-          <div className="text-2xl font-digital text-indigo-500 tracking-tighter mb-8">SCORE:BOARD</div>
-          <p className="text-secondary font-label text-[10px] uppercase tracking-[0.3em] mb-2">{getSportTranslation(tournament.sport_type, t)} Registration</p>
-          <h1 className="text-4xl font-headline font-black tracking-tight">{tournament.name}</h1>
+        <header className="text-center mb-8">
+          <Link href="/" className="text-xl font-digital text-text-primary tracking-wider mb-4 inline-block hover:opacity-80 transition-opacity">
+            SCORE:BOARD
+          </Link>
+          <p className="text-text-muted font-medium text-xs uppercase tracking-wider mb-1.5">
+            {getSportTranslation(tournament.sport_type, t)} Registration
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary">
+            {tournament.name}
+          </h1>
         </header>
 
         {success ? (
-          <div className="bg-surface-container-low rounded-[2rem] p-10 border border-emerald-500/20 shadow-3xl text-center animate-in zoom-in-95 duration-500">
-            <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <span className="material-symbols-outlined text-4xl text-emerald-500">check_circle</span>
+          <div className="bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant text-center animate-in fade-in duration-300">
+            <div className="w-12 h-12 bg-success/10 border border-success/20 rounded-full flex items-center justify-center mx-auto mb-4 text-success">
+              <span className="material-symbols-outlined text-2xl">check_circle</span>
             </div>
-            <h2 className="text-2xl font-headline font-black mb-4 text-on-surface">You're In!</h2>
-            <p className="text-on-surface-variant text-sm mb-8">
-              <span className="font-bold text-on-surface">"{teamName}"</span> has been registered for this tournament. Check the live bracket to see when matches start.
+            <h2 className="text-lg font-semibold mb-2 text-text-primary">Registration Confirmed</h2>
+            <p className="text-text-muted text-xs mb-6 leading-relaxed">
+              <span className="font-semibold text-text-primary">"{teamName}"</span> has been registered for this tournament. Check the live bracket to see when matches start.
             </p>
-            <div className="flex flex-col gap-4">
-              <Link href={`/tournament/${tournamentId}/teams`} className="w-full bg-surface-container-high py-4 rounded-xl font-bold text-sm border border-outline-variant/10 hover:bg-surface-bright transition-all flex items-center justify-center gap-2">
-                <span className="material-symbols-outlined text-sm">groups</span>
+            <div className="flex flex-col gap-3">
+              <Link 
+                href={`/tournament/${tournamentId}/teams`} 
+                className="w-full bg-surface-container-high hover:bg-surface-container-highest py-2.5 rounded-lg font-medium text-xs border border-outline-variant transition-colors flex items-center justify-center gap-2 text-text-primary"
+              >
+                <span className="material-symbols-outlined text-base">groups</span>
                 View Registered Teams
               </Link>
               <button 
@@ -149,27 +153,25 @@ function SignupContent() {
                   setFormResponses(buildInitialFormResponses(tournament?.signup_schema || []));
                   setSuccess(false);
                 }}
-                className="text-primary font-bold text-sm hover:underline"
+                className="text-primary hover:underline text-xs font-medium py-1"
               >
                 Register another team
               </button>
             </div>
           </div>
         ) : (
-          <div className="bg-surface-container-low rounded-[2rem] p-10 border border-outline-variant/10 shadow-3xl relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-50"></div>
-            
-            <form onSubmit={handleSignup} className="relative z-10 space-y-6">
+          <div className="bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant shadow-2xl relative">
+            <form onSubmit={handleSignup} className="space-y-4">
               {participantCount >= maxTeams ? (
                 <div className="text-center py-6">
-                  <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="material-symbols-outlined text-3xl text-amber-500">lock</span>
+                  <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-3 text-amber-400">
+                    <span className="material-symbols-outlined text-2xl">lock</span>
                   </div>
-                  <h2 className="text-xl font-headline font-black mb-2 text-on-surface">Tournament Full</h2>
-                  <p className="text-on-surface-variant text-xs mb-6 px-4">
+                  <h2 className="text-base font-semibold mb-1 text-text-primary">Tournament Full</h2>
+                  <p className="text-text-muted text-xs mb-4">
                     The maximum number of teams ({maxTeams}) has already registered for this tournament.
                   </p>
-                  <Link href={`/tournament/${tournamentId}/teams`} className="inline-flex items-center gap-2 text-primary font-bold text-sm hover:underline">
+                  <Link href={`/tournament/${tournamentId}/teams`} className="inline-flex items-center gap-1.5 text-primary font-medium text-xs hover:underline">
                     <span className="material-symbols-outlined text-sm">groups</span>
                     View Registered Teams
                   </Link>
@@ -177,11 +179,11 @@ function SignupContent() {
               ) : (
                 <>
                   <div>
-                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3">Team or Player Name</label>
+                    <label className="block text-xs font-medium text-text-muted mb-1.5">Team or Player Name</label>
                     <input 
                       autoFocus
                       required
-                      className="w-full px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold text-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-on-surface-variant/30"
+                      className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-primary transition-colors placeholder:text-text-muted/40"
                       placeholder="e.g. Lisbon Masters"
                       value={teamName}
                       onChange={(e) => setTeamName(e.target.value)}
@@ -189,11 +191,11 @@ function SignupContent() {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3">Contact Email</label>
+                    <label className="block text-xs font-medium text-text-muted mb-1.5">Contact Email</label>
                     <input 
                       required
                       type="email"
-                      className="w-full px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold text-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-on-surface-variant/30"
+                      className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-primary transition-colors placeholder:text-text-muted/40"
                       placeholder="manager@team.com"
                       value={contactEmail}
                       onChange={(e) => setContactEmail(e.target.value)}
@@ -203,13 +205,13 @@ function SignupContent() {
                   {/* Dynamic Fields */}
                   {(tournament.signup_schema || []).map((field: any) => (
                     <div key={field.id}>
-                      <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3">
+                      <label className="block text-xs font-medium text-text-muted mb-1.5">
                         {field.label} {field.required && <span className="text-primary">*</span>}
                       </label>
                       {field.type === 'select' ? (
                         <select 
                           required={field.required}
-                          className="w-full px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold text-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all appearance-none"
+                          className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-primary transition-colors appearance-none"
                           value={formResponses[field.id] || ""}
                           onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.value })}
                         >
@@ -219,15 +221,15 @@ function SignupContent() {
                           ))}
                         </select>
                       ) : field.type === 'checkbox' ? (
-                        <div className="flex items-center gap-3 px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10">
+                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant">
                           <input 
                             type="checkbox"
                             required={field.required}
-                            className="w-6 h-6 rounded bg-surface-container-highest border-none text-primary focus:ring-0"
+                            className="w-4 h-4 rounded bg-surface-container border-outline-variant text-primary focus:ring-0"
                             checked={formResponses[field.id] || false}
                             onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.checked })}
                           />
-                          <span className="text-on-surface-variant text-sm font-medium">{field.description || `I agree to ${field.label}`}</span>
+                          <span className="text-text-secondary text-xs font-medium">{field.description || `I agree to ${field.label}`}</span>
                         </div>
                       ) : (
                         <input 
@@ -235,7 +237,7 @@ function SignupContent() {
                           type={field.type}
                           min={field.type === 'number' && field.min != null ? field.min : undefined}
                           max={field.type === 'number' && field.max != null ? field.max : undefined}
-                          className="w-full px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold text-lg outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-on-surface-variant/30"
+                          className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-primary transition-colors placeholder:text-text-muted/40"
                           placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
                           value={formResponses[field.id] || ""}
                           onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.value })}
@@ -248,10 +250,10 @@ function SignupContent() {
                     <button 
                       type="submit"
                       disabled={submitting || tournament.status !== 'pending'}
-                      className="w-full bg-primary-container text-on-primary-container py-5 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
+                      className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 px-4 rounded-lg font-medium text-xs transition-colors disabled:opacity-50 active:scale-[0.99] flex items-center justify-center gap-2"
                     >
                       {submitting ? (
-                        <div className="w-4 h-4 border-2 border-on-primary-container border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       ) : (
                         <>
                           <span className="material-symbols-outlined text-sm">how_to_reg</span>
@@ -263,7 +265,7 @@ function SignupContent() {
                 </>
               )}
               {tournament.status !== 'pending' && participantCount < (tournament?.settings?.max_teams || 16) && (
-                <p className="text-center text-[10px] font-bold text-red-400 uppercase tracking-widest">
+                <p className="text-center text-xs font-medium text-error">
                   Signups are currently closed
                 </p>
               )}
@@ -271,8 +273,8 @@ function SignupContent() {
           </div>
         )}
 
-        <footer className="mt-12 text-center opacity-30">
-          <p className="font-label text-[10px] uppercase tracking-[0.5em] text-on-surface-variant">Powered by ScoreBoard Scoring Engine</p>
+        <footer className="mt-8 text-center">
+          <p className="font-mono text-xs text-text-muted">Powered by ScoreBoard Scoring Engine</p>
         </footer>
       </main>
     </div>

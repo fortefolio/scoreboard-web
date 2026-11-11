@@ -377,24 +377,23 @@ function TournamentContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-on-background font-body selection:bg-primary-container selection:text-on-primary-container">
-      <main className="pt-12 pb-20 px-8 max-w-7xl mx-auto relative">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-container/10 rounded-full blur-[120px] -z-10"></div>
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary-container/5 rounded-full blur-[120px] -z-10"></div>
-
-        <header className="mb-16 text-center animate-in fade-in slide-in-from-top-4 duration-700">
-          <p className="text-secondary font-label text-xs uppercase tracking-[0.3em] mb-4">{getSportTranslation(tournament?.sport_type, t)} {t("tournament.officialTournament")}</p>
-          <h1 className="font-headline text-5xl md:text-7xl font-black tracking-tighter leading-none mb-4">
+    <div className="min-h-screen bg-background text-on-background font-sans selection:bg-primary selection:text-white">
+      <main className="pt-8 pb-20 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto relative">
+        <header className="mb-8 text-center animate-in fade-in duration-300">
+          <p className="text-text-muted font-medium text-xs uppercase tracking-wider mb-2">
+            {getSportTranslation(tournament?.sport_type, t)} {t("tournament.officialTournament")}
+          </p>
+          <h1 className="font-sans text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-text-primary leading-tight mb-3">
             {tournament?.name || "Tournament"}
           </h1>
-          <div className="flex items-center justify-center gap-3">
-             <span className="px-3 py-1 bg-surface-container-high rounded-full text-[10px] font-bold text-on-surface-variant uppercase tracking-wider border border-outline-variant/10">
+          <div className="flex items-center justify-center gap-2.5">
+             <span className="px-2.5 py-0.5 bg-surface-container rounded-md text-[11px] font-mono font-medium text-text-secondary border border-outline-variant">
                 {t("tournament.idBadge")}: {tournamentId.slice(0,8)}
              </span>
-             <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                tournament?.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
-                tournament?.status === 'scheduled' ? 'bg-indigo-500/10 text-indigo-500' :
-                'bg-emerald-500/10 text-emerald-500'
+             <span className={`px-2.5 py-0.5 rounded-md text-[11px] font-medium border border-outline-variant ${
+                tournament?.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                tournament?.status === 'scheduled' ? 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20' :
+                'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
               }`}>
                 {tournament?.status}
              </span>
@@ -402,30 +401,42 @@ function TournamentContent() {
           </div>
         </header>
 
-        {/* Custom Tab Selector */}
-        <div className="flex justify-center mb-8 sm:mb-12 overflow-x-auto no-scrollbar max-w-full pb-2">
-          <div className="bg-surface-container-low p-1 sm:p-1.5 rounded-2xl sm:rounded-[1.5rem] border border-outline-variant/10 shadow-2xl flex gap-1 shrink-0">
+        {/* Precision Telemetry Segmented Tab Bar */}
+        <div className="flex justify-center mb-8 overflow-x-auto no-scrollbar max-w-full pb-2">
+          <div className="bg-surface-container-low p-1 rounded-xl border border-outline-variant flex gap-1 shrink-0">
             <button 
               onClick={() => handleTabChange('teams')}
-              className={`px-4 sm:px-8 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-1.5 sm:gap-2 shrink-0 ${activeTab === 'teams' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
+              className={`px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 shrink-0 ${
+                activeTab === 'teams'
+                  ? 'bg-surface-container text-text-primary border border-outline-variant shadow-sm'
+                  : 'text-text-muted hover:text-text-primary hover:bg-surface-container-high/40'
+              }`}
             >
-              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'teams' ? "'FILL' 1" : "" }}>groups</span>
+              <span className="material-symbols-outlined text-[16px] leading-none">groups</span>
               {t("tournament.teamsTab")}
             </button>
             {tournament?.settings?.stage_1?.type === 'groups' && tournament?.status !== 'pending' && (
               <>
                 <button 
                   onClick={() => handleTabChange('standings')}
-                  className={`px-4 sm:px-8 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-1.5 sm:gap-2 shrink-0 ${activeTab === 'standings' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
+                  className={`px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 shrink-0 ${
+                    activeTab === 'standings'
+                      ? 'bg-surface-container text-text-primary border border-outline-variant shadow-sm'
+                      : 'text-text-muted hover:text-text-primary hover:bg-surface-container-high/40'
+                  }`}
                 >
-                  <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'standings' ? "'FILL' 1" : "" }}>bar_chart</span>
+                  <span className="material-symbols-outlined text-[16px] leading-none">bar_chart</span>
                   {t("tournament.standingsTab")}
                 </button>
                 <button 
                   onClick={() => handleTabChange('group_matches')}
-                  className={`px-4 sm:px-8 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-1.5 sm:gap-2 shrink-0 ${activeTab === 'group_matches' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
+                  className={`px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 shrink-0 ${
+                    activeTab === 'group_matches'
+                      ? 'bg-surface-container text-text-primary border border-outline-variant shadow-sm'
+                      : 'text-text-muted hover:text-text-primary hover:bg-surface-container-high/40'
+                  }`}
                 >
-                  <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'group_matches' ? "'FILL' 1" : "" }}>sports_tennis</span>
+                  <span className="material-symbols-outlined text-[16px] leading-none">sports_tennis</span>
                   {t("tournament.matchesTab")}
                 </button>
               </>
@@ -433,71 +444,78 @@ function TournamentContent() {
             {tournament?.status !== 'pending' && (
               <button 
                 onClick={() => handleTabChange('bracket')}
-                className={`px-4 sm:px-8 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-1.5 sm:gap-2 shrink-0 ${activeTab === 'bracket' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
+                className={`px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'bracket'
+                    ? 'bg-surface-container text-text-primary border border-outline-variant shadow-sm'
+                    : 'text-text-muted hover:text-text-primary hover:bg-surface-container-high/40'
+                }`}
               >
-                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'bracket' ? "'FILL' 1" : "" }}>account_tree</span>
+                <span className="material-symbols-outlined text-[16px] leading-none">account_tree</span>
                 Bracket
               </button>
             )}
             <button 
               onClick={() => handleTabChange('settings')}
-              className={`px-4 sm:px-8 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-bold transition-all duration-300 flex items-center gap-1.5 sm:gap-2 shrink-0 ${activeTab === 'settings' ? 'bg-primary-container text-on-primary-container shadow-xl shadow-primary-container/20' : 'text-on-surface-variant hover:text-on-surface'}`}
+              className={`px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 shrink-0 ${
+                activeTab === 'settings'
+                  ? 'bg-surface-container text-text-primary border border-outline-variant shadow-sm'
+                  : 'text-text-muted hover:text-text-primary hover:bg-surface-container-high/40'
+              }`}
             >
-              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: activeTab === 'settings' ? "'FILL' 1" : "" }}>settings</span>
+              <span className="material-symbols-outlined text-[16px] leading-none">settings</span>
               {t("tournament.settingsTab")}
             </button>
           </div>
         </div>
 
         {/* View Content */}
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="animate-in fade-in duration-300">
           {activeTab === 'teams' ? (
             <div className="max-w-4xl mx-auto">
-              <div className="bg-surface-container-low rounded-2xl sm:rounded-[3rem] p-4 sm:p-8 md:p-10 border border-outline-variant/10 shadow-3xl relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-50"></div>
-                
+              <div className="bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant relative">
                 <div className="relative z-10">
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-10">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8 pb-5 border-b border-outline-variant">
                     <div>
-                      <h2 className="text-2xl sm:text-3xl font-headline font-black tracking-tight mb-1 sm:mb-2">Tournament Roster</h2>
-                      <p className="text-on-surface-variant text-xs sm:text-sm">Manage participating teams and players ({teamNames.length} / {maxTeams}).</p>
+                      <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-text-primary mb-1">Tournament Roster</h2>
+                      <p className="text-text-muted text-xs sm:text-sm">Manage participating teams and players ({teamNames.length} / {maxTeams}).</p>
                     </div>
-                    <div className="flex flex-wrap gap-2 sm:gap-3 w-full sm:w-auto">
+                    <div className="flex flex-wrap gap-2.5 w-full sm:w-auto">
                       <button 
                         onClick={copySignupLink}
-                        className="flex-1 sm:flex-initial justify-center bg-surface-container-high text-on-surface px-4 sm:px-6 py-2.5 sm:py-4 rounded-xl sm:rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs hover:bg-indigo-500/10 hover:text-indigo-400 transition-all border border-outline-variant/10 flex items-center gap-2"
+                        className="flex-1 sm:flex-initial justify-center bg-surface-container-high text-text-primary hover:bg-surface-container-highest px-4 py-2 rounded-lg font-medium text-xs transition-colors border border-outline-variant flex items-center gap-1.5"
                       >
-                        <span className="material-symbols-outlined text-sm">share</span>
+                        <span className="material-symbols-outlined text-[16px] leading-none text-text-muted">share</span>
                         Share Signup Link
                       </button>
                       <button 
                         onClick={addTeam}
                         disabled={teamNames.length >= maxTeams}
-                        className="flex-1 sm:flex-initial justify-center bg-surface-container-high text-on-surface px-4 sm:px-6 py-2.5 sm:py-4 rounded-xl sm:rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] sm:text-xs hover:bg-surface-bright transition-all border border-outline-variant/10 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 sm:flex-initial justify-center bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium text-xs transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        <span className="material-symbols-outlined text-sm">add</span>
+                        <span className="material-symbols-outlined text-[16px] leading-none">add</span>
                         {teamNames.length >= maxTeams ? 'Limit Reached' : 'Add Team'}
                       </button>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {participants.map((p, idx) => (
                       <div key={p.id} className="relative group flex items-center gap-2">
                         <div className="relative flex-1">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-primary opacity-30 group-focus-within:opacity-100 transition-opacity">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-medium text-text-muted">
                             {String(idx + 1).padStart(2, '0')}
                           </span>
-                          <div className="w-full pl-12 pr-4 py-4 bg-surface-container rounded-xl border border-outline-variant/10 text-on-surface font-bold">
-                            {p.name}
-                            <span className="ml-3 text-[10px] opacity-40 font-normal">{p.contact_email}</span>
+                          <div className="w-full pl-11 pr-4 py-3 bg-surface-container-high rounded-xl border border-outline-variant text-text-primary font-medium text-sm flex items-center justify-between">
+                            <span className="truncate">{p.name}</span>
+                            <span className="ml-2 text-xs text-text-muted font-normal truncate max-w-[140px]">{p.contact_email}</span>
                           </div>
                         </div>
                         <button 
                           onClick={() => setSelectedParticipant(p)}
-                          className="w-12 h-12 rounded-xl bg-surface-container-high text-on-surface-variant hover:text-primary transition-all flex items-center justify-center border border-outline-variant/10"
+                          className="w-10 h-10 rounded-xl bg-surface-container-high text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors flex items-center justify-center border border-outline-variant shrink-0"
+                          title="View Participant Details"
                         >
-                          <span className="material-symbols-outlined text-sm">visibility</span>
+                          <span className="material-symbols-outlined text-sm leading-none">visibility</span>
                         </button>
                       </div>
                     ))}
@@ -505,11 +523,11 @@ function TournamentContent() {
                     {tournament.status === 'pending' && Array.from({ length: Math.max(0, teamNames.length - participants.length) }).map((_, idx) => (
                        <div key={`empty-${idx}`} className="relative group flex items-center gap-2">
                         <div className="relative flex-1">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-primary opacity-30 group-focus-within:opacity-100 transition-opacity">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-medium text-text-muted">
                             {String(participants.length + idx + 1).padStart(2, '0')}
                           </span>
                           <input 
-                            className="w-full pl-12 pr-4 py-4 bg-surface-container rounded-xl border border-outline-variant/10 text-on-surface font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                            className="w-full pl-11 pr-4 py-3 bg-surface-container-high rounded-xl border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-primary transition-colors placeholder:text-text-muted/40"
                             placeholder={`Assign Team ${participants.length + idx + 1}`}
                             value={teamNames[participants.length + idx] || ""}
                             onChange={(e) => handleTeamNameChange(participants.length + idx, e.target.value)}
@@ -517,9 +535,10 @@ function TournamentContent() {
                         </div>
                         <button 
                           onClick={() => removeTeam(participants.length + idx)}
-                          className="w-12 h-12 rounded-xl bg-surface-container-high text-on-surface-variant hover:text-red-500 hover:bg-red-500/10 transition-all flex items-center justify-center border border-outline-variant/10"
+                          className="w-10 h-10 rounded-xl bg-surface-container-high text-text-muted hover:text-error hover:bg-error/10 transition-colors flex items-center justify-center border border-outline-variant shrink-0"
+                          title="Remove Team"
                         >
-                          <span className="material-symbols-outlined text-sm">delete</span>
+                          <span className="material-symbols-outlined text-sm leading-none">delete</span>
                         </button>
                       </div>
                     ))}
@@ -528,38 +547,38 @@ function TournamentContent() {
               </div>
             </div>
           ) : activeTab === 'standings' && tournament?.settings?.stage_1?.type === 'groups' ? (
-            <div className="bg-surface-container-low/50 rounded-2xl sm:rounded-[3rem] p-4 sm:p-8 md:p-12 border border-outline-variant/10 shadow-3xl">
+            <div className="max-w-6xl mx-auto">
                <GroupStandingsView tournamentId={tournamentId} />
             </div>
           ) : activeTab === 'group_matches' && tournament?.settings?.stage_1?.type === 'groups' ? (
-            <div className="bg-surface-container-low/50 rounded-2xl sm:rounded-[3rem] p-4 sm:p-8 md:p-12 border border-outline-variant/10 shadow-3xl">
+            <div className="max-w-6xl mx-auto">
                <GroupMatchesView tournamentId={tournamentId} tournament={tournament} onSaveOverride={saveOverride} onSaveScheduledDate={saveRoundDate} />
             </div>
           ) : activeTab === 'bracket' ? (
             <TournamentBracket tournamentId={tournamentId} tournamentFromParent={tournament} onSaveOverrideFromParent={saveOverride} onSaveScheduledDate={saveRoundDate} />
           ) : (
-            <div className="w-full mx-auto">
-              <div className="bg-surface-container-low rounded-2xl sm:rounded-[3rem] p-4 sm:p-8 md:p-12 border border-outline-variant/10 shadow-3xl">
-                <h2 className="text-2xl sm:text-3xl font-headline font-black tracking-tight mb-6 sm:mb-8">Tournament Settings</h2>
-                <div className="space-y-8">
-                  <div className="p-8 rounded-[2rem] bg-surface-container border border-outline-variant/10">
-                    <h3 className="text-xl font-bold text-on-surface mb-6">General Configuration</h3>
-                    <div className="space-y-6">
-                      <div className="grid md:grid-cols-2 gap-6">
+            <div className="w-full max-w-4xl mx-auto space-y-6">
+              <div className="bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant">
+                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-text-primary mb-6">Tournament Settings</h2>
+                <div className="space-y-6">
+                  <div className="p-5 sm:p-6 rounded-xl bg-surface-container-low border border-outline-variant">
+                    <h3 className="text-sm font-semibold text-text-primary mb-5">General Configuration</h3>
+                    <div className="space-y-5">
+                      <div className="grid md:grid-cols-2 gap-4">
                         <div>
-                          <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Tournament Start Date</label>
+                          <label className="text-xs font-medium text-text-secondary block mb-1.5">Tournament Start Date</label>
                           <input 
                             type="date"
-                            className="w-full px-4 py-3 bg-surface-container-high rounded-xl border border-outline-variant/10 font-bold outline-none focus:border-primary transition-all"
+                            className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant font-medium text-xs text-text-primary outline-none focus:border-primary transition-colors"
                             value={tStartDate}
                             onChange={(e) => setTStartDate(e.target.value)}
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Tournament End Date</label>
+                          <label className="text-xs font-medium text-text-secondary block mb-1.5">Tournament End Date</label>
                           <input 
                             type="date"
-                            className="w-full px-4 py-3 bg-surface-container-high rounded-xl border border-outline-variant/10 font-bold outline-none focus:border-primary transition-all"
+                            className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant font-medium text-xs text-text-primary outline-none focus:border-primary transition-colors"
                             value={tEndDate}
                             onChange={(e) => setTEndDate(e.target.value)}
                           />
@@ -567,12 +586,12 @@ function TournamentContent() {
                       </div>
 
                       <div>
-                        <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Number of Available Courts</label>
+                        <label className="text-xs font-medium text-text-secondary block mb-1.5">Number of Available Courts</label>
                         <div className="flex items-center gap-4">
                           <input 
                             type="number"
                             min="1"
-                            className="flex-1 px-4 py-3 bg-surface-container-high rounded-xl border border-outline-variant/10 font-bold outline-none focus:border-primary transition-all"
+                            className="flex-1 px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant font-medium text-xs text-text-primary outline-none focus:border-primary transition-colors"
                             value={courts}
                             onChange={(e) => setCourts(parseInt(e.target.value) || 1)}
                           />
@@ -580,24 +599,24 @@ function TournamentContent() {
                       </div>
 
                       <div>
-                        <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Tournament Visibility</label>
-                        <div className="flex gap-2">
+                        <label className="text-xs font-medium text-text-secondary block mb-1.5">Tournament Visibility</label>
+                        <div className="flex bg-surface-container-high p-1 rounded-lg border border-outline-variant gap-1">
                           {(['public', 'unlisted', 'private'] as const).map((mode) => (
                             <button
                               key={mode}
                               type="button"
                               onClick={() => setTVisibility(mode)}
-                              className={`flex-1 py-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+                              className={`flex-1 py-2 rounded-md text-xs font-medium uppercase tracking-wider transition-colors ${
                                 tVisibility === mode
-                                  ? 'bg-primary-container text-on-primary-container border-primary shadow-lg shadow-primary/20'
-                                  : 'bg-surface-container-high text-on-surface-variant border-outline-variant/10'
+                                  ? 'bg-surface-container text-text-primary border border-outline-variant shadow-sm'
+                                  : 'text-text-muted hover:text-text-primary'
                               }`}
                             >
                               {mode}
                             </button>
                           ))}
                         </div>
-                        <p className="mt-2 text-[10px] text-on-surface-variant opacity-60 uppercase font-bold tracking-tight">
+                        <p className="mt-1.5 text-xs text-text-muted">
                           {tVisibility === 'public'
                             ? 'Visible to everyone on the landing page'
                             : tVisibility === 'unlisted'
@@ -607,18 +626,18 @@ function TournamentContent() {
                       </div>
 
                       <div>
-                        <label className="text-xs font-bold text-on-surface-variant uppercase tracking-widest block mb-2">Maximum Number of Teams</label>
-                        <div className="flex items-center gap-4">
+                        <label className="text-xs font-medium text-text-secondary block mb-1.5">Maximum Number of Teams</label>
+                        <div className="flex items-center gap-3">
                           <input 
                             type="number"
                             min="1"
-                            className="flex-1 px-4 py-3 bg-surface-container-high rounded-xl border border-outline-variant/10 font-bold outline-none focus:border-primary transition-all"
+                            className="flex-1 px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant font-medium text-xs text-text-primary outline-none focus:border-primary transition-colors"
                             value={maxTeams}
                             onChange={(e) => setMaxTeams(parseInt(e.target.value) || 1)}
                           />
                           <button 
                             onClick={saveGeneralSettings}
-                            className="bg-primary-container text-on-primary-container px-6 py-3 rounded-full font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-primary-container/20"
+                            className="bg-primary hover:bg-primary/90 text-white px-4 py-2.5 rounded-lg font-medium text-xs transition-colors shrink-0"
                           >
                             Save Settings
                           </button>
@@ -627,38 +646,31 @@ function TournamentContent() {
                     </div>
                   </div>
 
-                  <div className="p-10 rounded-[2.5rem] bg-surface-container-low border-none shadow-2xl relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-br from-primary-container/5 via-transparent to-transparent pointer-events-none"></div>
-                    
-                    <div className="relative z-10">
-                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+                  <div className="p-6 sm:p-8 rounded-xl bg-surface-container-low border border-outline-variant relative">
+                    <div>
+                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-5 border-b border-outline-variant">
                         <div>
-                          <h2 className="text-4xl font-headline font-black tracking-tight text-on-surface mb-2">Signup Form Builder</h2>
-                          <p className="text-on-surface-variant text-sm max-w-xl leading-relaxed">
-                            Design the ultimate registration experience for your next tournament. Add fields, toggle requirements, and configure options.
+                          <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-text-primary mb-1">Signup Form Builder</h2>
+                          <p className="text-text-muted text-xs sm:text-sm max-w-xl leading-relaxed">
+                            Configure registration fields, required responses, and options for participants.
                           </p>
                         </div>
                         <button 
                           onClick={addSignupField}
-                          className="bg-surface-container-highest hover:bg-surface-container-high text-on-surface px-6 py-3 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] transition-all flex items-center gap-2 shadow-lg shadow-black/20 group active:scale-95"
+                          className="bg-surface-container-high hover:bg-surface-container-highest text-text-primary px-3.5 py-2 rounded-lg font-medium text-xs transition-colors flex items-center gap-1.5 border border-outline-variant active:scale-95"
                         >
-                          <span className="material-symbols-outlined text-sm group-hover:rotate-90 transition-transform duration-300">add</span>
+                          <span className="material-symbols-outlined text-[16px] leading-none text-text-muted">add</span>
                           Add Field
                         </button>
                       </div>
 
-                      <div className="space-y-6">
+                      <div className="space-y-4">
                         {signupFormConfig.map((field) => (
-                          <div key={field.id} className="p-8 bg-surface-container rounded-[2rem] shadow-xl animate-in slide-in-from-bottom-4 duration-500 group/field">
-                            <div className="flex items-center justify-between mb-8">
-                              <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                                  field.type === 'text' ? 'bg-indigo-500/20 text-indigo-400' :
-                                  field.type === 'number' ? 'bg-emerald-500/20 text-emerald-400' :
-                                  field.type === 'select' ? 'bg-amber-500/20 text-amber-400' :
-                                  'bg-purple-500/20 text-purple-400'
-                                }`}>
-                                  <span className="material-symbols-outlined">
+                          <div key={field.id} className="p-5 bg-surface-container rounded-xl border border-outline-variant group/field">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-muted border border-outline-variant">
+                                  <span className="material-symbols-outlined text-sm">
                                     {field.type === 'text' ? 'text_fields' :
                                      field.type === 'number' ? '123' :
                                      field.type === 'select' ? 'list' :
@@ -666,8 +678,8 @@ function TournamentContent() {
                                   </span>
                                 </div>
                                 <div>
-                                  <h4 className="font-bold text-on-surface text-lg leading-none mb-1">{field.label || "Untitled Field"}</h4>
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant opacity-40">
+                                  <h4 className="font-medium text-text-primary text-sm leading-none mb-1">{field.label || "Untitled Field"}</h4>
+                                  <span className="text-[11px] text-text-muted">
                                     {field.type === 'text' ? 'Text Input Field' :
                                      field.type === 'number' ? 'Numeric Input Field' :
                                      field.type === 'select' ? 'Dropdown Select Field' :
@@ -675,30 +687,31 @@ function TournamentContent() {
                                   </span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-6">
-                                <div className="flex items-center gap-3">
-                                  <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Required</span>
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium text-text-muted">Required</span>
                                   <button 
                                     onClick={() => updateSignupField(field.id, { required: !field.required })}
-                                    className={`w-12 h-6 rounded-full transition-all relative ${field.required ? 'bg-primary-container' : 'bg-surface-container-highest'}`}
+                                    className={`w-9 h-5 rounded-full transition-colors relative ${field.required ? 'bg-primary' : 'bg-surface-container-highest'}`}
                                   >
-                                    <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${field.required ? 'left-7' : 'left-1'}`}></div>
+                                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${field.required ? 'left-4.5' : 'left-0.5'}`}></div>
                                   </button>
                                 </div>
                                 <button 
                                   onClick={() => removeSignupField(field.id)}
-                                  className="w-10 h-10 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error/10 transition-all"
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-error hover:bg-error/10 transition-colors"
+                                  title="Remove Field"
                                 >
-                                  <span className="material-symbols-outlined text-xl">delete</span>
+                                  <span className="material-symbols-outlined text-base">delete</span>
                                 </button>
                               </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-4">
                               <div className="lg:col-span-4">
-                                <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3 block">Field Label</label>
+                                <label className="text-[11px] font-medium text-text-muted mb-1.5 block">Field Label</label>
                                 <input 
-                                  className="w-full px-5 py-4 bg-surface-container-low rounded-xl text-on-surface font-bold outline-none focus:ring-1 focus:ring-primary-container transition-all border border-outline-variant/10"
+                                  className="w-full px-3 py-2 bg-surface-container-high rounded-lg text-text-primary font-medium text-xs outline-none focus:border-primary transition-colors border border-outline-variant"
                                   placeholder="e.g. T-Shirt Size"
                                   value={field.label}
                                   onChange={(e) => updateSignupField(field.id, { label: e.target.value })}
@@ -706,9 +719,9 @@ function TournamentContent() {
                               </div>
 
                               <div className="lg:col-span-2">
-                                <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3 block">Field Type</label>
+                                <label className="text-[11px] font-medium text-text-muted mb-1.5 block">Field Type</label>
                                 <select
-                                  className="w-full px-4 py-4 bg-surface-container-low rounded-xl text-on-surface font-bold outline-none focus:ring-1 focus:ring-primary-container transition-all border border-outline-variant/10 appearance-none"
+                                  className="w-full px-3 py-2 bg-surface-container-high rounded-lg text-text-primary font-medium text-xs outline-none focus:border-primary transition-colors border border-outline-variant"
                                   value={field.type}
                                   onChange={(e) => updateSignupField(field.id, { type: e.target.value })}
                                 >
@@ -721,10 +734,10 @@ function TournamentContent() {
 
                               {field.type === 'text' && (
                                 <div className="lg:col-span-6">
-                                  <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3 block">Placeholder Text</label>
+                                  <label className="text-[11px] font-medium text-text-muted mb-1.5 block">Placeholder Text</label>
                                   <input 
-                                    className="w-full px-5 py-4 bg-surface-container-low rounded-xl text-on-surface font-bold outline-none focus:ring-1 focus:ring-primary-container transition-all border border-outline-variant/10"
-                                    placeholder="Enter your team name..."
+                                    className="w-full px-3 py-2 bg-surface-container-high rounded-lg text-text-primary font-medium text-xs outline-none focus:border-primary transition-colors border border-outline-variant"
+                                    placeholder="Enter placeholder..."
                                     value={field.placeholder || ""}
                                     onChange={(e) => updateSignupField(field.id, { placeholder: e.target.value })}
                                   />
@@ -734,19 +747,19 @@ function TournamentContent() {
                               {field.type === 'number' && (
                                 <>
                                   <div className="lg:col-span-3">
-                                    <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3 block">Min</label>
+                                    <label className="text-[11px] font-medium text-text-muted mb-1.5 block">Min</label>
                                     <input 
                                       type="number"
-                                      className="w-full px-5 py-4 bg-surface-container-low rounded-xl text-on-surface font-bold outline-none focus:ring-1 focus:ring-primary-container transition-all border border-outline-variant/10"
+                                      className="w-full px-3 py-2 bg-surface-container-high rounded-lg text-text-primary font-medium text-xs outline-none focus:border-primary transition-colors border border-outline-variant"
                                       value={field.min || ""}
                                       onChange={(e) => updateSignupField(field.id, { min: parseInt(e.target.value) || null })}
                                     />
                                   </div>
                                   <div className="lg:col-span-3">
-                                    <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3 block">Max</label>
+                                    <label className="text-[11px] font-medium text-text-muted mb-1.5 block">Max</label>
                                     <input 
                                       type="number"
-                                      className="w-full px-5 py-4 bg-surface-container-low rounded-xl text-on-surface font-bold outline-none focus:ring-1 focus:ring-primary-container transition-all border border-outline-variant/10"
+                                      className="w-full px-3 py-2 bg-surface-container-high rounded-lg text-text-primary font-medium text-xs outline-none focus:border-primary transition-colors border border-outline-variant"
                                       value={field.max || ""}
                                       onChange={(e) => updateSignupField(field.id, { max: parseInt(e.target.value) || null })}
                                     />
@@ -756,9 +769,9 @@ function TournamentContent() {
 
                               {field.type === 'checkbox' && (
                                 <div className="lg:col-span-6">
-                                  <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3 block">Description / Subtext</label>
+                                  <label className="text-[11px] font-medium text-text-muted mb-1.5 block">Description / Subtext</label>
                                   <textarea 
-                                    className="w-full px-5 py-4 bg-surface-container-low rounded-xl text-on-surface font-bold outline-none focus:ring-1 focus:ring-primary-container transition-all border border-outline-variant/10 min-h-[100px] resize-none"
+                                    className="w-full px-3 py-2 bg-surface-container-high rounded-lg text-text-primary font-medium text-xs outline-none focus:border-primary transition-colors border border-outline-variant min-h-[64px] resize-none"
                                     placeholder="Check this box if your team will be attending..."
                                     value={field.description || ""}
                                     onChange={(e) => updateSignupField(field.id, { description: e.target.value })}
@@ -768,28 +781,28 @@ function TournamentContent() {
 
                               {field.type === 'select' && (
                                 <div className="lg:col-span-12">
-                                  <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3 block">Options</label>
-                                  <div className="flex flex-wrap gap-3 p-4 bg-surface-container-low rounded-2xl border border-outline-variant/10">
+                                  <label className="text-[11px] font-medium text-text-muted mb-1.5 block">Options</label>
+                                  <div className="flex flex-wrap gap-2 p-3 bg-surface-container-high rounded-lg border border-outline-variant">
                                     {(field.options || []).map((opt: string, optIdx: number) => (
-                                      <div key={optIdx} className="bg-surface-container-highest px-4 py-2 rounded-full flex items-center gap-3 border border-outline-variant/20 shadow-lg group/opt">
+                                      <div key={optIdx} className="bg-surface-container px-3 py-1.5 rounded-md flex items-center gap-2 border border-outline-variant text-xs">
                                         <input 
-                                          className="bg-transparent text-sm font-bold text-on-surface outline-none min-w-[80px]"
+                                          className="bg-transparent text-xs font-medium text-text-primary outline-none min-w-[70px]"
                                           value={opt}
                                           onChange={(e) => updateOptionInField(field.id, optIdx, e.target.value)}
                                         />
                                         <button 
                                           onClick={() => removeOptionFromField(field.id, optIdx)}
-                                          className="text-on-surface-variant hover:text-error transition-colors"
+                                          className="text-text-muted hover:text-error transition-colors"
                                         >
-                                          <span className="material-symbols-outlined text-sm">close</span>
+                                          <span className="material-symbols-outlined text-sm leading-none">close</span>
                                         </button>
                                       </div>
                                     ))}
                                     <button 
                                       onClick={() => addOptionToField(field.id)}
-                                      className="flex items-center gap-2 px-4 py-2 text-primary-container font-black uppercase tracking-widest text-[10px] hover:text-primary transition-colors"
+                                      className="flex items-center gap-1.5 px-3 py-1.5 text-primary text-xs font-medium hover:underline transition-colors"
                                     >
-                                      <span className="material-symbols-outlined text-sm">add_circle</span>
+                                      <span className="material-symbols-outlined text-sm leading-none">add_circle</span>
                                       Add Option
                                     </button>
                                   </div>
@@ -800,30 +813,28 @@ function TournamentContent() {
                         ))}
 
                         {signupFormConfig.length === 0 && (
-                          <div className="py-20 text-center bg-surface-container-low rounded-[2rem] border border-dashed border-outline-variant/20 group/empty">
-                            <div className="w-20 h-20 bg-surface-container-highest rounded-full flex items-center justify-center mx-auto mb-6 group-hover/empty:scale-110 transition-transform duration-700">
-                               <span className="material-symbols-outlined text-4xl text-on-surface-variant opacity-20">dynamic_form</span>
-                            </div>
-                            <p className="text-on-surface-variant text-sm font-bold opacity-40 uppercase tracking-widest">No custom fields defined</p>
+                          <div className="py-12 text-center bg-surface-container rounded-xl border border-dashed border-outline-variant group/empty">
+                            <span className="material-symbols-outlined text-3xl text-text-muted/40 mb-2 block">dynamic_form</span>
+                            <p className="text-text-muted text-xs font-medium">No custom fields defined</p>
                           </div>
                         )}
                       </div>
 
-                      <div className="mt-12 p-10 bg-surface-container rounded-[2rem] border border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-6">
+                      <div className="mt-8 pt-5 border-t border-outline-variant flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
-                           <h3 className="text-2xl font-headline font-black text-on-surface mb-1">Configuration Complete?</h3>
-                           <p className="text-on-surface-variant text-sm">Save your changes to update the live registration portal.</p>
+                           <h3 className="text-sm font-semibold text-text-primary">Configuration Complete?</h3>
+                           <p className="text-text-muted text-xs">Save your changes to update the live registration portal.</p>
                         </div>
-                        <div className="flex items-center gap-4 w-full md:w-auto">
+                        <div className="flex items-center gap-2.5 w-full sm:w-auto">
                            <button 
                              onClick={() => setIsPreviewModalOpen(true)}
-                             className="flex-1 md:flex-none px-8 py-4 bg-transparent border border-outline-variant/30 rounded-xl text-on-surface font-black uppercase tracking-widest text-xs hover:bg-surface-bright transition-all"
+                             className="flex-1 sm:flex-none px-4 py-2 bg-transparent border border-outline-variant rounded-lg text-text-primary font-medium text-xs hover:bg-surface-container-high transition-colors"
                            >
                              Preview Form
                            </button>
                            <button 
                              onClick={saveGeneralSettings}
-                             className="flex-1 md:flex-none bg-primary-container text-white px-8 py-4 rounded-full font-black uppercase tracking-widest text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 active:scale-95"
+                             className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium text-xs transition-colors"
                            >
                              Save Form Config
                            </button>
@@ -833,33 +844,33 @@ function TournamentContent() {
                   </div>
 
                   {tournament?.status === 'pending' && (
-                    <div className="p-8 rounded-[2rem] bg-primary-container/10 border border-primary-container/20">
-                      <h3 className="text-xl font-bold text-primary mb-2">Tournament Generation</h3>
-                      <p className="text-on-surface-variant text-sm mb-8 leading-relaxed">
+                    <div className="p-5 sm:p-6 rounded-xl bg-surface-container-low border border-outline-variant">
+                      <h3 className="text-sm font-semibold text-text-primary mb-1">Tournament Generation</h3>
+                      <p className="text-text-muted text-xs mb-4 leading-relaxed">
                         Ready to start? Generating the bracket will finalize the current roster and create all initial matches.
                       </p>
                       <button 
                         onClick={handleGenerateBracket}
                         disabled={isGenerating}
-                        className="w-full bg-primary-container text-on-primary-container py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
+                        className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 px-4 rounded-lg font-medium text-xs transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                       >
-                        <span className="material-symbols-outlined text-sm">bolt</span>
+                        <span className="material-symbols-outlined text-sm leading-none">bolt</span>
                         {isGenerating ? "Generating..." : "Generate Tournament Bracket"}
                       </button>
                     </div>
                   )}
 
-                  <div className="p-8 rounded-[2rem] bg-error-container/10 border border-error-container/20">
-                    <h3 className="text-xl font-bold text-error mb-2">Danger Zone</h3>
-                    <p className="text-on-surface-variant text-sm mb-8 leading-relaxed">
+                  <div className="p-5 sm:p-6 rounded-xl bg-error/5 border border-error/20">
+                    <h3 className="text-sm font-semibold text-error mb-1">Danger Zone</h3>
+                    <p className="text-text-muted text-xs mb-4 leading-relaxed">
                       Deleting a tournament is a permanent action. All matches, team rosters, and historical scores will be erased permanently.
                     </p>
                     <button 
                       onClick={() => setIsDeleteModalOpen(true)}
                       disabled={isDeleting}
-                      className="w-full bg-error-container text-on-error-container py-4 rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-error/10 disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
+                      className="w-full bg-error hover:bg-error/90 text-white py-2.5 px-4 rounded-lg font-medium text-xs transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                      <span className="material-symbols-outlined text-sm">delete_forever</span>
+                      <span className="material-symbols-outlined text-sm leading-none">delete_forever</span>
                       {isDeleting ? "Deleting..." : "Permanently Delete Tournament"}
                     </button>
                   </div>
@@ -882,32 +893,32 @@ function TournamentContent() {
 
       {/* PARTICIPANT DETAILS MODAL */}
       {selectedParticipant && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-center justify-center p-6 z-[100] animate-in fade-in duration-300">
-          <div className="w-full max-w-lg bg-surface-container rounded-[2.5rem] shadow-4xl border border-outline-variant/10 relative z-10 overflow-hidden flex flex-col max-h-[80vh]">
-            <header className="px-8 pt-8 pb-5 flex justify-between items-center bg-surface-container-high border-b border-outline-variant/5">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-200">
+          <div className="w-full max-w-lg bg-surface-container rounded-2xl shadow-2xl border border-outline-variant relative z-10 overflow-hidden flex flex-col max-h-[85vh]">
+            <header className="px-6 py-4 flex justify-between items-center bg-surface-container-high border-b border-outline-variant">
               <div>
-                <h3 className="text-2xl font-headline font-black text-on-surface leading-none mb-1">{selectedParticipant.name}</h3>
-                <p className="text-on-surface-variant text-xs">{selectedParticipant.contact_email || "No contact email visible"}</p>
+                <h3 className="text-base font-semibold text-text-primary leading-tight">{selectedParticipant.name}</h3>
+                <p className="text-text-muted text-xs mt-0.5">{selectedParticipant.contact_email || "No contact email visible"}</p>
               </div>
               <button
                 onClick={() => setSelectedParticipant(null)}
-                className="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface hover:bg-error/10 hover:text-error transition-all"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors"
               >
-                <span className="material-symbols-outlined">close</span>
+                <span className="material-symbols-outlined text-base">close</span>
               </button>
             </header>
-            <div className="p-8 overflow-y-auto space-y-4">
+            <div className="p-6 overflow-y-auto space-y-3">
               {signupFormConfig.length > 0 ? (
                 signupFormConfig.map((field: any) => (
-                  <div key={field.id} className="p-4 bg-surface-container-low rounded-2xl border border-outline-variant/10">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant mb-1">{field.label || field.id}</p>
-                    <p className="font-bold text-on-surface text-sm">
+                  <div key={field.id} className="p-3.5 bg-surface-container-low rounded-xl border border-outline-variant">
+                    <p className="text-[11px] font-medium text-text-muted mb-0.5">{field.label || field.id}</p>
+                    <p className="font-medium text-text-primary text-xs">
                       {String(selectedParticipant.form_responses?.[field.id] ?? "—")}
                     </p>
                   </div>
                 ))
               ) : (
-                <p className="text-on-surface-variant text-xs italic text-center py-6 opacity-60">No custom signup fields configured for this tournament.</p>
+                <p className="text-text-muted text-xs italic text-center py-6">No custom signup fields configured for this tournament.</p>
               )}
             </div>
           </div>
@@ -916,80 +927,78 @@ function TournamentContent() {
 
       {/* FORM PREVIEW MODAL */}
       {isPreviewModalOpen && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-md flex items-center justify-center p-6 z-[100] animate-in fade-in duration-300">
-          <div className="absolute inset-0 z-0 bg-gradient-radial from-primary-container/10 via-transparent to-transparent pointer-events-none"></div>
-          
-          <div className="w-full max-w-lg bg-surface-container rounded-[3rem] shadow-4xl border border-outline-variant/10 relative z-10 overflow-hidden flex flex-col max-h-[80vh]">
-            <header className="px-10 pt-10 pb-6 flex justify-between items-center bg-surface-container-high border-b border-outline-variant/5">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-200">
+          <div className="w-full max-w-lg bg-surface-container rounded-2xl shadow-2xl border border-outline-variant relative z-10 overflow-hidden flex flex-col max-h-[85vh]">
+            <header className="px-6 py-4 flex justify-between items-center bg-surface-container-high border-b border-outline-variant">
               <div>
-                <h3 className="text-2xl font-headline font-black text-on-surface leading-none mb-2 italic">LIVE FORM PREVIEW</h3>
-                <p className="text-on-surface-variant text-[10px] font-black uppercase tracking-widest opacity-40">This is how participants will see your registration</p>
+                <h3 className="text-base font-semibold text-text-primary leading-tight">Live Form Preview</h3>
+                <p className="text-text-muted text-xs mt-0.5">This is how participants will see your registration form</p>
               </div>
               <button 
                 onClick={() => setIsPreviewModalOpen(false)}
-                className="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface hover:bg-error/10 hover:text-error transition-all"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors"
               >
-                <span className="material-symbols-outlined">close</span>
+                <span className="material-symbols-outlined text-base">close</span>
               </button>
             </header>
 
-            <div className="flex-1 overflow-y-auto p-10 space-y-8 scrollbar-hide">
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {/* Core Fields (Static) */}
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3">Team or Player Name <span className="text-primary">*</span></label>
-                  <div className="w-full px-6 py-5 bg-surface-container-low rounded-2xl border border-outline-variant/10 text-on-surface font-bold text-lg opacity-60">
+                  <label className="block text-[11px] font-medium text-text-muted mb-1.5">Team or Player Name <span className="text-primary">*</span></label>
+                  <div className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-xs opacity-70">
                     Lisbon Masters
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3">Contact Email <span className="text-primary">*</span></label>
-                  <div className="w-full px-6 py-5 bg-surface-container-low rounded-2xl border border-outline-variant/10 text-on-surface font-bold text-lg opacity-60">
+                  <label className="block text-[11px] font-medium text-text-muted mb-1.5">Contact Email <span className="text-primary">*</span></label>
+                  <div className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-xs opacity-70">
                     manager@team.com
                   </div>
                 </div>
               </div>
 
               {/* Dynamic Fields */}
-              <div className="pt-8 border-t border-outline-variant/5 space-y-6">
+              <div className="pt-4 border-t border-outline-variant space-y-4">
                 {signupFormConfig.map((field) => (
                   <div key={field.id}>
-                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-3">
+                    <label className="block text-[11px] font-medium text-text-muted mb-1.5">
                       {field.label || "Untitled Field"} {field.required && <span className="text-primary">*</span>}
                     </label>
                     
                     {field.type === 'select' ? (
-                      <div className="w-full px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface font-bold flex justify-between items-center opacity-80">
+                      <div className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-muted font-medium text-xs flex justify-between items-center">
                         <span>Select an option</span>
-                        <span className="material-symbols-outlined">expand_more</span>
+                        <span className="material-symbols-outlined text-sm leading-none">expand_more</span>
                       </div>
                     ) : field.type === 'checkbox' ? (
-                      <div className="flex items-center gap-3 px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10 opacity-80">
-                        <div className="w-6 h-6 rounded bg-surface-container-highest border border-outline-variant/20"></div>
-                        <span className="text-on-surface-variant text-sm font-medium">I agree to {field.label || "this condition"}</span>
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant">
+                        <div className="w-4 h-4 rounded bg-surface-container border border-outline-variant"></div>
+                        <span className="text-text-secondary text-xs font-medium">I agree to {field.label || "this condition"}</span>
                       </div>
                     ) : (
-                      <div className="w-full px-6 py-5 bg-surface-container rounded-2xl border border-outline-variant/10 text-on-surface-variant/40 font-bold italic opacity-80">
+                      <div className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-muted font-medium text-xs">
                         {field.placeholder || `Enter ${field.label.toLowerCase()}...`}
                       </div>
                     )}
                     {field.description && (
-                       <p className="mt-3 text-on-surface-variant text-[11px] leading-relaxed opacity-60 px-2">{field.description}</p>
+                       <p className="mt-1 text-text-muted text-[11px] leading-relaxed">{field.description}</p>
                     )}
                   </div>
                 ))}
 
                 {signupFormConfig.length === 0 && (
-                  <p className="text-center text-on-surface-variant text-xs italic py-10 opacity-40">No custom fields added yet.</p>
+                  <p className="text-center text-text-muted text-xs italic py-6">No custom fields added yet.</p>
                 )}
               </div>
             </div>
 
-            <footer className="p-10 bg-surface-container-high border-t border-outline-variant/5">
+            <footer className="p-4 bg-surface-container-high border-t border-outline-variant">
               <button 
                 onClick={() => setIsPreviewModalOpen(false)}
-                className="w-full bg-primary-container text-white py-5 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 active:scale-95"
+                className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 rounded-lg font-medium text-xs transition-colors"
               >
                 Back to Editor
               </button>
@@ -998,8 +1007,8 @@ function TournamentContent() {
         </div>
       )}
 
-      <footer className="mt-auto py-12 border-t border-outline-variant/10 text-center opacity-50">
-        <p className="font-label text-[10px] uppercase tracking-[0.5em] text-on-surface-variant">ScoreBoard Scoring Engine • v2.4.1</p>
+      <footer className="mt-auto py-8 border-t border-outline-variant text-center">
+        <p className="font-mono text-xs text-text-muted">ScoreBoard Scoring Engine</p>
       </footer>
     </div>
   );

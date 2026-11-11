@@ -1385,24 +1385,24 @@ function HomeContent() {
 
       {/* Authentication Modal (Preserved for full compatibility with tests & auth flow) */}
       {authModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-surface-container-low border border-outline-variant/10 rounded-[2.5rem] p-8 max-w-md w-full relative shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-surface-container border border-outline-variant rounded-2xl p-6 sm:p-7 max-w-md w-full relative shadow-2xl animate-in zoom-in-95 duration-200">
             <button
               onClick={closeAuthModal}
-              className="absolute top-6 right-6 text-on-surface-variant/50 hover:text-on-surface transition-colors cursor-pointer"
+              className="absolute top-5 right-5 text-text-muted hover:text-text-primary transition-colors cursor-pointer p-1 rounded-lg hover:bg-surface-container-high"
             >
-              <span className="material-symbols-outlined">close</span>
+              <span className="material-symbols-outlined text-lg leading-none">close</span>
             </button>
 
-            <div className="text-center mb-8">
-              <h2 className="font-headline text-3xl font-black uppercase tracking-tight text-on-surface">
+            <div className="text-center mb-6">
+              <h2 className="font-sans text-xl sm:text-2xl font-semibold tracking-tight text-text-primary">
                 {authModal === "signup"
                   ? t("auth.createAccount")
                   : authModal === "forgot"
                   ? t("auth.forgotPasswordTitle")
                   : t("auth.welcomeBack")}
               </h2>
-              <p className="font-label text-xs uppercase tracking-widest text-on-surface-variant/60 mt-1">
+              <p className="text-xs text-text-muted mt-1 leading-relaxed">
                 {authModal === "signup"
                   ? t("auth.joinSubtitle")
                   : authModal === "forgot"
@@ -1413,13 +1413,13 @@ function HomeContent() {
 
             {forgotEmailSent ? (
               <div className="text-center py-4">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                  <span className="material-symbols-outlined text-3xl">mark_email_read</span>
+                <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                  <span className="material-symbols-outlined text-2xl">mark_email_read</span>
                 </div>
-                <h3 className="font-headline text-lg font-bold text-on-surface mb-2">
+                <h3 className="text-base font-semibold text-text-primary mb-1">
                   {t("auth.resetEmailSentTitle")}
                 </h3>
-                <p className="text-xs text-on-surface-variant mb-6 leading-relaxed">
+                <p className="text-xs text-text-muted mb-5 leading-relaxed">
                   {t("auth.resetEmailSentMessage")}
                 </p>
                 <button
@@ -1428,17 +1428,17 @@ function HomeContent() {
                     setAuthModal("login");
                     setForgotEmailSent(false);
                   }}
-                  className="w-full bg-primary text-on-primary py-3.5 rounded-2xl font-label text-xs font-black uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer shadow-lg shadow-primary/20"
+                  className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer"
                 >
                   {t("auth.backToSignIn")}
                 </button>
               </div>
             ) : (
               <>
-                <form onSubmit={handleAuthSubmit} className="space-y-4">
+                <form onSubmit={handleAuthSubmit} className="space-y-3.5">
                   {authModal === "signup" && (
                     <div>
-                      <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
+                      <label className="block text-[11px] font-medium text-text-muted mb-1.5">
                         {t("auth.username")}
                       </label>
                       <input
@@ -1446,13 +1446,13 @@ function HomeContent() {
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder={t("auth.usernamePlaceholder")}
-                        className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
+                        className="w-full bg-surface-container-high text-text-primary px-3.5 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-primary transition-colors text-xs font-medium placeholder:text-text-muted/40"
                       />
                     </div>
                   )}
 
                   <div>
-                    <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
+                    <label className="block text-[11px] font-medium text-text-muted mb-1.5">
                       {t("auth.email")}
                     </label>
                     <input
@@ -1461,14 +1461,14 @@ function HomeContent() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={t("auth.emailPlaceholder")}
                       required
-                      className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
+                      className="w-full bg-surface-container-high text-text-primary px-3.5 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-primary transition-colors text-xs font-medium placeholder:text-text-muted/40"
                     />
                   </div>
 
                   {authModal !== "forgot" && (
                     <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-[11px] font-medium text-text-muted">
                           {t("auth.password")}
                         </label>
                         {authModal === "login" && (
@@ -1490,10 +1490,10 @@ function HomeContent() {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder={t("auth.passwordPlaceholder")}
                         required
-                        className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
+                        className="w-full bg-surface-container-high text-text-primary px-3.5 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-primary transition-colors text-xs font-medium placeholder:text-text-muted/40"
                       />
                       {authModal === "signup" && (
-                        <p className="text-[11px] text-on-surface-variant/70 mt-1 leading-snug">
+                        <p className="text-[11px] text-text-muted mt-1 leading-snug">
                           {t("auth.passwordRequirements")}
                         </p>
                       )}
@@ -1502,7 +1502,7 @@ function HomeContent() {
 
                   {authModal === "signup" && (
                     <div>
-                      <label className="block font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70 mb-1">
+                      <label className="block text-[11px] font-medium text-text-muted mb-1.5">
                         {t("auth.confirmPassword")}
                       </label>
                       <input
@@ -1510,7 +1510,7 @@ function HomeContent() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder={t("auth.confirmPasswordPlaceholder")}
-                        className="w-full bg-surface-container text-on-surface px-4 py-3 rounded-2xl border border-outline-variant/10 outline-none focus:border-primary transition-colors text-sm font-medium"
+                        className="w-full bg-surface-container-high text-text-primary px-3.5 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-primary transition-colors text-xs font-medium placeholder:text-text-muted/40"
                       />
                     </div>
                   )}
@@ -1518,7 +1518,7 @@ function HomeContent() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-primary text-on-primary py-3.5 rounded-2xl font-label text-xs font-black uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-primary/20 mt-2"
+                    className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 cursor-pointer mt-2"
                   >
                     {isSubmitting
                       ? t("auth.processing")
@@ -1530,17 +1530,17 @@ function HomeContent() {
                   </button>
                 </form>
 
-                <div className="mt-6 text-center">
+                <div className="mt-5 text-center">
                   {authModal === "forgot" ? (
                     <button
                       type="button"
                       onClick={() => setAuthModal("login")}
-                      className="text-xs text-primary font-bold hover:underline cursor-pointer"
+                      className="text-xs text-primary font-medium hover:underline cursor-pointer"
                     >
                       {t("auth.backToSignIn")}
                     </button>
                   ) : authModal === "signup" ? (
-                    <p className="text-xs text-on-surface-variant">
+                    <p className="text-xs text-text-muted">
                       {t("auth.alreadyHaveAccount")}{" "}
                       <button
                         type="button"
@@ -1550,13 +1550,13 @@ function HomeContent() {
                           params.set("auth", "login");
                           router.replace(window.location.pathname + "?" + params.toString());
                         }}
-                        className="text-primary font-bold hover:underline cursor-pointer"
+                        className="text-primary font-medium hover:underline cursor-pointer"
                       >
                         {t("auth.signInBtn")}
                       </button>
                     </p>
                   ) : (
-                    <p className="text-xs text-on-surface-variant">
+                    <p className="text-xs text-text-muted">
                       {t("auth.dontHaveAccount")}{" "}
                       <button
                         type="button"
@@ -1566,7 +1566,7 @@ function HomeContent() {
                           params.set("auth", "signup");
                           router.replace(window.location.pathname + "?" + params.toString());
                         }}
-                        className="text-primary font-bold hover:underline cursor-pointer"
+                        className="text-primary font-medium hover:underline cursor-pointer"
                       >
                         {t("auth.signUpBtn")}
                       </button>

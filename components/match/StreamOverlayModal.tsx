@@ -35,34 +35,30 @@ export default function StreamOverlayModal({ isOpen, onClose, matchId }: StreamO
   const isPt = locale === "pt";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
       <div 
-        className="relative w-full max-w-lg bg-[#0c1324] border border-indigo-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl text-on-surface overflow-hidden"
+        className="relative w-full max-w-lg bg-surface-container border border-outline-variant rounded-2xl p-6 sm:p-7 shadow-2xl text-text-primary"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Glow Background Accent */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-
         {/* Close Button */}
         <button
           onClick={onClose}
           aria-label="Close modal"
-          className="absolute top-5 right-5 text-slate-400 hover:text-white transition-colors p-2 rounded-full hover:bg-slate-800/60 cursor-pointer"
+          className="absolute top-5 right-5 text-text-muted hover:text-text-primary transition-colors p-1.5 rounded-lg hover:bg-surface-container-high cursor-pointer"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <span className="material-symbols-outlined text-lg leading-none">close</span>
         </button>
 
         {/* Header */}
         <div className="mb-6">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 mb-2">
-            📺 OBS & vMix
-          </span>
-          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-surface-container-high text-text-secondary border border-outline-variant mb-2.5">
+            <span className="material-symbols-outlined text-[13px] leading-none text-text-muted">sensors</span>
+            <span>OBS & vMix</span>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-semibold text-text-primary tracking-tight">
             {t("match.streamOverlayTitle")}
           </h2>
-          <p className="text-xs text-slate-400 mt-1.5">
+          <p className="text-xs text-text-muted mt-1 leading-relaxed">
             {t("match.streamOverlayDesc")}
           </p>
         </div>
@@ -70,15 +66,17 @@ export default function StreamOverlayModal({ isOpen, onClose, matchId }: StreamO
         {/* Settings: Position & Size */}
         <div className="grid grid-cols-2 gap-3 mb-5">
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
+            <label className="block text-[11px] font-medium text-text-muted mb-1.5">
               {isPt ? "Posição no Vídeo" : "Screen Position"}
             </label>
-            <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+            <div className="flex bg-surface-container-low p-0.5 rounded-lg border border-outline-variant">
               <button
                 type="button"
                 onClick={() => setPosition("top")}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  position === "top" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"
+                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  position === "top"
+                    ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
                 }`}
               >
                 {isPt ? "Topo" : "Top"}
@@ -86,8 +84,10 @@ export default function StreamOverlayModal({ isOpen, onClose, matchId }: StreamO
               <button
                 type="button"
                 onClick={() => setPosition("bottom")}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  position === "bottom" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"
+                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  position === "bottom"
+                    ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
                 }`}
               >
                 {isPt ? "Fundo" : "Bottom"}
@@ -96,15 +96,17 @@ export default function StreamOverlayModal({ isOpen, onClose, matchId }: StreamO
           </div>
 
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
+            <label className="block text-[11px] font-medium text-text-muted mb-1.5">
               {isPt ? "Escala / Tamanho" : "Size Scale"}
             </label>
-            <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+            <div className="flex bg-surface-container-low p-0.5 rounded-lg border border-outline-variant">
               <button
                 type="button"
                 onClick={() => setScale("sm")}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  scale === "sm" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"
+                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  scale === "sm"
+                    ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
                 }`}
               >
                 SM
@@ -112,8 +114,10 @@ export default function StreamOverlayModal({ isOpen, onClose, matchId }: StreamO
               <button
                 type="button"
                 onClick={() => setScale("md")}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  scale === "md" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"
+                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  scale === "md"
+                    ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
                 }`}
               >
                 MD
@@ -121,8 +125,10 @@ export default function StreamOverlayModal({ isOpen, onClose, matchId }: StreamO
               <button
                 type="button"
                 onClick={() => setScale("lg")}
-                className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${
-                  scale === "lg" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"
+                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                  scale === "lg"
+                    ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
                 }`}
               >
                 LG
@@ -133,29 +139,29 @@ export default function StreamOverlayModal({ isOpen, onClose, matchId }: StreamO
 
         {/* URL Box & Copy Button */}
         <div className="mb-5">
-          <label className="block text-[10px] font-black uppercase tracking-wider text-slate-400 mb-1.5">
+          <label className="block text-[11px] font-medium text-text-muted mb-1.5">
             {isPt ? "URL da Fonte de Navegador (Browser Source)" : "Browser Source URL"}
           </label>
-          <div className="flex items-center gap-2 bg-slate-900/90 border border-slate-700 rounded-2xl p-2 pl-3">
+          <div className="flex items-center gap-2 bg-surface-container-low border border-outline-variant rounded-lg p-1.5 pl-3">
             <input
               type="text"
               readOnly
               value={overlayUrl}
-              className="bg-transparent flex-1 text-xs text-indigo-300 font-mono outline-none truncate"
+              className="bg-transparent flex-1 text-xs text-text-secondary font-mono outline-none truncate"
             />
             <button
               type="button"
               onClick={handleCopy}
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-lg shadow-indigo-600/30"
+              className="px-3.5 py-1.5 bg-primary hover:bg-primary/90 text-white text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
             >
               {copied ? (
                 <>
-                  <span>✓</span>
+                  <span className="material-symbols-outlined text-[15px] leading-none">check</span>
                   <span>{isPt ? "Copiado!" : "Copied!"}</span>
                 </>
               ) : (
                 <>
-                  <span className="material-symbols-outlined text-[15px]">content_copy</span>
+                  <span className="material-symbols-outlined text-[15px] leading-none">content_copy</span>
                   <span>{isPt ? "Copiar" : "Copy"}</span>
                 </>
               )}
@@ -164,11 +170,12 @@ export default function StreamOverlayModal({ isOpen, onClose, matchId }: StreamO
         </div>
 
         {/* Instructions */}
-        <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-4 mb-6 text-xs text-slate-300 space-y-2">
-          <p className="font-bold text-white flex items-center gap-1.5">
-            <span>💡</span> {isPt ? "Como configurar no OBS Studio:" : "How to set up in OBS Studio:"}
+        <div className="bg-surface-container-low border border-outline-variant rounded-xl p-4 mb-6 text-xs text-text-secondary space-y-2">
+          <p className="font-medium text-text-primary flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-sm text-text-muted leading-none">info</span>
+            <span>{isPt ? "Como configurar no OBS Studio:" : "How to set up in OBS Studio:"}</span>
           </p>
-          <ol className="list-decimal pl-4 space-y-1.5 text-slate-400 text-[11px]">
+          <ol className="list-decimal pl-4 space-y-1.5 text-text-muted text-[11px] leading-relaxed">
             <li>{isPt ? "No OBS, clique em '+' sob 'Fontes' e adicione um 'Navegador' (Browser)." : "In OBS, click '+' under Sources and add a 'Browser' source."}</li>
             <li>{isPt ? "Cole o URL acima no campo 'URL'." : "Paste the URL above into the 'URL' field."}</li>
             <li>{isPt ? "Defina Largura: 1920 e Altura: 1080 (o fundo é 100% transparente)." : "Set Width: 1920 and Height: 1080 (the background is 100% transparent)."}</li>
@@ -182,14 +189,14 @@ export default function StreamOverlayModal({ isOpen, onClose, matchId }: StreamO
             href={overlayUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 py-3 px-4 bg-slate-800 hover:bg-slate-700 text-white text-center text-xs font-bold rounded-2xl transition-all cursor-pointer border border-slate-700"
+            className="flex-1 py-2.5 px-4 bg-surface-container-high hover:bg-surface-container-highest text-text-primary text-center text-xs font-medium rounded-lg transition-colors cursor-pointer border border-outline-variant"
           >
             {isPt ? "Abrir Pré-visualização ↗" : "Open Live Preview ↗"}
           </a>
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-3 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-bold rounded-2xl transition-all cursor-pointer"
+            className="px-5 py-2.5 bg-transparent hover:bg-surface-container-high text-text-secondary text-xs font-medium rounded-lg transition-colors cursor-pointer border border-outline-variant"
           >
             {isPt ? "Fechar" : "Close"}
           </button>

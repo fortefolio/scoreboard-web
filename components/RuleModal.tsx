@@ -78,22 +78,22 @@ export default function RuleModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-300">
-      <div className="bg-surface-container-high rounded-3xl sm:rounded-[2.5rem] p-5 sm:p-8 md:p-10 max-w-md w-full shadow-3xl border border-outline-variant/20 animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-headline font-black mb-2 uppercase tracking-tight">{t("match.editRulesTitle")}</h2>
-        <p className="text-on-surface-variant text-xs mb-8 font-label tracking-widest uppercase opacity-60">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-200">
+      <div className="bg-surface-container rounded-2xl p-5 sm:p-7 max-w-md w-full shadow-2xl border border-outline-variant animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto">
+        <h2 className="text-lg sm:text-xl font-semibold mb-1 tracking-tight text-text-primary">{t("match.editRulesTitle")}</h2>
+        <p className="text-text-muted text-xs mb-6">
           {t("match.roundConfiguration", { sport: getSportTranslation(sportType, t) || "Sport", round: roundNum })}
         </p>
 
-        <div className="space-y-5">
-          <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant/10">
-            <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-2">
+        <div className="space-y-4">
+          <div className="p-3.5 bg-surface-container-high rounded-xl border border-outline-variant">
+            <label className="block text-[11px] font-medium text-text-muted mb-1.5">
               {isFootball ? t("match.venueStadium") : t("match.venueCourt")}
             </label>
             <input
               type="text"
               placeholder={isBasketball ? "e.g. TD Garden" : isFootball ? "e.g. Estádio da Luz" : "e.g. Center Court"}
-              className="w-full bg-transparent text-xl font-black text-indigo-400 outline-none placeholder:opacity-20"
+              className="w-full bg-transparent text-base font-semibold text-text-primary outline-none placeholder:text-text-muted/40"
               value={court}
               onChange={(e) => setCourt(e.target.value)}
             />
@@ -102,8 +102,8 @@ export default function RuleModal({
           {/* Basketball Specific Rules */}
           {isBasketball && (
             <>
-              <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant/10">
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-2">
+              <div className="p-3.5 bg-surface-container-high rounded-xl border border-outline-variant">
+                <label className="block text-[11px] font-medium text-text-muted mb-1.5">
                   {t("match.quarterDurationMinutes")}
                 </label>
                 <div className="flex gap-2">
@@ -112,10 +112,10 @@ export default function RuleModal({
                       key={mins}
                       type="button"
                       onClick={() => setQuarterMinutes(mins)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-black transition-all ${
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                         quarterMinutes === mins
-                          ? "bg-primary text-on-primary shadow-md"
-                          : "bg-surface-container-high text-on-surface-variant hover:text-on-surface"
+                          ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
+                          : "text-text-muted hover:text-text-primary"
                       }`}
                     >
                       {mins} min {mins === 10 ? "(FIBA)" : mins === 12 ? "(NBA)" : ""}
@@ -124,37 +124,37 @@ export default function RuleModal({
                 </div>
               </div>
 
-              <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant/10">
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-2">
+              <div className="p-3.5 bg-surface-container-high rounded-xl border border-outline-variant">
+                <label className="block text-[11px] font-medium text-text-muted mb-1.5">
                   {t("match.shotClock")} ({t("match.secondsCount", { count: "" }).trim()})
                 </label>
                 <input
                   type="number"
-                  className="w-full bg-transparent text-xl font-black text-on-surface outline-none"
+                  className="w-full bg-transparent text-base font-semibold text-text-primary outline-none"
                   value={shotClockSeconds}
                   onChange={(e) => setShotClockSeconds(parseInt(e.target.value) || 24)}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant/10">
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-2">
+                <div className="p-3.5 bg-surface-container-high rounded-xl border border-outline-variant">
+                  <label className="block text-[11px] font-medium text-text-muted mb-1.5">
                     {t("match.overtime")} (Min)
                   </label>
                   <input
                     type="number"
-                    className="w-full bg-transparent text-xl font-black text-on-surface outline-none"
+                    className="w-full bg-transparent text-base font-semibold text-text-primary outline-none"
                     value={overtimeMinutes}
                     onChange={(e) => setOvertimeMinutes(parseInt(e.target.value) || 5)}
                   />
                 </div>
-                <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant/10">
-                  <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-2">
+                <div className="p-3.5 bg-surface-container-high rounded-xl border border-outline-variant">
+                  <label className="block text-[11px] font-medium text-text-muted mb-1.5">
                     {t("match.bonusAtFouls")}
                   </label>
                   <input
                     type="number"
-                    className="w-full bg-transparent text-xl font-black text-on-surface outline-none"
+                    className="w-full bg-transparent text-base font-semibold text-text-primary outline-none"
                     value={foulsBonus}
                     onChange={(e) => setFoulsBonus(parseInt(e.target.value) || 5)}
                   />
@@ -165,13 +165,13 @@ export default function RuleModal({
 
           {/* Football Specific Rules */}
           {isFootball && (
-            <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant/10">
-              <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-2">
+            <div className="p-3.5 bg-surface-container-high rounded-xl border border-outline-variant">
+              <label className="block text-[11px] font-medium text-text-muted mb-1.5">
                 {t("match.halfDurationMinutes")}
               </label>
               <input
                 type="number"
-                className="w-full bg-transparent text-xl font-black text-on-surface outline-none"
+                className="w-full bg-transparent text-base font-semibold text-text-primary outline-none"
                 value={halfMinutes}
                 onChange={(e) => setHalfMinutes(parseInt(e.target.value) || 45)}
               />
@@ -181,35 +181,35 @@ export default function RuleModal({
           {/* Volleyball & Tennis Rules */}
           {!isBasketball && !isFootball && (
             <>
-              <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant/10">
-                <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-2">
+              <div className="p-3.5 bg-surface-container-high rounded-xl border border-outline-variant">
+                <label className="block text-[11px] font-medium text-text-muted mb-1.5">
                   {t("match.maximumSets")}
                 </label>
                 <input
                   type="number"
-                  className="w-full bg-transparent text-xl font-black text-on-surface outline-none"
+                  className="w-full bg-transparent text-base font-semibold text-text-primary outline-none"
                   value={sets}
                   onChange={(e) => setSets(parseInt(e.target.value) || 1)}
                 />
               </div>
 
               {isPadel && (
-                <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant/10 flex items-center justify-between">
+                <div className="p-3.5 bg-surface-container-high rounded-xl border border-outline-variant flex items-center justify-between">
                   <div>
-                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-0.5">
+                    <label className="block text-[11px] font-medium text-text-primary mb-0.5">
                       {t("match.goldenPoint")}
                     </label>
-                    <p className="text-[11px] text-on-surface-variant/70">
+                    <p className="text-[11px] text-text-muted">
                       {t("match.goldenPointDesc")}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setNoAd(!noAd)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    className={`px-3 py-1 rounded-md text-xs font-medium transition-colors border border-outline-variant ${
                       noAd
-                        ? "bg-amber-400/20 text-amber-300 border border-amber-400/30"
-                        : "bg-surface-container-high text-on-surface-variant"
+                        ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                        : "bg-surface-container text-text-muted"
                     }`}
                   >
                     {noAd ? t("match.active") : t("match.inactive")}
@@ -219,25 +219,25 @@ export default function RuleModal({
 
               {!isRacketSport && (
                 <>
-                  <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant/10">
-                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-2">
+                  <div className="p-3.5 bg-surface-container-high rounded-xl border border-outline-variant">
+                    <label className="block text-[11px] font-medium text-text-muted mb-1.5">
                       {t("match.pointsPerSet")}
                     </label>
                     <input
                       type="number"
-                      className="w-full bg-transparent text-xl font-black text-on-surface outline-none"
+                      className="w-full bg-transparent text-base font-semibold text-text-primary outline-none"
                       value={points}
                       onChange={(e) => setPoints(parseInt(e.target.value) || 1)}
                     />
                   </div>
 
-                  <div className="p-4 bg-surface-container rounded-2xl border border-outline-variant/10">
-                    <label className="block text-[10px] font-black text-on-surface-variant uppercase tracking-[0.2em] mb-2">
+                  <div className="p-3.5 bg-surface-container-high rounded-xl border border-outline-variant">
+                    <label className="block text-[11px] font-medium text-text-muted mb-1.5">
                       {t("match.pointCapOptional")}
                     </label>
                     <input
                       type="number"
-                      className="w-full bg-transparent text-xl font-black text-on-surface outline-none"
+                      className="w-full bg-transparent text-base font-semibold text-text-primary outline-none"
                       placeholder={t("match.noCap")}
                       value={cap}
                       onChange={(e) => setCap(e.target.value === "" ? "" : parseInt(e.target.value))}
@@ -248,16 +248,16 @@ export default function RuleModal({
             </>
           )}
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex gap-3 pt-3">
             <button
               onClick={onClose}
-              className="flex-1 py-4 text-on-surface-variant font-bold hover:text-on-surface transition-colors uppercase tracking-widest text-[10px]"
+              className="flex-1 py-2.5 px-4 bg-transparent hover:bg-surface-container-high border border-outline-variant text-text-secondary rounded-lg font-medium text-xs transition-colors"
             >
               {t("common.cancel")}
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 bg-primary-container text-on-primary-container py-4 rounded-full font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 cursor-pointer"
+              className="flex-1 bg-primary hover:bg-primary/90 text-white py-2.5 px-4 rounded-lg font-medium text-xs transition-colors cursor-pointer"
             >
               {t("match.saveRules")}
             </button>

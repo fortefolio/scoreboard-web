@@ -86,19 +86,19 @@ export default function GroupMatchesView({
   );
 
   if (Object.keys(groups).length === 0) {
-    return <div className="text-center p-12 text-on-surface-variant italic bg-surface-container-low rounded-[2rem] border border-outline-variant/10">No group stage matches generated yet.</div>;
+    return <div className="text-center p-8 text-text-muted text-xs bg-surface-container rounded-xl border border-outline-variant">No group stage matches generated yet.</div>;
   }
 
   return (
-    <div className="space-y-12">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-surface-container rounded-[2rem] p-6 border border-outline-variant/10 gap-6">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 bg-primary-container/20 rounded-2xl flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined">settings</span>
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-surface-container rounded-xl p-4 sm:p-5 border border-outline-variant gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-surface-container-high rounded-lg flex items-center justify-center text-text-muted border border-outline-variant">
+            <span className="material-symbols-outlined text-base">settings</span>
           </div>
           <div>
-            <h3 className="text-on-surface font-black uppercase tracking-tighter">Group Stage Config</h3>
-            <p className="text-on-surface-variant text-[10px] font-label uppercase tracking-widest opacity-60">
+            <h3 className="text-text-primary font-semibold text-sm">Group Stage Config</h3>
+            <p className="text-text-muted text-xs font-mono">
               {tournament?.sport_type === "Tennis"
                 ? `Best of ${tournament?.settings?.overrides?.[1]?.max_sets || tournament?.settings?.default?.max_sets || 3} Sets`
                 : `${tournament?.settings?.overrides?.[1]?.max_sets || tournament?.settings?.default?.max_sets || 3} Sets • ${tournament?.settings?.overrides?.[1]?.points_per_set || tournament?.settings?.default?.points_per_set || 21} Points`}
@@ -106,51 +106,49 @@ export default function GroupMatchesView({
           </div>
         </div>
         
-        <div className="flex flex-wrap items-center gap-4 w-full md:w-auto">
-          <div className="flex items-center gap-3 bg-surface-container-low px-4 py-2 rounded-xl border border-outline-variant/10 flex-1 md:flex-none">
-            <span className="material-symbols-outlined text-sm text-on-surface-variant">calendar_today</span>
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex items-center gap-2 bg-surface-container-high px-3 py-1.5 rounded-lg border border-outline-variant flex-1 sm:flex-none">
+            <span className="material-symbols-outlined text-[13px] text-text-muted">calendar_today</span>
             <input 
               type="date"
-              className="bg-transparent text-[10px] font-black uppercase tracking-widest text-on-surface outline-none"
+              className="bg-transparent text-xs font-mono text-text-primary outline-none"
               value={tournament?.settings?.round_dates?.['group_stage'] || ""}
               onChange={(e) => onSaveScheduledDate('group_stage', e.target.value)}
             />
           </div>
           <button 
             onClick={() => setIsRuleModalOpen(true)}
-            className="bg-primary-container text-on-primary-container px-6 py-3 rounded-full font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl shadow-primary-container/20 flex-1 md:flex-none"
+            className="bg-primary hover:bg-primary/90 text-white px-3.5 py-1.5 rounded-lg font-medium text-xs transition-colors flex-1 sm:flex-none"
           >
             Edit Rules
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {Object.entries(groups).sort().map(([label, matches]) => (
-          <div key={label} className="space-y-6">
-            <div className="flex items-center gap-4 border-b border-outline-variant/10 pb-4">
-              <div className="w-10 h-10 rounded-xl bg-primary-container/20 flex items-center justify-center text-primary font-black">
+          <div key={label} className="space-y-4">
+            <div className="flex items-center gap-3 border-b border-outline-variant pb-3">
+              <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-primary font-semibold text-sm border border-outline-variant">
                 {label}
               </div>
-              <h3 className="text-2xl font-headline font-black uppercase tracking-tighter text-on-surface">Group {label} Matches</h3>
+              <h3 className="text-base font-semibold text-text-primary">Group {label} Matches</h3>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-3">
               {matches.map((match) => {
                 const roundDate = tournament?.settings?.round_dates?.['group_stage'];
                 return (
                   <Link key={match.id} href={`/match/${match.id}`} className="block group">
-                    <div className="bg-surface-container-low border border-outline-variant/10 rounded-2xl p-4 shadow-xl group-hover:border-primary/40 transition-all duration-300 relative overflow-hidden">
-                      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      
+                    <div className="bg-surface-container border border-outline-variant rounded-xl p-3.5 hover:border-outline hover:bg-surface-container-high/40 transition-colors relative overflow-hidden">
                       {roundDate && (
-                        <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-[0.2em] text-secondary mb-3 relative z-10">
-                          <span className="material-symbols-outlined text-[12px]">calendar_today</span>
+                        <div className="flex items-center gap-1 text-[11px] font-medium text-text-secondary mb-2">
+                          <span className="material-symbols-outlined text-[13px] text-text-muted">calendar_today</span>
                           {new Date(roundDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between relative z-10">
+                      <div className="flex items-center justify-between">
                       <div className="flex-1 space-y-2">
                         {[0, 1].map((i) => {
                           const side = i === 0 ? 'home' : 'away';
@@ -176,16 +174,16 @@ export default function GroupMatchesView({
                           }
 
                           return (
-                            <div key={i} className="flex justify-between items-center pr-4">
+                            <div key={i} className="flex justify-between items-center pr-3">
                               <div className="flex items-center gap-2 truncate max-w-[140px]">
-                                <span className={`text-sm font-bold tracking-tight truncate ${match.participants?.[i] ? 'text-on-surface' : 'text-on-surface-variant opacity-50 italic'}`}>
+                                <span className={`text-xs font-medium truncate ${match.participants?.[i] ? 'text-text-primary' : 'text-text-muted italic'}`}>
                                   {formatTeamOrPlayerName(match.participants?.[i]?.name) || "TBD"}
                                 </span>
                                 {match.status === 'ongoing' && match.scores?.serving_index === i && (
-                                  <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" title="Serving"></span>
+                                  <span className="w-1.5 h-1.5 rounded-full bg-primary" title="Serving"></span>
                                 )}
                               </div>
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-2.5">
                                 {setsList.map((s: any, sIdx: number) => {
                                   const pScore = i === 0 ? (s.home ?? s.team1 ?? 0) : (s.away ?? s.team2 ?? 0);
                                   const oScore = i === 0 ? (s.away ?? s.team2 ?? 0) : (s.home ?? s.team1 ?? 0);
@@ -193,34 +191,36 @@ export default function GroupMatchesView({
                                   return (
                                     <span
                                       key={sIdx}
-                                      className={`text-xs font-mono min-w-[16px] text-right ${
-                                        pScore > oScore ? "font-black text-on-surface" : "text-on-surface-variant/60"
+                                      className={`text-xs font-mono tabular-nums min-w-[14px] text-right ${
+                                        pScore > oScore ? "font-semibold text-text-primary" : "text-text-muted"
                                       }`}
                                     >
                                       {pScore}
                                       {tbVal !== null && tbVal !== undefined && (
-                                        <sup className="text-[8px] text-primary ml-0.5">{tbVal}</sup>
+                                        <sup className="text-[9px] text-primary ml-0.5">{tbVal}</sup>
                                       )}
                                     </span>
                                   );
                                 })}
-                                <div className="flex items-center justify-end pl-2 border-l border-outline-variant/10 min-w-[20px]">
-                                  <span className="text-xs font-black text-secondary">{sets}</span>
+                                <div className="flex items-center justify-end pl-1.5 border-l border-outline-variant min-w-[16px]">
+                                  <span className="text-xs font-mono tabular-nums font-semibold text-text-primary">{sets}</span>
                                 </div>
                                 {games !== null && (
-                                  <span className="text-xs font-bold text-indigo-400 min-w-[16px] text-right">{games}</span>
+                                  <span className="text-xs font-mono tabular-nums font-medium text-text-secondary min-w-[14px] text-right">{games}</span>
                                 )}
                                 {match.status === 'ongoing' && (
-                                  <span className="text-sm font-digital text-primary min-w-[24px] text-right">{livePoints}</span>
+                                  <span className="text-xs font-digital font-semibold text-primary min-w-[18px] text-right">{livePoints}</span>
                                 )}
                               </div>
                             </div>
                           );
                         })}
                       </div>
-                      <div className="pl-4 border-l border-outline-variant/10 flex flex-col items-center justify-center gap-1 min-w-[80px]">
-                        <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${
-                          match.status === 'completed' ? 'bg-secondary/10 text-secondary' : 'bg-primary/10 text-primary'
+                      <div className="pl-3 border-l border-outline-variant flex flex-col items-center justify-center gap-1 min-w-[70px]">
+                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-medium border border-outline-variant ${
+                          match.status === 'completed' ? 'bg-surface-container-high text-text-muted' :
+                          match.status === 'ongoing' ? 'bg-success/10 text-success border-success/20' :
+                          'bg-surface-container-high text-text-secondary'
                         }`}>
                           {match.status === 'completed'
                             ? t("status.final")
@@ -228,7 +228,7 @@ export default function GroupMatchesView({
                             ? t("status.live")
                             : t("status.scheduled")}
                         </span>
-                        <span className="text-[9px] text-on-surface-variant opacity-50 font-black uppercase">
+                        <span className="text-[10px] text-text-muted font-mono">
                           {t("common.roundCount", { round: match.round_number })}
                         </span>
                       </div>

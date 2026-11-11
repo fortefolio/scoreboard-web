@@ -69,49 +69,52 @@ function ParticipantsContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-on-background font-body p-6 flex flex-col items-center">
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-container/10 rounded-full blur-[120px]"></div>
-      </div>
-
-      <main className="w-full max-w-2xl relative z-10 pt-12">
-        <header className="text-center mb-16">
-          <Link href={`/tournament/${tournamentId}/signup`} className="text-2xl font-digital text-indigo-500 tracking-tighter mb-8 inline-block">SCORE:BOARD</Link>
-          <p className="text-secondary font-label text-[10px] uppercase tracking-[0.3em] mb-2">{getSportTranslation(tournament?.sport_type, t)} Roster</p>
-          <h1 className="text-4xl font-headline font-black tracking-tight mb-4">{tournament?.name}</h1>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-surface-container-high rounded-full border border-outline-variant/10">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+    <div className="min-h-screen bg-background text-on-background font-sans p-4 sm:p-6 flex flex-col items-center">
+      <main className="w-full max-w-2xl relative z-10 pt-8 pb-12">
+        <header className="text-center mb-8">
+          <Link href={`/tournament/${tournamentId}/signup`} className="text-xl font-digital text-text-primary tracking-wider mb-4 inline-block hover:opacity-80 transition-opacity">
+            SCORE:BOARD
+          </Link>
+          <p className="text-text-muted font-medium text-xs uppercase tracking-wider mb-1.5">
+            {getSportTranslation(tournament?.sport_type, t)} Roster
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary mb-3">
+            {tournament?.name}
+          </h1>
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-surface-container rounded-md border border-outline-variant">
+            <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+            <span className="text-[11px] font-mono font-medium text-text-secondary">
               {participants.length} / {tournament?.settings?.max_teams || 16} Teams Registered
             </span>
           </div>
         </header>
 
-        <div className="bg-surface-container-low rounded-[2.5rem] p-10 border border-outline-variant/10 shadow-3xl">
+        <div className="bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant">
           {participants.length === 0 ? (
-            <div className="text-center py-12 text-on-surface-variant italic">
+            <div className="text-center py-12 text-text-muted text-xs italic">
               No teams have registered yet.
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {participants.map((p, idx) => (
-                <div key={idx} className="bg-surface-container p-5 rounded-2xl border border-outline-variant/5 flex items-center gap-4 group hover:border-primary/30 transition-all">
-                  <span className="text-[10px] font-black text-primary opacity-30 group-hover:opacity-100 transition-opacity">
+                <div key={idx} className="bg-surface-container-high p-3.5 rounded-xl border border-outline-variant flex items-center gap-3">
+                  <span className="text-xs font-mono font-medium text-text-muted">
                     {String(idx + 1).padStart(2, '0')}
                   </span>
-                  <span className="font-bold text-on-surface">{p.name}</span>
+                  <span className="font-medium text-text-primary text-sm truncate">{p.name}</span>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <div className="mt-12 text-center">
-          <Link href={`/tournament/${tournamentId}/signup`}>
-            <button className="text-primary font-bold text-sm hover:underline flex items-center gap-2 mx-auto">
-              <span className="material-symbols-outlined text-sm">how_to_reg</span>
-              Back to Registration
-            </button>
+        <div className="mt-8 text-center">
+          <Link 
+            href={`/tournament/${tournamentId}/signup`}
+            className="text-primary hover:underline text-xs font-medium inline-flex items-center gap-1.5"
+          >
+            <span className="material-symbols-outlined text-sm">how_to_reg</span>
+            Back to Registration
           </Link>
         </div>
       </main>

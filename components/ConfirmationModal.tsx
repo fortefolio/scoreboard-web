@@ -24,19 +24,19 @@ export default function ConfirmationModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-300">
-      <div className="bg-surface-container-high rounded-3xl sm:rounded-[2.5rem] p-6 sm:p-10 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-3xl border border-outline-variant/20 animate-in zoom-in-95 duration-300">
-        <h2 className={`text-xl sm:text-2xl font-headline font-black mb-3 sm:mb-4 uppercase tracking-tight ${isDanger ? 'text-error' : 'text-on-surface'}`}>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-200">
+      <div className="bg-surface-container rounded-2xl p-6 sm:p-7 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-outline-variant animate-in zoom-in-95 duration-200">
+        <h2 className={`text-lg sm:text-xl font-semibold mb-2 tracking-tight ${isDanger ? 'text-error' : 'text-text-primary'}`}>
           {title}
         </h2>
-        <p className="text-on-surface-variant text-xs sm:text-sm mb-6 sm:mb-10 leading-relaxed font-medium">
+        <p className="text-text-muted text-xs sm:text-sm mb-6 leading-relaxed">
           {message}
         </p>
         
-        <div className="flex gap-4">
+        <div className="flex gap-3">
           <button 
             onClick={onClose} 
-            className="flex-1 py-4 text-on-surface-variant font-bold hover:text-on-surface transition-colors uppercase tracking-widest text-[10px]"
+            className="flex-1 py-2.5 px-4 bg-transparent hover:bg-surface-container-high border border-outline-variant text-text-secondary rounded-lg font-medium text-xs transition-colors"
           >
             {cancelText}
           </button>
@@ -45,7 +45,11 @@ export default function ConfirmationModal({
               onConfirm();
               onClose();
             }} 
-            className={`flex-1 ${isDanger ? 'bg-error-container text-on-error-container shadow-error/10' : 'bg-primary-container text-on-primary-container shadow-primary-container/20'} py-4 rounded-full font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110 transition-all shadow-xl active:scale-95`}
+            className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-xs transition-colors text-white ${
+              isDanger 
+                ? 'bg-error hover:bg-error/90' 
+                : 'bg-primary hover:bg-primary/90'
+            }`}
           >
             {confirmText}
           </button>
