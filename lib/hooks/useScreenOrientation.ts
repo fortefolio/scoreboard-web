@@ -5,7 +5,12 @@ import { useEffect, useState } from "react";
 export type ScreenOrientation = "portrait" | "landscape";
 
 export function useScreenOrientation(): ScreenOrientation {
-  const [orientation, setOrientation] = useState<ScreenOrientation>("portrait");
+  const [orientation, setOrientation] = useState<ScreenOrientation>(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth > window.innerHeight ? "landscape" : "portrait";
+    }
+    return "landscape";
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;

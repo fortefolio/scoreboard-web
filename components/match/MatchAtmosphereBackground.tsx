@@ -63,6 +63,12 @@ function MatchAtmosphereBackgroundComponent({
         data-sport={normalizedSport}
         data-orientation={orientation}
         data-mode={mode}
+        style={{
+          transform: "translate3d(0, 0, 0)",
+          WebkitTransform: "translate3d(0, 0, 0)",
+          backfaceVisibility: "hidden",
+          WebkitBackfaceVisibility: "hidden",
+        }}
         className={`fixed inset-0 pointer-events-none z-0 overflow-hidden select-none ${className}`}
         aria-hidden="true"
       >
@@ -74,12 +80,12 @@ function MatchAtmosphereBackgroundComponent({
           priority
           unoptimized
           sizes="100vw"
-          className="object-cover object-center transition-opacity duration-700 ease-in-out"
+          className="object-cover object-center"
         />
 
-        {/* Layer 2a: Semi-transparent Occlusion Mask */}
+        {/* Layer 2a: Semi-transparent Occlusion Mask (No backdrop-blur to avoid scroll GPU invalidation) */}
         <div
-          className={`absolute inset-0 transition-colors duration-500 backdrop-blur-[1px] ${
+          className={`absolute inset-0 ${
             isUmpire ? "bg-[#0b0d14]/85" : "bg-[#0b0d14]/75"
           }`}
         />
