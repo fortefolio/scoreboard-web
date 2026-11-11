@@ -118,7 +118,7 @@ export default function GroupMatchesView({
           </div>
           <button 
             onClick={() => setIsRuleModalOpen(true)}
-            className="bg-primary hover:bg-primary/90 text-white px-3.5 py-1.5 rounded-lg font-medium text-xs transition-colors flex-1 sm:flex-none"
+            className="bg-text-primary hover:bg-white text-surface-container-lowest px-3.5 py-1.5 rounded-lg font-medium text-xs transition-colors flex-1 sm:flex-none cursor-pointer"
           >
             Edit Rules
           </button>

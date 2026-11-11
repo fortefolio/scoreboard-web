@@ -432,10 +432,10 @@ function UserProfileContent({
                 type="button"
                 onClick={() => setViewMode("list")}
                 title={t("common.viewList")}
-                className={`p-1.5 rounded-lg transition-all flex items-center cursor-pointer ${
+                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
                   viewMode === "list"
-                    ? "bg-primary text-on-primary shadow-sm"
-                    : "text-on-surface-variant hover:text-on-surface"
+                    ? "bg-surface-container-highest text-text-primary shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
                 }`}
               >
                 <span className="material-symbols-outlined text-[18px]">view_list</span>
@@ -444,10 +444,10 @@ function UserProfileContent({
                 type="button"
                 onClick={() => setViewMode("cards")}
                 title={t("common.viewCards")}
-                className={`p-1.5 rounded-lg transition-all flex items-center cursor-pointer ${
+                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
                   viewMode === "cards"
-                    ? "bg-primary text-on-primary shadow-sm"
-                    : "text-on-surface-variant hover:text-on-surface"
+                    ? "bg-surface-container-highest text-text-primary shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
                 }`}
               >
                 <span className="material-symbols-outlined text-[18px]">grid_view</span>

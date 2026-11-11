@@ -187,7 +187,7 @@ const BracketTree = ({
               <div className="h-7 flex items-center justify-center mt-1">
                 <button 
                   onClick={() => setSelectedRound(roundInt)}
-                  className="opacity-0 group-hover:opacity-100 text-xs bg-primary hover:bg-primary/90 text-white px-2.5 py-0.5 rounded-md transition-all font-medium"
+                  className="opacity-0 group-hover:opacity-100 text-xs bg-text-primary hover:bg-white text-surface-container-lowest px-2.5 py-0.5 rounded-md transition-all font-medium"
                 >
                   Edit Rules
                 </button>
@@ -466,7 +466,7 @@ export default function TournamentBracket({
             <button
               onClick={handleGenerateKnockout}
               disabled={isGeneratingKnockout}
-              className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium text-xs transition-colors disabled:opacity-50"
+              className="bg-text-primary hover:bg-white text-surface-container-lowest px-4 py-2 rounded-lg font-medium text-xs transition-colors disabled:opacity-50 cursor-pointer"
             >
               {isGeneratingKnockout ? "Initializing..." : "Generate Bracket"}
             </button>

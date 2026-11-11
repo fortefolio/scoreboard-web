@@ -140,7 +140,7 @@ function ResetPasswordContent() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-primary text-on-primary py-3.5 rounded-2xl font-label text-xs font-black uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer shadow-lg shadow-primary/20 mt-2"
+          className="w-full bg-text-primary text-surface-container-lowest hover:bg-white py-3 rounded-xl font-label text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50 cursor-pointer mt-2"
         >
           {loading ? t("auth.processing") : t("auth.updatePasswordBtn")}
         </button>

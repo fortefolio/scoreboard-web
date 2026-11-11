@@ -1851,7 +1851,7 @@ export default function MatchDetailClient() {
                   <button
                     type="button"
                     onClick={() => setIsChangingUmpire(true)}
-                    className="mt-2 px-3.5 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-medium transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                    className="mt-2 px-3.5 py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest text-xs font-medium transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[15px]">person_add</span>
                     {t("match.appointOtherReferee")}
@@ -1971,7 +1971,7 @@ export default function MatchDetailClient() {
                   router.push(`/match/${matchIdStr}/scoreboard`);
                 }
               }}
-              className="w-full py-3.5 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              className="w-full py-3.5 rounded-xl bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
               <span className="material-symbols-outlined text-[18px]">play_circle</span>
               {t("match.startScoreboard")}

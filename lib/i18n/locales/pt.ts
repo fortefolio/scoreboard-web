@@ -423,4 +423,13 @@ export const pt: Translations = {
       deleteSuccess: "Conta eliminada com sucesso. A terminar sessão...",
     },
   },
+  footer: {
+    tagline: "Plataforma de resultados ao vivo e torneios para desporto competitivo.",
+    matches: "Jogos",
+    tournaments: "Torneios",
+    terms: "Termos & Privacidade",
+    settings: "Definições",
+    statusOnline: "SISTEMA OPERACIONAL",
+    allRightsReserved: "Todos os direitos reservados.",
+  },
 };

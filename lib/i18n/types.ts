@@ -419,4 +419,13 @@ export interface Translations {
       deleteSuccess: string;
     };
   };
+  footer: {
+    tagline: string;
+    matches: string;
+    tournaments: string;
+    terms: string;
+    settings: string;
+    statusOnline: string;
+    allRightsReserved: string;
+  };
 }

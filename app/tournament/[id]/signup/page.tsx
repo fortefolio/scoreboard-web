@@ -272,10 +272,6 @@ function SignupContent() {
             </form>
           </div>
         )}
-
-        <footer className="mt-8 text-center">
-          <p className="font-mono text-xs text-text-muted">Powered by ScoreBoard Scoring Engine</p>
-        </footer>
       </main>
     </div>
   );

@@ -99,14 +99,14 @@ function ConfirmContent() {
         <div className="space-y-3">
           <a
             href="scoreboard://auth/callback"
-            className="block w-full bg-primary text-on-primary py-3.5 rounded-2xl font-label text-xs font-black uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
+            className="block w-full bg-text-primary text-surface-container-lowest hover:bg-white py-3 rounded-xl font-label text-xs font-bold uppercase tracking-wider transition-colors"
           >
             Abrir na App ScoreBoard
           </a>
 
           <Link
             href="/"
-            className="block w-full bg-surface-container hover:bg-surface-container-high text-on-surface py-3.5 rounded-2xl font-label text-xs font-bold uppercase tracking-wider border border-outline-variant/10 transition-colors"
+            className="block w-full bg-surface-container hover:bg-surface-container-high text-text-primary py-3 rounded-xl font-label text-xs font-bold uppercase tracking-wider border border-outline-variant transition-colors"
           >
             Continuar na Web
           </Link>
@@ -145,7 +145,7 @@ function ConfirmContent() {
 
       <Link
         href="/"
-        className="block w-full bg-primary text-on-primary py-3.5 rounded-2xl font-label text-xs font-black uppercase tracking-wider hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-primary/20"
+        className="block w-full bg-text-primary text-surface-container-lowest hover:bg-white py-3 rounded-xl font-label text-xs font-bold uppercase tracking-wider transition-colors"
       >
         Ir para o ScoreBoard
       </Link>

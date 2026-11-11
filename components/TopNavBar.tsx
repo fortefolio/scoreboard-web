@@ -213,7 +213,7 @@ export default function TopNavBar() {
                </Link>
                <Link
                  href="/?auth=signup"
-                 className="hidden sm:inline-flex bg-primary hover:bg-primary/90 text-white px-3.5 py-1.5 rounded-lg font-medium text-xs transition-colors shadow-sm"
+                 className="hidden sm:inline-flex bg-text-primary hover:bg-white text-surface-container-lowest px-3.5 py-1.5 rounded-lg font-medium text-xs transition-colors shadow-sm"
                >
                  {t("nav.getStarted")}
                </Link>

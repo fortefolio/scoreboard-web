@@ -210,7 +210,7 @@ export default function MyTournamentsPage() {
 
           <button 
             onClick={handleOpenCreate}
-            className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+            className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
           >
             <span className="material-symbols-outlined text-[16px]">add</span>
             New Tournament
@@ -529,7 +529,7 @@ export default function MyTournamentsPage() {
                 <button 
                   type="button"
                   onClick={handleCreate} 
-                  className="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-medium transition-colors cursor-pointer shadow-sm"
+                  className="px-4 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest text-xs font-medium transition-colors cursor-pointer shadow-sm"
                 >
                   Create Tournament
                 </button>

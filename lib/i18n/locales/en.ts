@@ -423,4 +423,13 @@ export const en: Translations = {
       deleteSuccess: "Your account has been deleted. Logging you out...",
     },
   },
+  footer: {
+    tagline: "Live scoring & tournament platform built for competitive play.",
+    matches: "Matches",
+    tournaments: "Tournaments",
+    terms: "Terms & Privacy",
+    settings: "Settings",
+    statusOnline: "SYSTEM OPERATIONAL",
+    allRightsReserved: "All rights reserved.",
+  },
 };

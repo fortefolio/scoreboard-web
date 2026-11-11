@@ -1007,10 +1007,6 @@ function TournamentContent() {
           </div>
         </div>
       )}
-
-      <footer className="mt-auto py-8 border-t border-outline-variant text-center">
-        <p className="font-mono text-xs text-text-muted">ScoreBoard Scoring Engine</p>
-      </footer>
     </div>
   );
 }

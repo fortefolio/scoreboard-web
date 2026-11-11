@@ -1031,7 +1031,7 @@ function HomeContent() {
                       params.set("auth", "login");
                       router.replace(window.location.pathname + "?" + params.toString());
                     }}
-                    className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 bg-text-primary hover:bg-white text-surface-container-lowest px-4 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[16px]">login</span>
                     {t("home.unauthSignIn")}
@@ -1095,80 +1095,137 @@ function HomeContent() {
                           <div className="hidden md:block w-full bg-surface-container rounded-xl border border-outline-variant overflow-hidden shadow-sm">
                             <div className="w-full overflow-x-auto">
                               <table className="w-full text-left border-collapse">
-                                <thead className="border-b border-outline-variant bg-surface-container-high/60 text-[11px] font-medium text-text-muted">
+                                <thead className="border-b border-outline-variant bg-surface-container-high/60 text-xs font-medium text-text-muted">
                                   <tr>
-                                    <th className="py-3 px-6">{t("common.match")}</th>
+                                    <th className="py-3 px-6">{t("common.teamsOrPlayers")}</th>
+                                    <th className="py-3 px-6">{t("common.event")}</th>
                                     <th className="py-3 px-4">{t("common.sport")}</th>
-                                    <th className="py-3 px-4">{t("common.tournament")}</th>
+                                    <th className="py-3 px-4 text-center">{t("common.score")}</th>
                                     <th className="py-3 px-4 text-center">{t("common.status")}</th>
-                                    <th className="py-3 px-6 text-right font-mono">{t("common.score")}</th>
-                                    <th className="py-3 px-4 text-right">{t("common.date")}</th>
+                                    <th className="py-3 px-6 text-right">{t("common.date")}</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-outline-variant text-sm font-sans">
-                                  {followedMatches.map((m) => (
-                                    <tr
-                                      key={m.id}
-                                      onClick={() => router.push(`/match/${m.id}`)}
-                                      role="button"
-                                      tabIndex={0}
-                                      onKeyDown={(e) => {
-                                        if (e.key === "Enter" || e.key === " ") {
-                                          e.preventDefault();
-                                          router.push(`/match/${m.id}`);
-                                        }
-                                      }}
-                                      className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
-                                    >
-                                      <td className="py-3.5 px-6">
-                                        <div className="font-medium text-sm text-text-primary group-hover:text-primary transition-colors flex items-center gap-2">
-                                          <span>{m.participants?.[0]?.name || "TBD"}</span>
-                                          <span className="text-text-muted text-xs font-normal">vs</span>
-                                          <span>{m.participants?.[1]?.name || "TBD"}</span>
-                                        </div>
-                                      </td>
-                                      <td className="py-3.5 px-4">
-                                        <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-                                          <SportIcon sport={m.sport_type} className="text-text-muted text-[16px]" />
-                                          <span>{getSportTranslation(m.sport_type, t)}</span>
-                                        </div>
-                                      </td>
-                                      <td className="py-3.5 px-4 text-xs text-text-muted">
-                                        {m.tournaments?.name || "-"}
-                                      </td>
-                                      <td className="py-3.5 px-4 text-center">
-                                        <span
-                                          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
-                                            m.status === "completed"
-                                              ? "bg-surface-container-high text-text-muted border-outline-variant"
-                                              : m.status === "ongoing"
-                                              ? "bg-surface-container-high text-success border-success/30"
-                                              : "bg-surface-container-high text-text-secondary border-outline-variant"
-                                          }`}
-                                        >
-                                          {m.status === "ongoing" && <span className="w-1.5 h-1.5 rounded-full bg-success" />}
-                                          <span>
-                                            {m.status === "completed"
-                                              ? t("status.completed")
-                                              : m.status === "ongoing"
-                                              ? t("status.live")
-                                              : t("status.scheduled")}
-                                          </span>
-                                        </span>
-                                      </td>
-                                      <td className="py-3.5 px-6 text-right font-mono tabular-nums text-sm font-semibold text-text-primary">
-                                        {m.scores?.sets ? `${m.scores.sets[0]} - ${m.scores.sets[1]}` : m.scores?.current ? `${m.scores.current.home} - ${m.scores.current.away}` : "-"}
-                                      </td>
-                                      <td className="py-3.5 px-4 text-right text-xs text-text-muted">
-                                        {m.scheduled_at
-                                          ? new Date(m.scheduled_at).toLocaleDateString(undefined, {
-                                              day: "numeric",
-                                              month: "short",
-                                            })
-                                          : "-"}
-                                      </td>
-                                    </tr>
-                                  ))}
+                                  {followedMatches.map((m) => {
+                                    const rawSetData = extractSetsData(m.scores);
+                                    const isTimedOrPointsSport =
+                                      m.sport_type === "Football" || m.sport_type === "Basketball";
+                                    const setsWon0 = countSetsWon(rawSetData, 0);
+                                    const setsWon1 = countSetsWon(rawSetData, 1);
+                                    const mainScore0 = isTimedOrPointsSport
+                                      ? m.scores?.current?.home ?? 0
+                                      : setsWon0;
+                                    const mainScore1 = isTimedOrPointsSport
+                                      ? m.scores?.current?.away ?? 0
+                                      : setsWon1;
+
+                                    const setScores = Array.isArray(rawSetData)
+                                      ? rawSetData.map((s: any) => ({
+                                          t1: s.team1 ?? s.home ?? 0,
+                                          t2: s.team2 ?? s.away ?? 0,
+                                        }))
+                                      : [];
+
+                                    return (
+                                      <tr
+                                        key={m.id}
+                                        onClick={() => router.push(`/match/${m.id}`)}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter" || e.key === " ") {
+                                            e.preventDefault();
+                                            router.push(`/match/${m.id}`);
+                                          }
+                                        }}
+                                        className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
+                                      >
+                                        {/* Equipas / Jogadores */}
+                                        <td className="py-3.5 px-6">
+                                          <div className="space-y-1">
+                                            <div className="font-medium text-xs sm:text-sm text-text-primary flex items-center gap-2">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-primary/60 shrink-0" />
+                                              {formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD"}
+                                            </div>
+                                            <div className="font-medium text-xs sm:text-sm text-text-primary flex items-center gap-2">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-secondary/60 shrink-0" />
+                                              {formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD"}
+                                            </div>
+                                          </div>
+                                        </td>
+
+                                        {/* Evento */}
+                                        <td className="py-3.5 px-6">
+                                          <div className="font-medium text-text-primary text-xs leading-snug">
+                                            {m.tournaments?.name || t("home.isolatedMatch")}
+                                          </div>
+                                          {m.court && (
+                                            <div className="text-xs text-text-muted mt-0.5">
+                                              {m.court}
+                                            </div>
+                                          )}
+                                        </td>
+
+                                        {/* Desporto */}
+                                        <td className="py-3.5 px-4">
+                                          <div className="flex items-center gap-2">
+                                            <SportIcon
+                                              sport={m.sport_type}
+                                              className="text-text-muted group-hover:text-text-primary text-[16px] shrink-0"
+                                            />
+                                            <span className="text-xs font-medium text-text-secondary">
+                                              {getSportTranslation(m.sport_type, t)}
+                                            </span>
+                                          </div>
+                                        </td>
+
+                                        {/* Score & Sets */}
+                                        <td className="py-3.5 px-4 text-center">
+                                          <div className="inline-flex flex-col items-center">
+                                            <span className="font-mono tabular-nums text-sm font-semibold text-text-primary tracking-tight">
+                                              {mainScore0} - {mainScore1}
+                                            </span>
+                                            {!isTimedOrPointsSport && setScores.length > 0 && (
+                                              <span className="font-mono tabular-nums text-xs text-text-muted">
+                                                ({setScores.map((s: any) => `${s.t1}-${s.t2}`).join(", ")})
+                                              </span>
+                                            )}
+                                          </div>
+                                        </td>
+
+                                        {/* Estado */}
+                                        <td className="py-3.5 px-4 text-center">
+                                          {m.status === "ongoing" ? (
+                                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                                              {t("status.live")}
+                                            </span>
+                                          ) : (
+                                            <span className="text-xs text-text-muted">
+                                              {m.status === "completed" ? t("status.completed") : t("status.scheduled")}
+                                            </span>
+                                          )}
+                                        </td>
+
+                                        {/* Data */}
+                                        <td className="py-3.5 px-6 text-right font-mono tabular-nums text-xs text-text-muted">
+                                          {m.scheduled_at
+                                            ? new Date(m.scheduled_at).toLocaleDateString(undefined, {
+                                                day: "numeric",
+                                                month: "short",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                              })
+                                            : m.created_at
+                                            ? new Date(m.created_at).toLocaleDateString(undefined, {
+                                                day: "numeric",
+                                                month: "short",
+                                              })
+                                            : "-"}
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
                                 </tbody>
                               </table>
                             </div>
@@ -1381,7 +1438,7 @@ function HomeContent() {
                     setAuthModal("login");
                     setForgotEmailSent(false);
                   }}
-                  className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer"
+                  className="w-full bg-text-primary hover:bg-white text-surface-container-lowest py-2.5 rounded-lg text-xs font-medium transition-colors cursor-pointer"
                 >
                   {t("auth.backToSignIn")}
                 </button>
@@ -1471,7 +1528,7 @@ function HomeContent() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 cursor-pointer mt-2"
+                    className="w-full bg-text-primary hover:bg-white text-surface-container-lowest py-2.5 rounded-lg text-xs font-medium transition-colors disabled:opacity-50 cursor-pointer mt-2"
                   >
                     {isSubmitting
                       ? t("auth.processing")

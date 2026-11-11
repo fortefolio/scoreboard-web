@@ -11,6 +11,7 @@ import SportIcon from "@/components/SportIcon";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
+import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 
 function MyMatchesContent() {
   const router = useRouter();
@@ -258,15 +259,15 @@ function MyMatchesContent() {
           <div className="hidden md:block w-full bg-surface-container rounded-xl border border-outline-variant overflow-hidden shadow-sm">
             <div className="w-full overflow-x-auto">
               <table className="w-full text-left border-collapse">
-                <thead className="border-b border-outline-variant bg-surface-container-high/60 text-[11px] font-medium text-text-muted">
+                <thead className="border-b border-outline-variant bg-surface-container-high/60 text-xs font-medium text-text-muted">
                   <tr>
-                    <th className="py-3 px-6">{t("common.match")}</th>
+                    <th className="py-3 px-6">{t("common.teamsOrPlayers")}</th>
+                    <th className="py-3 px-6">{t("common.event")}</th>
                     <th className="py-3 px-4">{t("common.sport")}</th>
-                    <th className="py-3 px-4">{t("common.tournament")}</th>
+                    <th className="py-3 px-4 text-center">{t("common.score")}</th>
                     <th className="py-3 px-4 text-center">{t("common.status")}</th>
-                    <th className="py-3 px-6 text-right font-mono">{t("common.score")}</th>
-                    <th className="py-3 px-4 text-right">{t("common.date")}</th>
-                    <th className="py-3 px-4 text-center">Actions</th>
+                    <th className="py-3 px-6 text-right">{t("common.date")}</th>
+                    <th className="py-3 px-4 text-center">{t("common.action")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant text-sm font-sans">
@@ -307,51 +308,91 @@ function MyMatchesContent() {
                         }}
                         className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
                       >
+                        {/* Equipas / Jogadores */}
                         <td className="py-3.5 px-6">
-                          <div className="font-medium text-sm text-text-primary group-hover:text-primary transition-colors flex items-center gap-2">
-                            <span>{m.participants?.[0]?.name || "TBD"}</span>
-                            <span className="text-text-muted text-xs font-normal">vs</span>
-                            <span>{m.participants?.[1]?.name || "TBD"}</span>
+                          <div className="space-y-1">
+                            <div className="font-medium text-xs sm:text-sm text-text-primary flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-primary/60 shrink-0" />
+                              {formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD"}
+                            </div>
+                            <div className="font-medium text-xs sm:text-sm text-text-primary flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-secondary/60 shrink-0" />
+                              {formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD"}
+                            </div>
                           </div>
                         </td>
+
+                        {/* Evento */}
+                        <td className="py-3.5 px-6">
+                          <div className="font-medium text-text-primary text-xs leading-snug">
+                            {m.tournaments?.name || t("home.isolatedMatch")}
+                          </div>
+                          {m.court && (
+                            <div className="text-xs text-text-muted mt-0.5">
+                              {m.court}
+                            </div>
+                          )}
+                        </td>
+
+                        {/* Desporto */}
                         <td className="py-3.5 px-4">
-                          <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-                            <SportIcon sport={m.sport_type} className="text-text-muted text-[16px]" />
-                            <span>{getSportTranslation(m.sport_type, t)}</span>
+                          <div className="flex items-center gap-2">
+                            <SportIcon
+                              sport={m.sport_type}
+                              className="text-text-muted group-hover:text-text-primary text-[16px] shrink-0"
+                            />
+                            <span className="text-xs font-medium text-text-secondary">
+                              {getSportTranslation(m.sport_type, t)}
+                            </span>
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 text-xs text-text-muted">
-                          {m.tournaments?.name || "-"}
-                        </td>
+
+                        {/* Score & Sets */}
                         <td className="py-3.5 px-4 text-center">
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
-                              m.status === "completed"
-                                ? "bg-surface-container-high text-text-muted border-outline-variant"
-                                : m.status === "ongoing"
-                                ? "bg-surface-container-high text-success border-success/30"
-                                : "bg-surface-container-high text-text-secondary border-outline-variant"
-                            }`}
-                          >
-                            {m.status === "ongoing" && <span className="w-1.5 h-1.5 rounded-full bg-success" />}
-                            <span>{getStatusTranslation(m.status)}</span>
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-6 text-right">
-                          <div className="inline-flex flex-col items-end">
-                            <span className="font-mono tabular-nums text-sm font-semibold text-text-primary">
+                          <div className="inline-flex flex-col items-center">
+                            <span className="font-mono tabular-nums text-sm font-semibold text-text-primary tracking-tight">
                               {mainScore0} - {mainScore1}
                             </span>
                             {!isTimedOrPointsSport && setScores.length > 0 && (
-                              <span className="font-mono tabular-nums text-[11px] text-text-muted">
+                              <span className="font-mono tabular-nums text-xs text-text-muted">
                                 ({setScores.map((s: any) => `${s.t1}-${s.t2}`).join(", ")})
                               </span>
                             )}
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 text-right text-xs text-text-muted">
-                          {m.scheduled_at ? new Date(m.scheduled_at).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : "-"}
+
+                        {/* Estado */}
+                        <td className="py-3.5 px-4 text-center">
+                          {m.status === "ongoing" ? (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
+                              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                              {t("status.live")}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-text-muted">
+                              {m.status === "completed" ? t("status.completed") : t("status.scheduled")}
+                            </span>
+                          )}
                         </td>
+
+                        {/* Data */}
+                        <td className="py-3.5 px-6 text-right font-mono tabular-nums text-xs text-text-muted">
+                          {m.scheduled_at
+                            ? new Date(m.scheduled_at).toLocaleDateString(undefined, {
+                                day: "numeric",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })
+                            : m.created_at
+                            ? new Date(m.created_at).toLocaleDateString(undefined, {
+                                day: "numeric",
+                                month: "short",
+                              })
+                            : "-"}
+                        </td>
+
+                        {/* Ações */}
                         <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
                           <div className="flex items-center justify-center gap-1">
                             <button

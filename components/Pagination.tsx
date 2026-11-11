@@ -70,10 +70,10 @@ export default function Pagination({
                 type="button"
                 onClick={() => onPageChange(p)}
                 aria-current={safePage === p ? "page" : undefined}
-                className={`w-8 h-8 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center ${
+                className={`w-8 h-8 rounded-lg text-xs font-medium transition-colors cursor-pointer flex items-center justify-center ${
                   safePage === p
-                    ? "bg-primary text-on-primary shadow-md shadow-primary/20 font-black"
-                    : "bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high border border-white/5"
+                    ? "bg-surface-container-highest text-text-primary border border-outline-variant font-semibold shadow-sm"
+                    : "text-text-muted hover:text-text-primary hover:bg-surface-container-high"
                 }`}
               >
                 {p}

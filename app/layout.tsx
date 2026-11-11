@@ -6,6 +6,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import TopNavBar from "@/components/TopNavBar";
 import BottomTabBar from "@/components/BottomTabBar";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -70,7 +71,12 @@ export default function RootLayout({
             <Suspense fallback={<nav className="fixed top-0 w-full h-16 sm:h-20 bg-slate-950/40 backdrop-blur-xl z-50 border-b border-white/5" />}>
               <TopNavBar />
             </Suspense>
-            {children}
+            <main className="flex-1 flex flex-col w-full">
+              {children}
+            </main>
+            <Suspense fallback={null}>
+              <Footer />
+            </Suspense>
             <Suspense fallback={null}>
               <BottomTabBar />
             </Suspense>
