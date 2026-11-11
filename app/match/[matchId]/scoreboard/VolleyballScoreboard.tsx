@@ -232,21 +232,28 @@ export default function VolleyballScoreboard({
       )}
 
       {/* Top Banner / Match Info */}
-      <div className="w-full flex items-center justify-between py-3 px-5 bg-surface-container-low rounded-2xl border border-outline-variant mb-6">
+      <div className="w-full bg-surface-container rounded-xl border border-outline-variant p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <SportIcon sport={matchData.sport_type} className="text-secondary text-lg" />
+          <div className="w-9 h-9 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center">
+            <SportIcon sport={matchData.sport_type} className="w-4 h-4 text-text-primary" />
+          </div>
           <div>
-            <span className="text-[11px] font-medium text-on-surface-variant block">
-              {isBeachVolleyball ? "Voleibol de Praia" : "Voleibol Oficial"}
-            </span>
-            <span className="text-sm font-semibold text-on-surface">
-              {matchData.tournaments?.name || "Jogo Isolado"}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-text-secondary">
+                {isBeachVolleyball ? "Voleibol de Praia" : "Voleibol"}
+              </span>
+              <span className="text-xs text-text-muted">
+                • {matchData?.tournaments?.name || "Jogo Isolado"}
+              </span>
+            </div>
+            <h2 className="text-sm font-semibold text-text-primary mt-0.5">
+              {teamHome} <span className="text-text-muted font-normal">vs</span> {teamAway}
+            </h2>
           </div>
         </div>
 
-        {/* Set Tabs / Indicators */}
-        <div className="flex items-center gap-1 bg-surface-container-high/60 p-1 rounded-xl border border-outline-variant">
+        {/* Set Navigator Tabs */}
+        <div className="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg border border-outline-variant">
           {Array.from({ length: defaultMaxSets }).map((_, idx) => {
             const setNum = idx + 1;
             const isCurrent = setNum === currentSetNum;
@@ -254,15 +261,20 @@ export default function VolleyballScoreboard({
             return (
               <span
                 key={setNum}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
                   isCurrent
-                    ? "bg-primary text-on-primary"
+                    ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
                     : isCompleted
-                    ? "bg-surface-container-highest text-secondary"
-                    : "text-on-surface-variant/50"
+                    ? "text-text-secondary"
+                    : "text-text-muted/50"
                 }`}
               >
-                S{setNum}
+                Set {setNum}
+                {isCompleted && setHistory[idx] && (
+                  <span className="ml-1.5 font-digital text-xs text-text-muted">
+                    {setHistory[idx].home}-{setHistory[idx].away}
+                  </span>
+                )}
               </span>
             );
           })}
@@ -312,71 +324,77 @@ export default function VolleyballScoreboard({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           
           {/* HOME TEAM */}
-          <div className="flex flex-col items-center text-center">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-              <h2 className="text-lg md:text-xl font-headline font-semibold text-on-surface truncate max-w-[240px]">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left order-2 md:order-1">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-primary" />
+              <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
                 {teamHome}
               </h2>
             </div>
 
-            {/* Serving indicator */}
-            {serverIdx === 0 ? (
-              <span className="inline-flex items-center gap-1.5 text-primary text-[11px] font-medium bg-primary/10 px-2.5 py-0.5 rounded-md border border-primary/20 mb-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                A Servir
-              </span>
-            ) : (
-              <span className="h-[23px] mb-1" />
-            )}
-
-            {/* Home Score (Points in current set) */}
-            <div className="text-6xl md:text-7xl font-mono tabular-nums font-semibold text-on-surface tracking-tight my-2">
-              {currentPoints.home}
+            {/* Serving / Receiving Indicator */}
+            <div className="h-6 flex items-center mb-3">
+              {serverIdx === 0 ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary bg-surface-container-high px-2 py-0.5 rounded-md border border-outline-variant">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+                  A Servir
+                </span>
+              ) : (
+                <span className="inline-flex items-center text-text-muted text-xs font-medium px-2 py-0.5">
+                  Receção
+                </span>
+              )}
             </div>
 
-            {/* Sets Won & Timeouts */}
-            <div className="flex items-center gap-2 text-xs mt-2">
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline-variant font-medium">
-                Sets: <span className="font-mono tabular-nums font-semibold text-on-surface">{setsWon.home}</span>
+            {/* Sets Won & Timeouts Context Pills */}
+            <div className="flex items-center gap-2 text-xs mb-3">
+              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+                Sets: <span className="font-digital text-sm text-text-primary">{setsWon.home}</span>
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline-variant font-medium">
-                Descontos: <span className="font-mono tabular-nums">{timeouts.home}/2</span>
+              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+                Descontos: <span className="font-digital text-sm text-text-primary">{timeouts.home}/2</span>
               </span>
+            </div>
+
+            {/* Home Big Point Score */}
+            <div className="text-7xl sm:text-8xl md:text-9xl font-digital text-text-primary tracking-wider my-2 select-none">
+              {currentPoints.home}
             </div>
 
             {/* Quick Scoring & Actions */}
             {canEdit && (
-              <div className="flex flex-col gap-2 w-full max-w-[260px] mt-6">
-                <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-2 w-full max-w-xs mt-3">
+                <div className="flex gap-2">
                   <button
                     onClick={() => handlePoint("home")}
-                    className="h-10 bg-primary hover:bg-primary/90 text-on-primary font-medium rounded-lg transition-colors text-xs flex items-center justify-center gap-1 cursor-pointer"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
                     title="Ponto para Equipa da Casa"
                   >
-                    <span className="material-symbols-outlined text-base">add</span>
+                    <span className="material-symbols-outlined text-[16px]">add</span>
                     Ponto
                   </button>
                   <button
                     onClick={() => handleUndoPoint("home")}
-                    className="h-10 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-rose-400 font-medium rounded-lg border border-outline-variant transition-colors text-xs cursor-pointer"
+                    disabled={currentPoints.home <= 0}
+                    className="bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-2 px-3 rounded-lg font-medium text-xs border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1"
                     title="Corrigir Ponto (-1)"
                   >
-                    -1 Corrigir
+                    <span className="material-symbols-outlined text-[16px]">undo</span>
+                    -1
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex gap-2">
                   <button
                     onClick={() => handleTimeout("home")}
                     disabled={timeouts.home <= 0}
-                    className="h-8 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant text-[11px] font-medium disabled:opacity-40 cursor-pointer"
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer"
                   >
                     Desconto
                   </button>
                   <button
                     onClick={() => setServerIdx(0)}
-                    className="h-8 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant text-[11px] font-medium cursor-pointer"
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors cursor-pointer"
                   >
                     Marcar Serviço
                   </button>
@@ -386,21 +404,23 @@ export default function VolleyballScoreboard({
           </div>
 
           {/* CENTER: CURRENT SET & TARGET */}
-          <div className="flex flex-col items-center justify-center py-4 border-y md:border-y-0 md:border-x border-outline-variant px-4">
-            <span className="text-on-surface-variant text-xs font-medium mb-2">
+          <div className="flex flex-col items-center text-center order-1 md:order-2 py-4">
+            <span className="text-xs font-medium text-text-muted mb-1.5">
               {isDecidingSet ? "Set Decisivo (Negra)" : `Set ${currentSetNum}`}
             </span>
 
             {/* Target Points */}
-            <div className="text-4xl md:text-5xl font-mono tabular-nums font-semibold text-secondary py-2 px-5 rounded-xl border border-outline-variant bg-surface-container-high/60 mb-2">
-              {activeLimit}
+            <div className="flex items-center gap-3 my-2">
+              <div className="text-3xl md:text-4xl font-digital text-text-primary py-2 px-6 rounded-xl bg-surface-container-high border border-outline-variant tracking-wide">
+                {activeLimit}
+              </div>
             </div>
-            <span className="text-[11px] font-medium text-on-surface-variant/80">
+            <span className="text-[11px] text-text-muted mt-1 font-medium">
               Pontos Alvo
             </span>
 
             {/* Set Match Status Info */}
-            <div className="flex items-center gap-2 mt-4 text-xs text-on-surface-variant">
+            <div className="flex items-center gap-2 mt-3 text-xs text-text-muted">
               <span>Melhor de {defaultMaxSets} Sets</span>
               <span>•</span>
               <span>Diferença 2 Pts</span>
@@ -408,71 +428,77 @@ export default function VolleyballScoreboard({
           </div>
 
           {/* AWAY TEAM */}
-          <div className="flex flex-col items-center text-center">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-secondary" />
-              <h2 className="text-lg md:text-xl font-headline font-semibold text-on-surface truncate max-w-[240px]">
+          <div className="flex flex-col items-center md:items-end text-center md:text-right order-3">
+            <div className="flex items-center gap-2 mb-1.5">
+              <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
                 {teamAway}
               </h2>
+              <span className="w-2 h-2 rounded-full bg-secondary" />
             </div>
 
-            {/* Serving indicator */}
-            {serverIdx === 1 ? (
-              <span className="inline-flex items-center gap-1.5 text-secondary text-[11px] font-medium bg-secondary/10 px-2.5 py-0.5 rounded-md border border-secondary/20 mb-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-secondary" />
-                A Servir
-              </span>
-            ) : (
-              <span className="h-[23px] mb-1" />
-            )}
+            {/* Serving / Receiving Indicator */}
+            <div className="h-6 flex items-center mb-3">
+              {serverIdx === 1 ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary bg-surface-container-high px-2 py-0.5 rounded-md border border-outline-variant">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+                  A Servir
+                </span>
+              ) : (
+                <span className="inline-flex items-center text-text-muted text-xs font-medium px-2 py-0.5">
+                  Receção
+                </span>
+              )}
+            </div>
 
-            {/* Away Score (Points in current set) */}
-            <div className="text-6xl md:text-7xl font-mono tabular-nums font-semibold text-on-surface tracking-tight my-2">
+            {/* Sets Won & Timeouts Context Pills */}
+            <div className="flex items-center gap-2 text-xs mb-3">
+              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+                Descontos: <span className="font-digital text-sm text-text-primary">{timeouts.away}/2</span>
+              </span>
+              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+                Sets: <span className="font-digital text-sm text-text-primary">{setsWon.away}</span>
+              </span>
+            </div>
+
+            {/* Away Big Point Score */}
+            <div className="text-7xl sm:text-8xl md:text-9xl font-digital text-text-primary tracking-wider my-2 select-none">
               {currentPoints.away}
-            </div>
-
-            {/* Sets Won & Timeouts */}
-            <div className="flex items-center gap-2 text-xs mt-2">
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline-variant font-medium">
-                Sets: <span className="font-mono tabular-nums font-semibold text-on-surface">{setsWon.away}</span>
-              </span>
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline-variant font-medium">
-                Descontos: <span className="font-mono tabular-nums">{timeouts.away}/2</span>
-              </span>
             </div>
 
             {/* Quick Scoring & Actions */}
             {canEdit && (
-              <div className="flex flex-col gap-2 w-full max-w-[260px] mt-6">
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => handlePoint("away")}
-                    className="h-10 bg-secondary hover:bg-secondary/90 text-on-secondary font-medium rounded-lg transition-colors text-xs flex items-center justify-center gap-1 cursor-pointer"
-                    title="Ponto para Equipa Visitante"
-                  >
-                    <span className="material-symbols-outlined text-base">add</span>
-                    Ponto
-                  </button>
+              <div className="flex flex-col gap-2 w-full max-w-xs mt-3">
+                <div className="flex gap-2">
                   <button
                     onClick={() => handleUndoPoint("away")}
-                    className="h-10 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-rose-400 font-medium rounded-lg border border-outline-variant transition-colors text-xs cursor-pointer"
+                    disabled={currentPoints.away <= 0}
+                    className="bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-2 px-3 rounded-lg font-medium text-xs border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1"
                     title="Corrigir Ponto (-1)"
                   >
-                    -1 Corrigir
+                    <span className="material-symbols-outlined text-[16px]">undo</span>
+                    -1
+                  </button>
+                  <button
+                    onClick={() => handlePoint("away")}
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
+                    title="Ponto para Equipa Visitante"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">add</span>
+                    Ponto
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="flex gap-2">
                   <button
                     onClick={() => handleTimeout("away")}
                     disabled={timeouts.away <= 0}
-                    className="h-8 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant text-[11px] font-medium disabled:opacity-40 cursor-pointer"
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer"
                   >
                     Desconto
                   </button>
                   <button
                     onClick={() => setServerIdx(1)}
-                    className="h-8 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant text-[11px] font-medium cursor-pointer"
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors cursor-pointer"
                   >
                     Marcar Serviço
                   </button>
@@ -484,25 +510,25 @@ export default function VolleyballScoreboard({
       </div>
 
       {/* Set by Set Breakdown Table */}
-      <div className="w-full bg-surface-container-low rounded-2xl border border-outline-variant overflow-hidden p-5 mb-6">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-4">
+      <div className="w-full bg-surface-container rounded-2xl border border-outline-variant overflow-hidden p-5 mb-6">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">
           Resumo por Set
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-center text-sm">
             <thead>
-              <tr className="border-b border-outline-variant text-on-surface-variant/80 text-xs font-medium">
+              <tr className="border-b border-outline-variant text-text-muted text-xs font-medium">
                 <th className="py-2.5 px-4 text-left">Equipa</th>
                 {Array.from({ length: defaultMaxSets }).map((_, idx) => (
-                  <th key={idx} className="py-2.5 px-3">S{idx + 1}</th>
+                  <th key={idx} className="py-2.5 px-3">Set {idx + 1}</th>
                 ))}
                 <th className="py-2.5 px-4 font-semibold text-secondary">Sets</th>
-                <th className="py-2.5 px-4 font-semibold text-on-surface">Total Pts</th>
+                <th className="py-2.5 px-4 font-semibold text-text-primary">Total Pts</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant/60 font-mono tabular-nums text-sm">
+            <tbody className="divide-y divide-outline-variant font-digital text-base">
               <tr>
-                <td className="py-3 px-4 text-left font-sans text-on-surface font-medium flex items-center gap-2">
+                <td className="py-3 px-4 text-left font-sans text-text-primary font-medium flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-primary" />
                   {teamHome}
                 </td>
@@ -510,18 +536,18 @@ export default function VolleyballScoreboard({
                   const setNum = idx + 1;
                   const pts = setNum === currentSetNum ? currentPoints.home : (setHistory[idx]?.home ?? "-");
                   return (
-                    <td key={idx} className={`py-3 px-3 ${setNum === currentSetNum ? "text-primary font-semibold" : "text-on-surface-variant"}`}>
+                    <td key={idx} className={`py-3 px-3 ${setNum === currentSetNum ? "text-primary font-semibold" : "text-text-secondary"}`}>
                       {pts}
                     </td>
                   );
                 })}
                 <td className="py-3 px-4 font-semibold text-primary">{setsWon.home}</td>
-                <td className="py-3 px-4 font-semibold text-on-surface">
+                <td className="py-3 px-4 font-semibold text-text-primary">
                   {setHistory.reduce((sum, s) => sum + s.home, 0) + currentPoints.home}
                 </td>
               </tr>
               <tr>
-                <td className="py-3 px-4 text-left font-sans text-on-surface font-medium flex items-center gap-2">
+                <td className="py-3 px-4 text-left font-sans text-text-primary font-medium flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-secondary" />
                   {teamAway}
                 </td>
@@ -529,13 +555,13 @@ export default function VolleyballScoreboard({
                   const setNum = idx + 1;
                   const pts = setNum === currentSetNum ? currentPoints.away : (setHistory[idx]?.away ?? "-");
                   return (
-                    <td key={idx} className={`py-3 px-3 ${setNum === currentSetNum ? "text-secondary font-semibold" : "text-on-surface-variant"}`}>
+                    <td key={idx} className={`py-3 px-3 ${setNum === currentSetNum ? "text-secondary font-semibold" : "text-text-secondary"}`}>
                       {pts}
                     </td>
                   );
                 })}
                 <td className="py-3 px-4 font-semibold text-secondary">{setsWon.away}</td>
-                <td className="py-3 px-4 font-semibold text-on-surface">
+                <td className="py-3 px-4 font-semibold text-text-primary">
                   {setHistory.reduce((sum, s) => sum + s.away, 0) + currentPoints.away}
                 </td>
               </tr>
@@ -549,9 +575,9 @@ export default function VolleyballScoreboard({
         <div className="w-full flex justify-end gap-3">
           <button
             onClick={handleFinalizeMatch}
-            className="h-9 px-4 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5"
+            className="h-9 px-4 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5"
           >
-            <span className="material-symbols-outlined text-base">check_circle</span>
+            <span className="material-symbols-outlined text-[16px]">check_circle</span>
             Terminar Jogo
           </button>
         </div>

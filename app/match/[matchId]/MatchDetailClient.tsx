@@ -716,13 +716,13 @@ export default function MatchDetailClient() {
             <div className="w-full max-w-xl sm:max-w-2xl grid grid-cols-[1fr_auto_1fr] gap-2 sm:gap-6 md:gap-8 items-center mb-4">
               {/* Left Team Box */}
               <div className="flex flex-col items-center gap-2.5 sm:gap-4">
-                <div className="w-16 h-16 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-full bg-surface-container border border-outline flex items-center justify-center">
+                <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-2xl sm:rounded-3xl bg-surface-container border border-outline-variant flex items-center justify-center">
                   {match.status === "scheduled" ? (
                     <span className="font-sans font-medium text-lg sm:text-2xl md:text-3xl text-text-secondary">
                       {getInitials(match.participants?.[0]?.name)}
                     </span>
                   ) : (
-                    <span className="font-mono tabular-nums text-3xl sm:text-6xl md:text-7xl font-bold text-text-primary">
+                    <span className="font-digital text-5xl sm:text-7xl md:text-8xl text-text-primary select-none">
                       {sets[0]}
                     </span>
                   )}
@@ -751,13 +751,13 @@ export default function MatchDetailClient() {
 
               {/* Right Team Box */}
               <div className="flex flex-col items-center gap-2.5 sm:gap-4">
-                <div className="w-16 h-16 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-full bg-surface-container border border-outline flex items-center justify-center">
+                <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-36 md:h-36 rounded-2xl sm:rounded-3xl bg-surface-container border border-outline-variant flex items-center justify-center">
                   {match.status === "scheduled" ? (
                     <span className="font-sans font-medium text-lg sm:text-2xl md:text-3xl text-text-secondary">
                       {getInitials(match.participants?.[1]?.name)}
                     </span>
                   ) : (
-                    <span className="font-mono tabular-nums text-3xl sm:text-6xl md:text-7xl font-bold text-text-primary">
+                    <span className="font-digital text-5xl sm:text-7xl md:text-8xl text-text-primary select-none">
                       {sets[1]}
                     </span>
                   )}
@@ -809,16 +809,16 @@ export default function MatchDetailClient() {
                               )}
                             </td>
                             {[0, 1, 2, 3].map((qIdx) => (
-                              <td key={qIdx} className="py-3 px-3 text-center font-mono tabular-nums text-sm text-text-secondary">
+                              <td key={qIdx} className="py-3 px-3 text-center font-digital text-base text-text-secondary">
                                 {bQuarters[qIdx]?.[pIdx === 0 ? "home" : "away"] ?? 0}
                               </td>
                             ))}
                             {bQuarters.length > 4 && (
-                              <td className="py-3 px-3 text-center font-mono tabular-nums text-sm text-text-secondary">
+                              <td className="py-3 px-3 text-center font-digital text-base text-text-secondary">
                                 {bQuarters[4]?.[pIdx === 0 ? "home" : "away"] ?? 0}
                               </td>
                             )}
-                            <td className="py-3 px-4 text-center font-mono tabular-nums font-semibold text-sm text-text-primary bg-surface-container-high/40">
+                            <td className="py-3 px-4 text-center font-digital font-semibold text-lg text-text-primary bg-surface-container-high/40">
                               {totalScore}
                             </td>
                           </tr>
@@ -901,13 +901,13 @@ export default function MatchDetailClient() {
                               return (
                                 <td
                                   key={sIdx}
-                                  className={`py-3 px-3 text-center font-mono tabular-nums text-sm ${
+                                  className={`py-3 px-3 text-center font-digital text-base ${
                                     wonSet ? "font-semibold text-text-primary" : "text-text-muted"
                                   }`}
                                 >
                                   <span>{pScore}</span>
                                   {tbVal !== null && tbVal !== undefined && (
-                                    <sup className="text-[10px] font-medium text-primary ml-0.5">{tbVal}</sup>
+                                    <sup className="text-[10px] font-sans font-medium text-primary ml-0.5">{tbVal}</sup>
                                   )}
                                 </td>
                               );
@@ -915,15 +915,15 @@ export default function MatchDetailClient() {
                             {match.status === "ongoing" && (
                               (match.sport_type === "Tennis" || match.sport_type === "Padel") ? (
                                 <>
-                                  <td className="py-3 px-3 text-center font-mono tabular-nums text-sm text-text-secondary">
+                                  <td className="py-3 px-3 text-center font-digital text-base text-text-secondary">
                                     {match.scores?.tennis?.games?.[pIdx] ?? 0}
                                   </td>
-                                  <td className="py-3 px-3 text-center font-mono tabular-nums font-semibold text-sm text-primary bg-primary/5">
+                                  <td className="py-3 px-3 text-center font-digital font-semibold text-base text-primary bg-primary/5">
                                     {renderLivePoint(match, pIdx)}
                                   </td>
                                 </>
                               ) : (
-                                <td className="py-3 px-3 text-center font-mono tabular-nums font-semibold text-sm text-primary bg-primary/5">
+                                <td className="py-3 px-3 text-center font-digital font-semibold text-base text-primary bg-primary/5">
                                   {match.scores?.current?.[pIdx === 0 ? "home" : "away"] ?? 0}
                                 </td>
                               )

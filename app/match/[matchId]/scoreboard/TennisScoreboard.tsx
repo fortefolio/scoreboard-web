@@ -372,7 +372,7 @@ export default function TennisScoreboard({
             </div>
 
             {/* Serving / Receiving Indicator */}
-            <div className="mb-3">
+            <div className="h-6 flex items-center mb-3">
               {serverIdx === 0 ? (
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary bg-surface-container-high px-2 py-0.5 rounded-md border border-outline-variant">
                   <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
@@ -387,16 +387,16 @@ export default function TennisScoreboard({
 
             {/* Sets & Games Context Pills */}
             <div className="flex items-center gap-2 text-xs mb-3">
-              <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
-                Sets: <span className="font-mono tabular-nums text-text-primary font-semibold">{homeSetsWon}</span>
+              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+                Sets: <span className="font-digital text-sm text-text-primary">{homeSetsWon}</span>
               </span>
-              <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
-                Games: <span className="font-mono tabular-nums text-text-primary font-semibold">{games[0]}</span>
+              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+                Games: <span className="font-digital text-sm text-text-primary">{games[0]}</span>
               </span>
             </div>
 
             {/* Home Big Point Score */}
-            <div className="text-6xl md:text-8xl font-mono tabular-nums font-bold text-text-primary tracking-tight my-2">
+            <div className="text-7xl sm:text-8xl md:text-9xl font-digital text-text-primary tracking-wider my-2 select-none">
               {formatPoint(0)}
             </div>
 
@@ -457,7 +457,7 @@ export default function TennisScoreboard({
 
             {/* Current Games Board */}
             <div className="flex items-center gap-3 my-2">
-              <div className="text-3xl md:text-4xl font-mono tabular-nums font-semibold text-text-primary py-2 px-6 rounded-xl bg-surface-container-high border border-outline-variant">
+              <div className="text-3xl md:text-4xl font-digital text-text-primary py-2 px-6 rounded-xl bg-surface-container-high border border-outline-variant tracking-wide">
                 {games[0]} - {games[1]}
               </div>
             </div>
@@ -514,7 +514,7 @@ export default function TennisScoreboard({
             </div>
 
             {/* Serving / Receiving Indicator */}
-            <div className="mb-3">
+            <div className="h-6 flex items-center mb-3">
               {serverIdx === 1 ? (
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary bg-surface-container-high px-2 py-0.5 rounded-md border border-outline-variant">
                   <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
@@ -529,16 +529,16 @@ export default function TennisScoreboard({
 
             {/* Sets & Games Context Pills */}
             <div className="flex items-center gap-2 text-xs mb-3">
-              <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
-                Games: <span className="font-mono tabular-nums text-text-primary font-semibold">{games[1]}</span>
+              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+                Games: <span className="font-digital text-sm text-text-primary">{games[1]}</span>
               </span>
-              <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
-                Sets: <span className="font-mono tabular-nums text-text-primary font-semibold">{awaySetsWon}</span>
+              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+                Sets: <span className="font-digital text-sm text-text-primary">{awaySetsWon}</span>
               </span>
             </div>
 
             {/* Away Big Point Score */}
-            <div className="text-6xl md:text-8xl font-mono tabular-nums font-bold text-text-primary tracking-tight my-2">
+            <div className="text-7xl sm:text-8xl md:text-9xl font-digital text-text-primary tracking-wider my-2 select-none">
               {formatPoint(1)}
             </div>
 

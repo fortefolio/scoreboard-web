@@ -299,30 +299,37 @@ export default function BasketballScoreboard({
   return (
     <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
       {/* Top Banner / Match Info */}
-      <div className="w-full flex items-center justify-between py-3 px-5 bg-surface-container-low rounded-2xl border border-outline-variant mb-6">
+      <div className="w-full bg-surface-container rounded-xl border border-outline-variant p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <SportIcon sport="Basketball" className="text-secondary text-lg" />
+          <div className="w-9 h-9 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center">
+            <SportIcon sport="Basketball" className="w-4 h-4 text-text-primary" />
+          </div>
           <div>
-            <span className="text-[11px] font-medium text-on-surface-variant block">
-              Basquetebol Oficial
-            </span>
-            <span className="text-sm font-semibold text-on-surface">
-              {matchData.tournaments?.name || "Jogo Isolado"}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-text-secondary">
+                Basquetebol
+              </span>
+              <span className="text-xs text-text-muted">
+                • {matchData?.tournaments?.name || "Jogo Isolado"}
+              </span>
+            </div>
+            <h2 className="text-sm font-semibold text-text-primary mt-0.5">
+              {teamHome} <span className="text-text-muted font-normal">vs</span> {teamAway}
+            </h2>
           </div>
         </div>
 
         {/* Period Selector Tabs */}
-        <div className="flex items-center gap-1 bg-surface-container-high/60 p-1 rounded-xl border border-outline-variant">
+        <div className="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg border border-outline-variant">
           {["Q1", "Q2", "Q3", "Q4", "OT"].map((p) => (
             <button
               key={p}
               onClick={() => changePeriod(p)}
               disabled={!canEdit}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
                 currentPeriod === p
-                  ? "bg-primary text-on-primary"
-                  : "text-on-surface-variant hover:text-on-surface"
+                  ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
+                  : "text-text-muted hover:text-text-primary"
               } ${!canEdit ? "cursor-default" : "cursor-pointer"}`}
             >
               {p}
@@ -335,114 +342,123 @@ export default function BasketballScoreboard({
       <div className="w-full bg-surface-container rounded-2xl border border-outline-variant p-6 md:p-8 relative overflow-hidden mb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           {/* HOME TEAM */}
-          <div className="flex flex-col items-center text-center">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-              <h2 className="text-lg md:text-xl font-headline font-semibold text-on-surface truncate max-w-[240px]">
+          <div className="flex flex-col items-center md:items-start text-center md:text-left order-2 md:order-1">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-primary" />
+              <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
                 {teamHome}
               </h2>
             </div>
 
-            {/* Home Score */}
-            <div className="text-6xl md:text-7xl font-mono tabular-nums font-semibold text-on-surface tracking-tight my-2">
-              {scores.home}
+            {/* Bonus Indicator / Spacing */}
+            <div className="h-6 flex items-center mb-3">
+              {teamFouls.home >= 5 ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                  Bónus Faltas
+                </span>
+              ) : (
+                <span className="inline-flex items-center text-text-muted text-xs font-medium px-2 py-0.5">
+                  Casa
+                </span>
+              )}
             </div>
 
             {/* Home Fouls & Timeouts */}
-            <div className="flex items-center gap-2 text-xs mt-2">
-              <span className={`px-2.5 py-1 rounded-lg border text-xs font-medium ${
+            <div className="flex items-center gap-2 text-xs mb-3">
+              <span className={`px-2.5 py-0.5 rounded-md border text-xs font-medium ${
                 teamFouls.home >= 5
                   ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
-                  : "bg-surface-container-high text-on-surface-variant border-outline-variant"
+                  : "bg-surface-container-high text-text-secondary border-outline-variant"
               }`}>
-                Faltas: <span className="font-mono tabular-nums">{teamFouls.home}</span> {teamFouls.home >= 5 && "(BÓNUS)"}
+                Faltas: <span className="font-digital text-sm text-text-primary">{teamFouls.home}</span>
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline-variant text-xs font-medium">
-                Descontos: <span className="font-mono tabular-nums">{timeouts.home}</span>
+              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant text-xs font-medium">
+                Descontos: <span className="font-digital text-sm text-text-primary">{timeouts.home}</span>
               </span>
+            </div>
+
+            {/* Home Big Score */}
+            <div className="text-7xl sm:text-8xl md:text-9xl font-digital text-text-primary tracking-wider my-2 select-none">
+              {scores.home}
             </div>
 
             {/* Quick Scoring Buttons for Home */}
             {canEdit && (
-              <div className="grid grid-cols-4 gap-1.5 w-full max-w-[260px] mt-6">
-                <button
-                  onClick={() => handleScore("home", 1)}
-                  className="h-9 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-mono tabular-nums font-semibold rounded-lg border border-outline-variant transition-colors text-xs cursor-pointer"
-                  title="Lance Livre (+1)"
-                >
-                  +1
-                </button>
-                <button
-                  onClick={() => handleScore("home", 2)}
-                  className="h-9 bg-primary hover:bg-primary/90 text-on-primary font-mono tabular-nums font-semibold rounded-lg transition-colors text-xs cursor-pointer"
-                  title="Cesto (+2)"
-                >
-                  +2
-                </button>
-                <button
-                  onClick={() => handleScore("home", 3)}
-                  className="h-9 bg-secondary hover:bg-secondary/90 text-on-secondary font-mono tabular-nums font-semibold rounded-lg transition-colors text-xs cursor-pointer"
-                  title="Triplo (+3)"
-                >
-                  +3
-                </button>
-                <button
-                  onClick={() => handleScore("home", -1)}
-                  className="h-9 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-rose-400 font-mono tabular-nums font-medium rounded-lg border border-outline-variant transition-colors text-xs cursor-pointer"
-                  title="Corrigir (-1)"
-                >
-                  -1
-                </button>
-              </div>
-            )}
+              <div className="flex flex-col gap-2 w-full max-w-xs mt-3">
+                <div className="grid grid-cols-4 gap-1.5">
+                  <button
+                    onClick={() => handleScore("home", 1)}
+                    className="h-10 bg-surface-container-high hover:bg-surface-container-highest text-text-primary font-digital text-base font-semibold rounded-lg border border-outline-variant transition-colors flex items-center justify-center cursor-pointer"
+                    title="Lance Livre (+1)"
+                  >
+                    +1
+                  </button>
+                  <button
+                    onClick={() => handleScore("home", 2)}
+                    className="h-10 bg-primary hover:bg-primary/90 text-on-primary font-digital text-base font-semibold rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
+                    title="Cesto (+2)"
+                  >
+                    +2
+                  </button>
+                  <button
+                    onClick={() => handleScore("home", 3)}
+                    className="h-10 bg-primary hover:bg-primary/90 text-on-primary font-digital text-base font-semibold rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
+                    title="Triplo (+3)"
+                  >
+                    +3
+                  </button>
+                  <button
+                    onClick={() => handleScore("home", -1)}
+                    className="h-10 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-rose-400 font-digital text-base font-medium rounded-lg border border-outline-variant transition-colors flex items-center justify-center cursor-pointer"
+                    title="Corrigir (-1)"
+                  >
+                    -1
+                  </button>
+                </div>
 
-            {/* Foul & Timeout actions */}
-            {canEdit && (
-              <div className="flex gap-2 mt-2.5">
-                <button
-                  onClick={() => addFoul("home")}
-                  className="h-7 px-3 bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant transition-colors cursor-pointer"
-                >
-                  + Falta
-                </button>
-                <button
-                  onClick={() => useTimeout("home")}
-                  disabled={timeouts.home <= 0}
-                  className="h-7 px-3 bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer"
-                >
-                  Desconto
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => addFoul("home")}
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors cursor-pointer"
+                  >
+                    + Falta
+                  </button>
+                  <button
+                    onClick={() => useTimeout("home")}
+                    disabled={timeouts.home <= 0}
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer"
+                  >
+                    Desconto
+                  </button>
+                </div>
               </div>
             )}
           </div>
 
           {/* CENTER: CLOCK & PERIOD */}
-          <div className="flex flex-col items-center justify-center py-4 border-y md:border-y-0 md:border-x border-outline-variant px-4">
-            <span className="text-on-surface-variant text-xs font-medium mb-2">
+          <div className="flex flex-col items-center text-center order-1 md:order-2 py-4">
+            <span className="text-xs font-medium text-text-muted mb-1.5">
               {currentPeriod}
             </span>
 
             {/* Game Clock */}
-            <div
-              onClick={toggleClock}
-              className={`text-4xl md:text-5xl font-mono tabular-nums font-semibold tracking-tight cursor-pointer select-none py-2 px-5 rounded-xl border transition-colors ${
-                isClockRunning
-                  ? "text-primary border-primary/40 bg-primary/10"
-                  : "text-on-surface border-outline-variant bg-surface-container-high/60 hover:border-outline-variant/80"
-              }`}
-              title="Clique para Iniciar/Pausar o Relógio"
-            >
-              {formatClock(quarterSeconds)}
+            <div className="flex items-center gap-3 my-2">
+              <div
+                onClick={toggleClock}
+                className="text-3xl md:text-4xl font-digital text-text-primary py-2 px-6 rounded-xl bg-surface-container-high border border-outline-variant tracking-wide cursor-pointer select-none"
+                title="Clique para Iniciar/Pausar o Relógio"
+              >
+                {formatClock(quarterSeconds)}
+              </div>
             </div>
 
             {/* Shot Clock (24s / 14s) */}
-            <div className="flex items-center gap-2.5 mt-3">
-              <div className="flex items-center gap-2 bg-surface-container-high/60 px-3 py-1 rounded-lg border border-outline-variant">
-                <span className="text-[11px] font-medium text-on-surface-variant">
-                  Posse:
-                </span>
+            <div className="flex items-center gap-2 mt-1.5">
+              <div className="px-3 py-1 rounded-md bg-surface-container-high border border-outline-variant flex items-center gap-1.5 text-xs text-text-muted font-medium">
+                <span>Posse:</span>
                 <span
-                  className={`font-mono tabular-nums text-lg font-semibold ${
+                  className={`font-digital text-base ${
                     shotClock <= 5 ? "text-rose-400" : "text-amber-400"
                   }`}
                 >
@@ -454,15 +470,15 @@ export default function BasketballScoreboard({
                 <div className="flex gap-1">
                   <button
                     onClick={() => resetShotClock(24)}
-                    className="h-7 px-2.5 text-xs font-mono tabular-nums font-medium bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-lg border border-outline-variant transition-colors cursor-pointer"
+                    className="h-7 px-2.5 text-xs font-digital font-medium bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-text-primary rounded-md border border-outline-variant transition-colors cursor-pointer"
                     title="Reset 24 segundos"
                   >
                     24s
                   </button>
                   <button
                     onClick={() => resetShotClock(14)}
-                    className="h-7 px-2.5 text-xs font-mono tabular-nums font-medium bg-surface-container-high hover:bg-surface-container-highest text-on-surface rounded-lg border border-outline-variant transition-colors cursor-pointer"
-                    title="Reset 14 segundos (Ressalto Ofensivo)"
+                    className="h-7 px-2.5 text-xs font-digital font-medium bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-text-primary rounded-md border border-outline-variant transition-colors cursor-pointer"
+                    title="Reset 14 segundos"
                   >
                     14s
                   </button>
@@ -475,7 +491,7 @@ export default function BasketballScoreboard({
               <div className="flex items-center gap-2 mt-3">
                 <button
                   onClick={toggleClock}
-                  className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  className={`h-8 px-3.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
                     isClockRunning
                       ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
                       : "bg-primary text-on-primary hover:bg-primary/90"
@@ -487,94 +503,107 @@ export default function BasketballScoreboard({
                   {isClockRunning ? "Pausar" : "Iniciar"}
                 </button>
                 <button
-                  onClick={() => setQuarterSeconds(10 * 60)}
-                  className="h-8 px-2 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant transition-colors cursor-pointer flex items-center justify-center"
-                  title="Repor 10:00"
+                  onClick={() => setQuarterSeconds(defaultQuarterMinutes * 60)}
+                  className="h-8 px-2.5 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-text-primary rounded-lg border border-outline-variant transition-colors cursor-pointer flex items-center justify-center"
+                  title="Repor Tempo"
                 >
-                  <span className="material-symbols-outlined text-base">restart_alt</span>
+                  <span className="material-symbols-outlined text-[15px]">restart_alt</span>
                 </button>
               </div>
             )}
           </div>
 
           {/* AWAY TEAM */}
-          <div className="flex flex-col items-center text-center">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-secondary" />
-              <h2 className="text-lg md:text-xl font-headline font-semibold text-on-surface truncate max-w-[240px]">
+          <div className="flex flex-col items-center md:items-end text-center md:text-right order-3">
+            <div className="flex items-center gap-2 mb-1.5">
+              <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
                 {teamAway}
               </h2>
+              <span className="w-2 h-2 rounded-full bg-secondary" />
             </div>
 
-            {/* Away Score */}
-            <div className="text-6xl md:text-7xl font-mono tabular-nums font-semibold text-on-surface tracking-tight my-2">
-              {scores.away}
+            {/* Bonus Indicator / Spacing */}
+            <div className="h-6 flex items-center mb-3">
+              {teamFouls.away >= 5 ? (
+                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-500/20">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                  Bónus Faltas
+                </span>
+              ) : (
+                <span className="inline-flex items-center text-text-muted text-xs font-medium px-2 py-0.5">
+                  Visitante
+                </span>
+              )}
             </div>
 
             {/* Away Fouls & Timeouts */}
-            <div className="flex items-center gap-2 text-xs mt-2">
-              <span className={`px-2.5 py-1 rounded-lg border text-xs font-medium ${
+            <div className="flex items-center gap-2 text-xs mb-3">
+              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant text-xs font-medium">
+                Descontos: <span className="font-digital text-sm text-text-primary">{timeouts.away}</span>
+              </span>
+              <span className={`px-2.5 py-0.5 rounded-md border text-xs font-medium ${
                 teamFouls.away >= 5
                   ? "bg-rose-500/15 text-rose-300 border-rose-500/30"
-                  : "bg-surface-container-high text-on-surface-variant border-outline-variant"
+                  : "bg-surface-container-high text-text-secondary border-outline-variant"
               }`}>
-                Faltas: <span className="font-mono tabular-nums">{teamFouls.away}</span> {teamFouls.away >= 5 && "(BÓNUS)"}
+                Faltas: <span className="font-digital text-sm text-text-primary">{teamFouls.away}</span>
               </span>
-              <span className="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface-variant border border-outline-variant text-xs font-medium">
-                Descontos: <span className="font-mono tabular-nums">{timeouts.away}</span>
-              </span>
+            </div>
+
+            {/* Away Big Score */}
+            <div className="text-7xl sm:text-8xl md:text-9xl font-digital text-text-primary tracking-wider my-2 select-none">
+              {scores.away}
             </div>
 
             {/* Quick Scoring Buttons for Away */}
             {canEdit && (
-              <div className="grid grid-cols-4 gap-1.5 w-full max-w-[260px] mt-6">
-                <button
-                  onClick={() => handleScore("away", 1)}
-                  className="h-9 bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-mono tabular-nums font-semibold rounded-lg border border-outline-variant transition-colors text-xs cursor-pointer"
-                  title="Lance Livre (+1)"
-                >
-                  +1
-                </button>
-                <button
-                  onClick={() => handleScore("away", 2)}
-                  className="h-9 bg-primary hover:bg-primary/90 text-on-primary font-mono tabular-nums font-semibold rounded-lg transition-colors text-xs cursor-pointer"
-                  title="Cesto (+2)"
-                >
-                  +2
-                </button>
-                <button
-                  onClick={() => handleScore("away", 3)}
-                  className="h-9 bg-secondary hover:bg-secondary/90 text-on-secondary font-mono tabular-nums font-semibold rounded-lg transition-colors text-xs cursor-pointer"
-                  title="Triplo (+3)"
-                >
-                  +3
-                </button>
-                <button
-                  onClick={() => handleScore("away", -1)}
-                  className="h-9 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant hover:text-rose-400 font-mono tabular-nums font-medium rounded-lg border border-outline-variant transition-colors text-xs cursor-pointer"
-                  title="Corrigir (-1)"
-                >
-                  -1
-                </button>
-              </div>
-            )}
+              <div className="flex flex-col gap-2 w-full max-w-xs mt-3">
+                <div className="grid grid-cols-4 gap-1.5">
+                  <button
+                    onClick={() => handleScore("away", -1)}
+                    className="h-10 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-rose-400 font-digital text-base font-medium rounded-lg border border-outline-variant transition-colors flex items-center justify-center cursor-pointer"
+                    title="Corrigir (-1)"
+                  >
+                    -1
+                  </button>
+                  <button
+                    onClick={() => handleScore("away", 3)}
+                    className="h-10 bg-primary hover:bg-primary/90 text-on-primary font-digital text-base font-semibold rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
+                    title="Triplo (+3)"
+                  >
+                    +3
+                  </button>
+                  <button
+                    onClick={() => handleScore("away", 2)}
+                    className="h-10 bg-primary hover:bg-primary/90 text-on-primary font-digital text-base font-semibold rounded-lg transition-colors flex items-center justify-center cursor-pointer shadow-sm"
+                    title="Cesto (+2)"
+                  >
+                    +2
+                  </button>
+                  <button
+                    onClick={() => handleScore("away", 1)}
+                    className="h-10 bg-surface-container-high hover:bg-surface-container-highest text-text-primary font-digital text-base font-semibold rounded-lg border border-outline-variant transition-colors flex items-center justify-center cursor-pointer"
+                    title="Lance Livre (+1)"
+                  >
+                    +1
+                  </button>
+                </div>
 
-            {/* Foul & Timeout actions */}
-            {canEdit && (
-              <div className="flex gap-2 mt-2.5">
-                <button
-                  onClick={() => addFoul("away")}
-                  className="h-7 px-3 bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant transition-colors cursor-pointer"
-                >
-                  + Falta
-                </button>
-                <button
-                  onClick={() => useTimeout("away")}
-                  disabled={timeouts.away <= 0}
-                  className="h-7 px-3 bg-surface-container-high hover:bg-surface-container-highest text-xs text-on-surface-variant hover:text-on-surface rounded-lg border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer"
-                >
-                  Desconto
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => useTimeout("away")}
+                    disabled={timeouts.away <= 0}
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer"
+                  >
+                    Desconto
+                  </button>
+                  <button
+                    onClick={() => addFoul("away")}
+                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors cursor-pointer"
+                  >
+                    + Falta
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -582,14 +611,14 @@ export default function BasketballScoreboard({
       </div>
 
       {/* Quarter by Quarter Breakdown Table */}
-      <div className="w-full bg-surface-container-low rounded-2xl border border-outline-variant overflow-hidden p-5 mb-6">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-on-surface-variant mb-4">
+      <div className="w-full bg-surface-container rounded-2xl border border-outline-variant overflow-hidden p-5 mb-6">
+        <h3 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">
           Resumo por Período
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-center text-sm">
             <thead>
-              <tr className="border-b border-outline-variant text-on-surface-variant/80 text-xs font-medium">
+              <tr className="border-b border-outline-variant text-text-muted text-xs font-medium">
                 <th className="py-2.5 px-4 text-left">Equipa</th>
                 <th className="py-2.5 px-3">Q1</th>
                 <th className="py-2.5 px-3">Q2</th>
@@ -599,9 +628,9 @@ export default function BasketballScoreboard({
                 <th className="py-2.5 px-4 font-semibold text-secondary">Total</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-outline-variant/60 font-mono tabular-nums text-sm">
+            <tbody className="divide-y divide-outline-variant font-digital text-base">
               <tr>
-                <td className="py-3 px-4 text-left font-sans text-on-surface font-medium flex items-center gap-2">
+                <td className="py-3 px-4 text-left font-sans text-text-primary font-medium flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-primary" />
                   {teamHome}
                 </td>
@@ -613,7 +642,7 @@ export default function BasketballScoreboard({
                 <td className="py-3 px-4 font-semibold text-primary">{scores.home}</td>
               </tr>
               <tr>
-                <td className="py-3 px-4 text-left font-sans text-on-surface font-medium flex items-center gap-2">
+                <td className="py-3 px-4 text-left font-sans text-text-primary font-medium flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-secondary" />
                   {teamAway}
                 </td>
@@ -634,9 +663,9 @@ export default function BasketballScoreboard({
         <div className="w-full flex justify-end gap-3">
           <button
             onClick={handleFinalizeMatch}
-            className="h-9 px-4 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5"
+            className="h-9 px-4 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5"
           >
-            <span className="material-symbols-outlined text-base">check_circle</span>
+            <span className="material-symbols-outlined text-[16px]">check_circle</span>
             Terminar Jogo
           </button>
         </div>
