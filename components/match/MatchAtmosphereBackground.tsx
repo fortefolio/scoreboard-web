@@ -41,7 +41,7 @@ export function normalizeSportType(sport?: string | null): SportType {
   return "tennis"; // Universal clean fallback
 }
 
-export default function MatchAtmosphereBackground({
+function MatchAtmosphereBackgroundComponent({
   sportType,
   mode = "spectator",
   forcedOrientation,
@@ -93,3 +93,5 @@ export default function MatchAtmosphereBackground({
     </>
   );
 }
+
+export default React.memo(MatchAtmosphereBackgroundComponent);

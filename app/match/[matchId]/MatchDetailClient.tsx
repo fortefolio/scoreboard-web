@@ -142,7 +142,7 @@ export default function MatchDetailClient() {
   const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
   const menuRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     let ticking = false;
@@ -150,9 +150,7 @@ export default function MatchDetailClient() {
       if (!ticking) {
         window.requestAnimationFrame(() => {
           const scrollPos = window.scrollY || document.documentElement.scrollTop || 0;
-          // Smooth progressive interpolation from 0 (expanded) to 1 (collapsed) over 180px scroll
-          const p = Math.min(1, Math.max(0, scrollPos / 180));
-          setScrollProgress(p);
+          setIsScrolled(scrollPos > 90);
           ticking = false;
         });
         ticking = true;
@@ -163,8 +161,6 @@ export default function MatchDetailClient() {
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const isCollapsed = scrollProgress >= 0.8;
 
   const isOrganizer = Boolean(
     currentUser && (
@@ -592,70 +588,12 @@ export default function MatchDetailClient() {
           </Link>
         </div>
 
-        {/* HERO / COLLAPSIBLE MATCH CARD */}
+        {/* HERO / BIG MATCH CARD (Image 0) */}
         <div
           ref={heroRef}
-          style={{
-            maxHeight: scrollProgress >= 1 ? "58px" : `${Math.round(580 - scrollProgress * (580 - 58))}px`,
-          }}
-          className="sticky top-14 sm:top-16 z-30 bg-[#0b0d14]/95 backdrop-blur-md rounded-2xl border border-outline-variant shadow-xl shadow-black/40 overflow-hidden mb-6 relative"
+          className="relative bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant shadow-xl overflow-hidden mb-6"
         >
-          {/* COMPACT VERSION (Image 1) - Progressively revealed on scroll */}
-          <div
-            style={{
-              opacity: Math.max(0, (scrollProgress - 0.25) / 0.75),
-              transform: `translateY(${(1 - scrollProgress) * 8}px)`,
-              pointerEvents: scrollProgress > 0.5 ? "auto" : "none",
-            }}
-            className="absolute top-0 left-0 right-0 h-14 flex items-center justify-between gap-3 px-4 sm:px-6 z-10"
-          >
-            {/* Team 1 */}
-            <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
-              <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate">
-                {formatTeamOrPlayerName(match.participants?.[0]?.name) || "TBD"}
-              </span>
-              <span className="font-digital text-lg sm:text-2xl text-primary ml-auto pl-2 shrink-0">
-                {sets[0]}
-              </span>
-            </div>
-
-            {/* Center Status / Live Indicator */}
-            <div className="flex flex-col items-center justify-center px-2 shrink-0">
-              {isCompleted ? (
-                <span className="text-[10px] font-mono text-text-muted">{t("status.completed")}</span>
-              ) : match.status === "ongoing" ? (
-                <span className="text-[10px] font-mono text-success flex items-center gap-1 font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                  {t("status.live")}
-                </span>
-              ) : (
-                <span className="text-[10px] font-mono text-text-muted">VS</span>
-              )}
-            </div>
-
-            {/* Team 2 */}
-            <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
-              <span className="font-digital text-lg sm:text-2xl text-primary mr-auto pr-2 shrink-0">
-                {sets[1]}
-              </span>
-              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate text-right">
-                {formatTeamOrPlayerName(match.participants?.[1]?.name) || "TBD"}
-              </span>
-              <span className="w-2 h-2 rounded-full bg-secondary shrink-0" />
-            </div>
-          </div>
-
-          {/* EXPANDED BIG CARD (Image 0) - Progressively dissolved on scroll */}
-          <div
-            style={{
-              opacity: Math.max(0, 1 - scrollProgress * 1.5),
-              transform: `translateY(${-scrollProgress * 20}px) scale(${1 - scrollProgress * 0.04})`,
-              pointerEvents: scrollProgress > 0.5 ? "none" : "auto",
-            }}
-            className="p-6 sm:p-8"
-          >
-            {/* Top Bar: Chips (Sport -> Author -> Status) & Options Menu */}
+          {/* Top Bar: Chips (Sport -> Author -> Status) & Options Menu */}
           <div className="relative z-20 flex items-start justify-between gap-3 mb-6 sm:mb-8">
             {/* Left Chips: Sport -> Author -> Status */}
             <div className="flex flex-wrap items-center gap-2">
@@ -857,10 +795,7 @@ export default function MatchDetailClient() {
 
             {/* SCOREBOARD TABLE (QUARTERS FOR BASKETBALL, SETS FOR VOLLEYBALL/TENNIS) */}
             {match.sport_type === "Basketball" ? (
-              <div
-                style={{ opacity: Math.max(0, 1 - scrollProgress * 2.2) }}
-                className="w-full mt-8 pt-6 border-t border-outline-variant transition-opacity"
-              >
+              <div className="w-full mt-8 pt-6 border-t border-outline-variant">
                 <div className="bg-surface-container-high/30 rounded-xl border border-outline-variant overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-surface-container-high/60 border-b border-outline-variant text-[11px] font-medium text-text-muted">
@@ -919,10 +854,7 @@ export default function MatchDetailClient() {
                 </div>
               </div>
             ) : (setsData.length > 0 || match.status === "ongoing") && (
-              <div
-                style={{ opacity: Math.max(0, 1 - scrollProgress * 2.2) }}
-                className="w-full mt-8 pt-6 border-t border-outline-variant transition-opacity"
-              >
+              <div className="w-full mt-8 pt-6 border-t border-outline-variant">
                 <div className="bg-surface-container-high/30 rounded-xl border border-outline-variant overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="bg-surface-container-high/60 border-b border-outline-variant text-[11px] font-medium text-text-muted">
@@ -1034,7 +966,53 @@ export default function MatchDetailClient() {
             )}
           </div>
         </div>
-      </div>
+
+        {/* STICKY COMPACT TELEMETRY HEADER (Image 1 - Pins smoothly on scroll) */}
+        <div
+          className={`sticky top-14 sm:top-16 z-30 mb-6 transition-all duration-300 ${
+            isScrolled
+              ? "opacity-100 translate-y-0 pointer-events-auto"
+              : "opacity-0 -translate-y-2 pointer-events-none"
+          }`}
+        >
+          <div className="bg-[#0b0d14]/95 backdrop-blur-md rounded-xl sm:rounded-2xl border border-outline-variant shadow-xl shadow-black/40 px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
+            {/* Team 1 */}
+            <div className="flex items-center gap-2 min-w-0 flex-1 justify-start">
+              <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
+              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate">
+                {formatTeamOrPlayerName(match.participants?.[0]?.name) || "TBD"}
+              </span>
+              <span className="font-digital text-lg sm:text-2xl text-primary ml-auto pl-2 shrink-0">
+                {sets[0]}
+              </span>
+            </div>
+
+            {/* Center Status / Live Indicator */}
+            <div className="flex flex-col items-center justify-center px-2 shrink-0">
+              {isCompleted ? (
+                <span className="text-[10px] font-mono text-text-muted">{t("status.completed")}</span>
+              ) : match.status === "ongoing" ? (
+                <span className="text-[10px] font-mono text-success flex items-center gap-1 font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                  {t("status.live")}
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono text-text-muted">VS</span>
+              )}
+            </div>
+
+            {/* Team 2 */}
+            <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+              <span className="font-digital text-lg sm:text-2xl text-primary mr-auto pr-2 shrink-0">
+                {sets[1]}
+              </span>
+              <span className="text-xs sm:text-sm font-semibold text-text-primary truncate text-right">
+                {formatTeamOrPlayerName(match.participants?.[1]?.name) || "TBD"}
+              </span>
+              <span className="w-2 h-2 rounded-full bg-secondary shrink-0" />
+            </div>
+          </div>
+        </div>
 
         {/* DETAIL TABS (Score Progress, Match Rules, Match Official) */}
         <div className="flex items-center justify-center my-6 overflow-x-auto">
