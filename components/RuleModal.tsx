@@ -257,7 +257,7 @@ export default function RuleModal({
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 bg-primary hover:bg-primary/90 text-white py-2.5 px-4 rounded-lg font-medium text-xs transition-colors cursor-pointer"
+              className="flex-1 bg-text-primary hover:bg-white text-surface-container-lowest py-2.5 px-4 rounded-lg font-medium text-xs transition-colors cursor-pointer"
             >
               {t("match.saveRules")}
             </button>

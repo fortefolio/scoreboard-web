@@ -152,7 +152,7 @@ export default function StreamOverlayModal({ isOpen, onClose, matchId }: StreamO
             <button
               type="button"
               onClick={handleCopy}
-              className="px-3.5 py-1.5 bg-primary hover:bg-primary/90 text-white text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+              className="px-3.5 py-1.5 bg-text-primary hover:bg-white text-surface-container-lowest text-xs font-medium rounded-md transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
             >
               {copied ? (
                 <>

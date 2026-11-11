@@ -490,7 +490,7 @@ function TournamentContent() {
                       <button 
                         onClick={addTeam}
                         disabled={teamNames.length >= maxTeams}
-                        className="flex-1 sm:flex-initial justify-center bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium text-xs transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex-1 sm:flex-initial justify-center bg-text-primary hover:bg-white text-surface-container-lowest px-4 py-2 rounded-lg font-medium text-xs transition-colors flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                       >
                         <span className="material-symbols-outlined text-[16px] leading-none">add</span>
                         {teamNames.length >= maxTeams ? 'Limit Reached' : 'Add Team'}
@@ -637,7 +637,7 @@ function TournamentContent() {
                           />
                           <button 
                             onClick={saveGeneralSettings}
-                            className="bg-primary hover:bg-primary/90 text-white px-4 py-2.5 rounded-lg font-medium text-xs transition-colors shrink-0"
+                            className="bg-text-primary hover:bg-white text-surface-container-lowest px-4 py-2.5 rounded-lg font-medium text-xs transition-colors shrink-0 cursor-pointer"
                           >
                             Save Settings
                           </button>
@@ -691,15 +691,16 @@ function TournamentContent() {
                                 <div className="flex items-center gap-2">
                                   <span className="text-xs font-medium text-text-muted">Required</span>
                                   <button 
+                                    type="button"
                                     onClick={() => updateSignupField(field.id, { required: !field.required })}
-                                    className={`w-9 h-5 rounded-full transition-colors relative ${field.required ? 'bg-primary' : 'bg-surface-container-highest'}`}
+                                    className={`w-8 h-4.5 rounded-full transition-colors relative cursor-pointer ${field.required ? 'bg-text-primary' : 'bg-surface-container-highest border border-outline-variant'}`}
                                   >
-                                    <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${field.required ? 'left-4.5' : 'left-0.5'}`}></div>
+                                    <div className={`absolute top-0.5 w-3.5 h-3.5 rounded-full transition-all ${field.required ? 'left-4 bg-surface-container-lowest' : 'left-0.5 bg-text-muted'}`}></div>
                                   </button>
                                 </div>
                                 <button 
                                   onClick={() => removeSignupField(field.id)}
-                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-error hover:bg-error/10 transition-colors"
+                                  className="w-8 h-8 rounded-lg flex items-center justify-center text-text-muted hover:text-error hover:bg-error/10 transition-colors cursor-pointer"
                                   title="Remove Field"
                                 >
                                   <span className="material-symbols-outlined text-base">delete</span>
@@ -828,13 +829,13 @@ function TournamentContent() {
                         <div className="flex items-center gap-2.5 w-full sm:w-auto">
                            <button 
                              onClick={() => setIsPreviewModalOpen(true)}
-                             className="flex-1 sm:flex-none px-4 py-2 bg-transparent border border-outline-variant rounded-lg text-text-primary font-medium text-xs hover:bg-surface-container-high transition-colors"
+                             className="flex-1 sm:flex-none px-4 py-2 bg-transparent border border-outline-variant rounded-lg text-text-primary font-medium text-xs hover:bg-surface-container-high transition-colors cursor-pointer"
                            >
                              Preview Form
                            </button>
                            <button 
                              onClick={saveGeneralSettings}
-                             className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium text-xs transition-colors"
+                             className="flex-1 sm:flex-none bg-text-primary hover:bg-white text-surface-container-lowest px-4 py-2 rounded-lg font-medium text-xs transition-colors cursor-pointer"
                            >
                              Save Form Config
                            </button>
@@ -852,7 +853,7 @@ function TournamentContent() {
                       <button 
                         onClick={handleGenerateBracket}
                         disabled={isGenerating}
-                        className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 px-4 rounded-lg font-medium text-xs transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                        className="w-full bg-text-primary hover:bg-white text-surface-container-lowest py-2.5 px-4 rounded-lg font-medium text-xs transition-colors disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
                       >
                         <span className="material-symbols-outlined text-sm leading-none">bolt</span>
                         {isGenerating ? "Generating..." : "Generate Tournament Bracket"}
@@ -998,7 +999,7 @@ function TournamentContent() {
             <footer className="p-4 bg-surface-container-high border-t border-outline-variant">
               <button 
                 onClick={() => setIsPreviewModalOpen(false)}
-                className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 rounded-lg font-medium text-xs transition-colors"
+                className="w-full bg-text-primary hover:bg-white text-surface-container-lowest py-2.5 rounded-lg font-medium text-xs transition-colors cursor-pointer"
               >
                 Back to Editor
               </button>

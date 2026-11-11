@@ -45,10 +45,10 @@ export default function ConfirmationModal({
               onConfirm();
               onClose();
             }} 
-            className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-xs transition-colors text-white ${
+            className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-xs transition-colors cursor-pointer ${
               isDanger 
-                ? 'bg-error hover:bg-error/90' 
-                : 'bg-primary hover:bg-primary/90'
+                ? 'bg-error hover:bg-error/90 text-white' 
+                : 'bg-text-primary hover:bg-white text-surface-container-lowest'
             }`}
           >
             {confirmText}

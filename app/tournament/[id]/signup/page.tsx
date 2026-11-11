@@ -105,9 +105,9 @@ function SignupContent() {
   if (!tournament) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-4xl font-headline font-black mb-4">Tournament Not Found</h1>
-        <p className="text-on-surface-variant mb-8">The tournament you are looking for does not exist or has been removed.</p>
-        <Link href="/" className="bg-primary-container text-on-primary-container px-8 py-3 rounded-xl font-bold">
+        <h1 className="text-2xl font-semibold mb-2 text-text-primary">Tournament Not Found</h1>
+        <p className="text-text-muted text-xs mb-6 max-w-sm">The tournament you are looking for does not exist or has been removed.</p>
+        <Link href="/" className="bg-text-primary hover:bg-white text-surface-container-lowest px-5 py-2.5 rounded-lg font-medium text-xs transition-colors">
           Go Home
         </Link>
       </div>
@@ -250,10 +250,10 @@ function SignupContent() {
                     <button 
                       type="submit"
                       disabled={submitting || tournament.status !== 'pending'}
-                      className="w-full bg-primary hover:bg-primary/90 text-white py-2.5 px-4 rounded-lg font-medium text-xs transition-colors disabled:opacity-50 active:scale-[0.99] flex items-center justify-center gap-2"
+                      className="w-full bg-text-primary hover:bg-white text-surface-container-lowest py-2.5 px-4 rounded-lg font-medium text-xs transition-colors disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       {submitting ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <div className="w-4 h-4 border-2 border-surface-container-lowest border-t-transparent rounded-full animate-spin"></div>
                       ) : (
                         <>
                           <span className="material-symbols-outlined text-sm">how_to_reg</span>
