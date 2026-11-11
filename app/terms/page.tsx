@@ -11,31 +11,36 @@ export default function TermsPage() {
   const isPt = selectedLang === "pt";
 
   return (
-    <div className="min-h-screen bg-[#0c1324] text-slate-200 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background text-text-primary font-sans p-4 sm:p-8 pt-20 sm:pt-24">
       <div className="max-w-4xl mx-auto">
         {/* Navigation / Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-10 pb-6 border-b border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b border-outline-variant">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-text-primary transition-colors"
           >
-            ← {isPt ? "Voltar ao ScoreBoard" : "Back to ScoreBoard"}
+            <span className="material-symbols-outlined text-[16px] leading-none">arrow_back</span>
+            <span>{isPt ? "Voltar ao ScoreBoard" : "Back to ScoreBoard"}</span>
           </Link>
 
           {/* Language Switcher */}
-          <div className="flex items-center gap-1.5 p-1 bg-slate-900 border border-slate-800 rounded-xl">
+          <div className="flex items-center gap-1 p-0.5 bg-surface-container-low border border-outline-variant rounded-lg">
             <button
               onClick={() => setSelectedLang("en")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
-                selectedLang === "en" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                selectedLang === "en"
+                  ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
+                  : "text-text-muted hover:text-text-primary"
               }`}
             >
               EN
             </button>
             <button
               onClick={() => setSelectedLang("pt")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${
-                selectedLang === "pt" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"
+              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
+                selectedLang === "pt"
+                  ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
+                  : "text-text-muted hover:text-text-primary"
               }`}
             >
               PT
@@ -44,14 +49,15 @@ export default function TermsPage() {
         </div>
 
         {/* Title & Meta */}
-        <div className="mb-10">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mb-3">
-            ⚖️ {isPt ? "Termos Oficiais de Serviço & Privacidade" : "Official Terms of Service & Privacy"}
-          </span>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-white tracking-tight">
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-surface-container text-text-secondary border border-outline-variant mb-2">
+            <span className="material-symbols-outlined text-[13px] text-text-muted leading-none">gavel</span>
+            <span>{isPt ? "Termos Oficiais de Serviço & Privacidade" : "Official Terms of Service & Privacy"}</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-semibold text-text-primary tracking-tight">
             {isPt ? "Termos & Condições de Utilização" : "Terms & Conditions of Service"}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-3">
+          <p className="text-xs text-text-muted mt-1.5">
             {isPt 
               ? "Última atualização: 3 de Novembro de 2026 • Em conformidade com o RGPD (UE 2016/679) e Diretrizes das Lojas de Aplicações."
               : "Last updated: November 3, 2026 • Fully compliant with EU GDPR (2016/679) and App Store Guidelines."}
@@ -59,11 +65,11 @@ export default function TermsPage() {
         </div>
 
         {/* Legal Body */}
-        <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-6 sm:p-10 space-y-10 text-sm leading-relaxed text-slate-300">
+        <div className="bg-surface-container border border-outline-variant rounded-2xl p-6 sm:p-8 space-y-8 text-xs sm:text-sm leading-relaxed text-text-secondary">
           {/* Section 1 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-              <span className="text-indigo-400">1.</span> {isPt ? "Introdução e Aceitação" : "Introduction & Acceptance of Terms"}
+            <h2 className="text-base sm:text-lg font-semibold text-text-primary mb-2 flex items-center gap-2">
+              <span className="font-mono text-text-muted">1.</span> {isPt ? "Introdução e Aceitação" : "Introduction & Acceptance of Terms"}
             </h2>
             <p>
               {isPt
@@ -74,23 +80,23 @@ export default function TermsPage() {
 
           {/* Section 2 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-              <span className="text-indigo-400">2.</span> {isPt ? "Planos e Funcionalidades do Serviço" : "Services & Plans"}
+            <h2 className="text-base sm:text-lg font-semibold text-text-primary mb-2 flex items-center gap-2">
+              <span className="font-mono text-text-muted">2.</span> {isPt ? "Planos e Funcionalidades do Serviço" : "Services & Plans"}
             </h2>
-            <p className="mb-3">
+            <p className="mb-2.5">
               {isPt
                 ? "O ScoreBoard disponibiliza gestão e acompanhamento de jogos e competições em tempo real para diversas modalidades desportivas (Ténis, Padel, Voleibol, Voleibol de Praia, Basquetebol e Futebol):"
                 : "ScoreBoard provides live match scorekeeping, tournament bracket management, referee delegation, and real-time feeds across multiple sports (Tennis, Padel, Volleyball, Beach Volleyball, Basketball, and Football):"}
             </p>
-            <ul className="list-disc pl-5 space-y-2 text-slate-300">
+            <ul className="list-disc pl-5 space-y-1.5 text-text-secondary">
               <li>
-                <strong>{isPt ? "Plano Gratuito (Comunidade):" : "Community / Free Plan:"}</strong>{" "}
+                <strong className="text-text-primary">{isPt ? "Plano Gratuito (Comunidade):" : "Community / Free Plan:"}</strong>{" "}
                 {isPt
                   ? "Marcador e acompanhamento ilimitado de partidas amigáveis e individuais, acesso aos marcadores ao vivo com temas visuais de campo, participação como jogador/equipa em torneios e modo offline com sincronização automática."
                   : "Unlimited scorekeeping for friendly and standalone matches, live atmospheric court views, participating in competitions as a player/team, and offline scorekeeping with auto-sync."}
               </li>
               <li>
-                <strong>{isPt ? "Plano Pro Organizador:" : "Pro Organizer Plan:"}</strong>{" "}
+                <strong className="text-text-primary">{isPt ? "Plano Pro Organizador:" : "Pro Organizer Plan:"}</strong>{" "}
                 {isPt
                   ? "Criação ilimitada de torneios (fase de grupos, eliminatórias simples e duplas), atribuição oficial de árbitros, personalização de patrocinadores e logótipos, marcador limpo em tempo real para transmissões em direto (OBS / vMix) e exportação de resultados em PDF/CSV."
                   : "Unlimited tournament creation (Group stages, single/double knockout brackets), referee delegation, sponsor branding, real-time clean broadcast scoreboard overlay for live streams (OBS / vMix), and PDF/CSV standings exports."}
@@ -100,12 +106,12 @@ export default function TermsPage() {
 
           {/* Section 3 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-              <span className="text-indigo-400">3.</span> {isPt ? "Subscrições, Faturação e Vouchers de Clube" : "Subscriptions, Billing & Club Vouchers"}
+            <h2 className="text-base sm:text-lg font-semibold text-text-primary mb-2 flex items-center gap-2">
+              <span className="font-mono text-text-muted">3.</span> {isPt ? "Subscrições, Faturação e Vouchers de Clube" : "Subscriptions, Billing & Club Vouchers"}
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               <div>
-                <h3 className="font-bold text-white mb-1">{isPt ? "Preçário e Renovação Automática" : "Pricing & Auto-Renewal"}</h3>
+                <h3 className="font-semibold text-text-primary mb-1">{isPt ? "Preçário e Renovação Automática" : "Pricing & Auto-Renewal"}</h3>
                 <p>
                   {isPt
                     ? "O Plano Pro Organizador tem o valor de €3.99/mês (faturação mensal) ou €34.99/ano (faturação anual, poupança de ~27%). As subscrições renovam-se automaticamente a menos que sejam canceladas com pelo menos 24 horas de antecedência em relação ao fim do ciclo corrente."
@@ -114,7 +120,7 @@ export default function TermsPage() {
               </div>
 
               <div>
-                <h3 className="font-bold text-white mb-1">{isPt ? "Processamento de Pagamento" : "Payment Processors & App Stores"}</h3>
+                <h3 className="font-semibold text-text-primary mb-1">{isPt ? "Processamento de Pagamento" : "Payment Processors & App Stores"}</h3>
                 <p>
                   {isPt
                     ? "Os pagamentos na web são processados de forma encriptada através do Stripe, Inc. Nas aplicações móveis (iOS e Android), as compras são processadas através da Apple StoreKit ou Google Play Billing de acordo com os termos de cada plataforma. A ativação numa plataforma desbloqueia o acesso Pro em todos os dispositivos associados à mesma conta."
@@ -123,7 +129,7 @@ export default function TermsPage() {
               </div>
 
               <div>
-                <h3 className="font-bold text-white mb-1">{isPt ? "Cancelamento e Política de Reembolso" : "Cancellation & Refund Policy"}</h3>
+                <h3 className="font-semibold text-text-primary mb-1">{isPt ? "Cancelamento e Política de Reembolso" : "Cancellation & Refund Policy"}</h3>
                 <p>
                   {isPt
                     ? "Pode cancelar a sua subscrição a qualquer momento no menu de Definições através do Portal de Clientes Stripe ou nas definições de subscrição do seu dispositivo móvel. Ao cancelar, mantém o acesso total até ao termo do período faturado. Exceto nos termos previstos pelo direito de livre resolução da União Europeia (14 dias prévios ao início da fruição do serviço digital), os pagamentos efetuados não são reembolsáveis."
@@ -132,7 +138,7 @@ export default function TermsPage() {
               </div>
 
               <div>
-                <h3 className="font-bold text-white mb-1">{isPt ? "Vouchers e Códigos Promocionais de Clube" : "Club Beta Vouchers & Promotional Codes"}</h3>
+                <h3 className="font-semibold text-text-primary mb-1">{isPt ? "Vouchers e Códigos Promocionais de Clube" : "Club Beta Vouchers & Promotional Codes"}</h3>
                 <p>
                   {isPt
                     ? "Os vouchers distribuídos a clubes e parceiros durante a fase beta (ex: BETA-CLUB-60D) garantem acesso Pro temporário sem necessidade de introduzir dados de cartão de crédito. Os vouchers não têm valor monetário, não podem ser vendidos e cessam no termo do período concedido."
@@ -144,10 +150,10 @@ export default function TermsPage() {
 
           {/* Section 4 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-              <span className="text-emerald-400">4.</span> {isPt ? "Privacidade, Retenção de Dados e RGPD (UE 2016/679)" : "Privacy, Data Retention & GDPR (EU 2016/679)"}
+            <h2 className="text-base sm:text-lg font-semibold text-text-primary mb-2 flex items-center gap-2">
+              <span className="font-mono text-text-muted">4.</span> {isPt ? "Privacidade, Retenção de Dados e RGPD (UE 2016/679)" : "Privacy, Data Retention & GDPR (EU 2016/679)"}
             </h2>
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               <p>
                 {isPt
                   ? "O ScoreBoard atua como Responsável pelo Tratamento de Dados (Data Controller) e respeita integralmente os princípios da privacidade desde a conceção (Privacy by Design) e por defeito."
@@ -155,7 +161,7 @@ export default function TermsPage() {
               </p>
 
               <div>
-                <h3 className="font-bold text-white mb-1">{isPt ? "Dados Recolhidos e Finalidade" : "Collected Data & Purpose"}</h3>
+                <h3 className="font-semibold text-text-primary mb-1">{isPt ? "Dados Recolhidos e Finalidade" : "Collected Data & Purpose"}</h3>
                 <p>
                   {isPt
                     ? "Recolhemos o email de registo, identificador de utilizador (username e display name), histórico de pontuações de partidas, preferências de visualização e identificadores anónimos de subscrição. Não armazenamos números de cartões de pagamento nos nossos servidores."
@@ -164,7 +170,7 @@ export default function TermsPage() {
               </div>
 
               <div>
-                <h3 className="font-bold text-white mb-1">{isPt ? "Direito ao Esquecimento / Eliminação Permanente (Art. 17 RGPD)" : "Right to Erasure / Account Deletion (Art. 17 GDPR)"}</h3>
+                <h3 className="font-semibold text-text-primary mb-1">{isPt ? "Direito ao Esquecimento / Eliminação Permanente (Art. 17 RGPD)" : "Right to Erasure / Account Deletion (Art. 17 GDPR)"}</h3>
                 <p>
                   {isPt
                     ? "Qualquer utilizador pode eliminar a sua conta e todos os dados associados a qualquer momento, de forma autónoma, acedendo a Definições → Zona de Perigo e confirmando a ação com o texto 'DELETE'. Esta ação efetua a eliminação irreversível e criptográfica do perfil, credenciais de acesso e notificações do utilizador."
@@ -173,7 +179,7 @@ export default function TermsPage() {
               </div>
 
               <div>
-                <h3 className="font-bold text-white mb-1">{isPt ? "Portabilidade de Dados (Art. 20 RGPD)" : "Data Portability (Art. 20 GDPR)"}</h3>
+                <h3 className="font-semibold text-text-primary mb-1">{isPt ? "Portabilidade de Dados (Art. 20 RGPD)" : "Data Portability (Art. 20 GDPR)"}</h3>
                 <p>
                   {isPt
                     ? "Disponibilizamos uma ferramenta de exportação completa dos seus dados no menu Definições → Segurança, gerando um ficheiro estruturado em formato JSON com todos os registos do utilizador."
@@ -185,27 +191,27 @@ export default function TermsPage() {
 
           {/* Section 5 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-              <span className="text-indigo-400">5.</span>{" "}
+            <h2 className="text-base sm:text-lg font-semibold text-text-primary mb-2 flex items-center gap-2">
+              <span className="font-mono text-text-muted">5.</span>{" "}
               {isPt
                 ? "Responsabilidade pelos Dados Inseridos, Integridade e Denúncia de Ocorrências"
                 : "Responsibility for Inserted Data, Integrity & Incident Reporting"}
             </h2>
-            <div className="space-y-3">
+            <div className="space-y-2.5">
               <p>
-                <strong>{isPt ? "Responsabilidade Exclusiva do Utilizador:" : "Sole User Responsibility:"}</strong>{" "}
+                <strong className="text-text-primary">{isPt ? "Responsabilidade Exclusiva do Utilizador:" : "Sole User Responsibility:"}</strong>{" "}
                 {isPt
                   ? "Todos os resultados, pontuações, nomes de participantes, equipas, horários e quaisquer outras informações introduzidas na plataforma são da inteira e exclusiva responsabilidade do utilizador, organizador ou árbitro que efetuou a inserção."
                   : "All match results, scores, player/team names, schedules, and any other data entered onto the platform are the sole and exclusive responsibility of the user, organizer, or match official who submitted them."}
               </p>
               <p>
-                <strong>{isPt ? "Inexistência de Validação Prévia pela Plataforma:" : "No Prior Verification by the Platform:"}</strong>{" "}
+                <strong className="text-text-primary">{isPt ? "Inexistência de Validação Prévia pela Plataforma:" : "No Prior Verification by the Platform:"}</strong>{" "}
                 {isPt
                   ? "O ScoreBoard funciona como um meio tecnológico de suporte e agregação desportiva e não dispõe de qualquer forma, meio ou obrigação de validar, auditar ou certificar previamente a autenticidade, fidedignidade ou veracidade dos dados inseridos."
                   : "ScoreBoard operates strictly as a digital technology tool and does not possess any means, mechanism, or obligation to verify, audit, or certify the accuracy, authenticity, or truthfulness of any submitted data."}
               </p>
               <p>
-                <strong>{isPt ? "Obrigação de Reporte de Ocorrências Não Fidedignas:" : "Reporting Inaccurate or Fraudulent Occurrences:"}</strong>{" "}
+                <strong className="text-text-primary">{isPt ? "Obrigação de Reporte de Ocorrências Não Fidedignas:" : "Reporting Inaccurate or Fraudulent Occurrences:"}</strong>{" "}
                 {isPt
                   ? "Se algum utilizador, participante ou terceiro detetar alguma ocorrência não fidedigna, pontuação fraudulenta, usurpação de identidade ou manipulação de resultados, deve reportar de imediato a ocorrência à plataforma através do email support@scoreboard.app. A plataforma reserva-se o direito de investigar, retificar, ocultar ou remover os dados contestados, bem como suspender ou cancelar as contas infratoras."
                   : "If any user, player, or third party detects an inaccurate record, fraudulent score, identity impersonation, or match manipulation, they must promptly report the incident to support@scoreboard.app. ScoreBoard reserves the right to investigate, correct, hide, or remove contested entries and suspend offending accounts."}
@@ -215,17 +221,17 @@ export default function TermsPage() {
 
           {/* Section 6 */}
           <section>
-            <h2 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-              <span className="text-indigo-400">6.</span> {isPt ? "Lei Aplicável e Contacto" : "Governing Law & Contact"}
+            <h2 className="text-base sm:text-lg font-semibold text-text-primary mb-2 flex items-center gap-2">
+              <span className="font-mono text-text-muted">6.</span> {isPt ? "Lei Aplicável e Contacto" : "Governing Law & Contact"}
             </h2>
             <p className="mb-2">
               {isPt
                 ? "Estes Termos regem-se pelas leis de Portugal e da União Europeia. Para quaisquer questões, suporte ou exercício de direitos de proteção de dados, contacte-nos:"
                 : "These Terms are governed by and construed in accordance with the laws of Portugal and the European Union. For support or privacy inquiries, contact us at:"}
             </p>
-            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs font-mono">
-              <p>Email: <span className="text-indigo-400">support@scoreboard.app</span></p>
-              <p>Privacy & Data Protection: <span className="text-indigo-400">privacy@scoreboard.app</span></p>
+            <div className="bg-surface-container-high p-3.5 rounded-lg border border-outline-variant text-xs font-mono text-text-muted space-y-1">
+              <p>Email: <span className="text-text-primary">support@scoreboard.app</span></p>
+              <p>Privacy & Data Protection: <span className="text-text-primary">privacy@scoreboard.app</span></p>
             </div>
           </section>
         </div>
@@ -234,7 +240,7 @@ export default function TermsPage() {
         <div className="mt-8 text-center">
           <Link
             href="/"
-            className="text-xs text-slate-500 hover:text-white transition-colors"
+            className="text-xs text-text-muted hover:text-text-primary transition-colors"
           >
             © 2026 ScoreBoard. {isPt ? "Todos os direitos reservados." : "All rights reserved."}
           </Link>
