@@ -651,10 +651,10 @@ export default function MatchDetailClient() {
                     }}
                     className="w-full px-3.5 py-2 text-left text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-container flex items-center gap-2 transition-colors cursor-pointer border-t border-outline-variant"
                   >
-                    <span className="material-symbols-outlined text-[16px] text-primary">podcasts</span>
+                    <span className="material-symbols-outlined text-[16px] text-text-muted">podcasts</span>
                     <span className="flex-1">{t("match.streamOverlay")}</span>
                     {subscriptionTier !== "pro" && !canManageOfficial && (
-                      <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                      <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded-md bg-surface-container font-medium text-text-secondary border border-outline-variant">
                         PRO
                       </span>
                     )}
@@ -699,7 +699,7 @@ export default function MatchDetailClient() {
                   className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant text-text-secondary hover:text-text-primary transition-colors max-w-[85vw] sm:max-w-md group"
                   title={match.tournaments.name}
                 >
-                  <span className="material-symbols-outlined text-[15px] text-primary shrink-0">emoji_events</span>
+                  <span className="material-symbols-outlined text-[15px] text-text-muted shrink-0">emoji_events</span>
                   <span className="text-xs font-medium truncate">
                     {match.tournaments.name}
                   </span>
@@ -709,7 +709,7 @@ export default function MatchDetailClient() {
                   className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-text-secondary max-w-[85vw] sm:max-w-md"
                   title={match.tournaments.name}
                 >
-                  <span className="material-symbols-outlined text-[15px] text-primary shrink-0">emoji_events</span>
+                  <span className="material-symbols-outlined text-[15px] text-text-muted shrink-0">emoji_events</span>
                   <span className="text-xs font-medium truncate">
                     {match.tournaments.name}
                   </span>
@@ -809,7 +809,7 @@ export default function MatchDetailClient() {
                                 {playerName}
                               </span>
                               {isMatchWinner && (
-                                <span className="material-symbols-outlined text-primary text-[15px]" title="Winner">
+                                <span className="material-symbols-outlined text-text-primary text-[15px]" title="Winner">
                                   emoji_events
                                 </span>
                               )}
@@ -820,7 +820,7 @@ export default function MatchDetailClient() {
                               </td>
                             ))}
                             {bQuarters.length > 4 && (
-                              <td className="py-3 px-3 text-center font-digital text-base text-text-secondary">
+                              <td key={4} className="py-3 px-3 text-center font-digital text-base text-text-secondary">
                                 {bQuarters[4]?.[pIdx === 0 ? "home" : "away"] ?? 0}
                               </td>
                             )}
@@ -852,7 +852,7 @@ export default function MatchDetailClient() {
                               <th className="py-2.5 px-3 text-center text-text-secondary font-medium min-w-[44px]">
                                 {t("common.games")}
                               </th>
-                              <th className="py-2.5 px-3 text-center text-primary font-medium min-w-[44px] bg-primary/5">
+                              <th className="py-2.5 px-3 text-center text-text-primary font-medium min-w-[44px] bg-surface-container-high/40">
                                 {t("common.pointsLabel")}
                               </th>
                             </>
@@ -884,12 +884,12 @@ export default function MatchDetailClient() {
                               </span>
                               {isServing && (
                                 <span
-                                  className="w-1.5 h-1.5 rounded-full bg-primary shrink-0"
+                                  className="w-1.5 h-1.5 rounded-full bg-success shrink-0"
                                   title="Serving"
                                 />
                               )}
                               {isMatchWinner && (
-                                <span className="material-symbols-outlined text-primary text-[15px]" title="Winner">
+                                <span className="material-symbols-outlined text-text-primary text-[15px]" title="Winner">
                                   emoji_events
                                 </span>
                               )}
@@ -913,7 +913,7 @@ export default function MatchDetailClient() {
                                 >
                                   <span>{pScore}</span>
                                   {tbVal !== null && tbVal !== undefined && (
-                                    <sup className="text-[10px] font-sans font-medium text-primary ml-0.5">{tbVal}</sup>
+                                    <sup className="text-[10px] font-mono font-medium text-text-muted ml-0.5">{tbVal}</sup>
                                   )}
                                 </td>
                               );
@@ -924,12 +924,12 @@ export default function MatchDetailClient() {
                                   <td className="py-3 px-3 text-center font-digital text-base text-text-secondary">
                                     {match.scores?.tennis?.games?.[pIdx] ?? 0}
                                   </td>
-                                  <td className="py-3 px-3 text-center font-digital font-semibold text-base text-primary bg-primary/5">
+                                  <td className="py-3 px-3 text-center font-digital font-semibold text-base text-text-primary bg-surface-container-high/40">
                                     {renderLivePoint(match, pIdx)}
                                   </td>
                                 </>
                               ) : (
-                                <td className="py-3 px-3 text-center font-digital font-semibold text-base text-primary bg-primary/5">
+                                <td className="py-3 px-3 text-center font-digital font-semibold text-base text-text-primary bg-surface-container-high/40">
                                   {match.scores?.current?.[pIdx === 0 ? "home" : "away"] ?? 0}
                                 </td>
                               )
@@ -1087,7 +1087,7 @@ export default function MatchDetailClient() {
             <div className="bg-surface-container rounded-2xl p-5 mt-4 border border-outline-variant">
               <div className="flex items-center justify-between gap-4 mb-5">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-[18px]">analytics</span>
+                  <span className="material-symbols-outlined text-text-muted text-[18px]">analytics</span>
                   <div>
                     <h3 className="font-semibold text-sm text-text-primary">
                       {t("match.quarterBreakdown")}
@@ -1101,7 +1101,7 @@ export default function MatchDetailClient() {
                 <button
                   type="button"
                   onClick={toggleAllQuarters}
-                  className="text-xs font-medium text-primary hover:underline transition-colors px-2 py-1 cursor-pointer"
+                  className="text-xs font-medium text-text-secondary hover:text-text-primary transition-colors px-2 py-1 cursor-pointer"
                 >
                   {allExpanded ? t("match.collapseAll") : t("match.expandAll")}
                 </button>
@@ -1178,7 +1178,7 @@ export default function MatchDetailClient() {
 
                           <span
                             className={`material-symbols-outlined text-text-muted text-[18px] transition-transform duration-200 ml-1 ${
-                              isExpanded ? "rotate-180 text-primary" : ""
+                              isExpanded ? "rotate-180 text-text-primary" : ""
                             }`}
                           >
                             expand_more
@@ -1598,7 +1598,7 @@ export default function MatchDetailClient() {
             <div className="bg-surface-container rounded-2xl p-5 border border-outline-variant space-y-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-[18px]">sports_soccer</span>
+                  <SportIcon sport="Football" className="text-text-muted text-[18px]" />
                   <div>
                     <h3 className="font-semibold text-sm text-text-primary">
                       {t("match.scoreProgress")}
@@ -1637,7 +1637,7 @@ export default function MatchDetailClient() {
                               {pName}
                             </span>
                             {isWinner && (
-                              <span className="material-symbols-outlined text-primary text-[15px]" title="Winner">
+                              <span className="material-symbols-outlined text-text-primary text-[15px]" title="Winner">
                                 emoji_events
                               </span>
                             )}
@@ -1670,15 +1670,15 @@ export default function MatchDetailClient() {
                       return (
                         <div key={g.id || gIdx} className="px-3.5 py-2.5 flex items-center justify-between hover:bg-surface-container-high/30 transition-colors">
                           <div className="flex items-center gap-2">
-                            <span className="px-1.5 py-0.5 rounded bg-surface-container-high text-primary font-semibold text-[11px]">
+                            <span className="px-1.5 py-0.5 rounded bg-surface-container font-mono text-text-secondary text-[11px] border border-outline-variant">
                               {minute}
                             </span>
-                            <span className="material-symbols-outlined text-[15px] text-primary">sports_soccer</span>
+                            <SportIcon sport="Football" className="text-text-muted text-[15px]" />
                             <span className="font-sans font-medium text-text-primary">
                               {teamName}
                             </span>
                           </div>
-                          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                          <span className="px-2 py-0.5 rounded-md text-[11px] font-mono font-bold bg-surface-container-high text-text-primary border border-outline-variant">
                             GOAL
                           </span>
                         </div>
@@ -1702,7 +1702,7 @@ export default function MatchDetailClient() {
           <div className="bg-surface-container rounded-2xl p-6 border border-outline-variant">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[18px]">tune</span>
+                <span className="material-symbols-outlined text-text-muted text-[18px]">tune</span>
                 <h3 className="font-semibold text-sm text-text-primary">{t("match.matchRules")}</h3>
               </div>
               {isOrganizer && !match.tournament_id && (
@@ -1781,8 +1781,8 @@ export default function MatchDetailClient() {
                 {(match.sport_type === "Padel" || rules?.no_ad !== undefined) && (
                   <div className="bg-surface-container-high rounded-xl p-3.5 border border-outline-variant col-span-2">
                     <p className="text-[11px] font-medium text-text-muted mb-1">{t("match.advantageRule")}</p>
-                    <p className="font-semibold text-sm text-primary flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[16px]">stars</span>
+                    <p className="font-semibold text-sm text-text-primary flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-text-muted text-[16px]">stars</span>
                       {rules?.no_ad ? t("match.goldenPoint") : t("match.standardAd")}
                     </p>
                   </div>
@@ -1801,7 +1801,7 @@ export default function MatchDetailClient() {
           <div className="w-full bg-surface-container rounded-2xl p-6 border border-outline-variant">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary text-[18px]">gavel</span>
+                <span className="material-symbols-outlined text-text-muted text-[18px]">gavel</span>
                 <h3 className="font-semibold text-sm text-text-primary">{t("match.matchOfficial")}</h3>
               </div>
               {canManageOfficial && !isChangingUmpire && (
@@ -1910,7 +1910,7 @@ export default function MatchDetailClient() {
                   />
                   {isSearching && (
                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                      <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      <div className="w-3 h-3 border-2 border-text-primary border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
 
@@ -1931,7 +1931,7 @@ export default function MatchDetailClient() {
                               {u.email}
                             </span>
                           </div>
-                          <span className="text-xs font-medium text-primary">
+                          <span className="text-xs font-medium text-text-primary">
                             Select
                           </span>
                         </button>
