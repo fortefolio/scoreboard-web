@@ -54,15 +54,15 @@ export function FollowButton({
         disabled={isUpdating}
         title={following ? t("common.following") : t("common.follow")}
         aria-label={following ? t("common.following") : t("common.follow")}
-        className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all cursor-pointer backdrop-blur-md shadow-sm ${
+        className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer border ${
           following
-            ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-lg shadow-amber-500/10 hover:bg-amber-500/30"
-            : "bg-white/5 hover:bg-white/10 text-on-surface-variant hover:text-on-surface border border-white/10"
+            ? "bg-surface-container-highest text-text-primary border-outline shadow-sm"
+            : "bg-surface-container-high hover:bg-surface-container-highest text-text-muted hover:text-text-primary border-outline-variant"
         } ${isUpdating ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
       >
         <span
-          className={`material-symbols-outlined text-[20px] transition-transform ${
-            following ? "text-amber-400 scale-110" : "text-slate-400"
+          className={`material-symbols-outlined text-[18px] transition-transform ${
+            following ? "text-text-primary scale-105" : "text-text-muted"
           }`}
           style={following ? { fontVariationSettings: "'FILL' 1" } : undefined}
         >
@@ -79,15 +79,15 @@ export function FollowButton({
       disabled={isUpdating}
       title={following ? t("common.following") : t("common.follow")}
       aria-label={following ? t("common.following") : t("common.follow")}
-      className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+      className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer border ${
         following
-          ? "bg-amber-500/20 text-amber-400 border border-amber-500/30 shadow-lg shadow-amber-500/10"
-          : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent hover:border-white/10"
+          ? "bg-surface-container-highest text-text-primary border-outline shadow-sm"
+          : "text-text-muted hover:text-text-primary hover:bg-surface-container-high border-transparent hover:border-outline-variant"
       } ${isUpdating ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
     >
       <span
-        className={`material-symbols-outlined text-[18px] transition-transform ${
-          following ? "text-amber-400 scale-110" : ""
+        className={`material-symbols-outlined text-[17px] transition-transform ${
+          following ? "text-text-primary scale-105" : ""
         }`}
         style={following ? { fontVariationSettings: "'FILL' 1" } : undefined}
       >
