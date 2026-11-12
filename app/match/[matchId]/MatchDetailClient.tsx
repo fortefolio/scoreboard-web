@@ -1347,7 +1347,7 @@ export default function MatchDetailClient() {
             <div className="bg-surface-container rounded-2xl p-5 mt-4 border border-outline-variant">
               <div className="flex items-center justify-between gap-4 mb-5">
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-primary text-[18px]">analytics</span>
+                  <span className="material-symbols-outlined text-text-muted text-[18px]">analytics</span>
                   <div>
                     <h3 className="font-semibold text-sm text-text-primary">
                       {isVolleyballLike
@@ -1365,7 +1365,7 @@ export default function MatchDetailClient() {
                 <button
                   type="button"
                   onClick={toggleAll}
-                  className="text-xs font-medium text-primary hover:underline transition-colors px-2 py-1 cursor-pointer"
+                  className="text-xs font-medium text-text-secondary hover:text-text-primary transition-colors px-2 py-1 cursor-pointer"
                 >
                   {allExpanded ? t("match.collapseAll") : t("match.expandAll")}
                 </button>
@@ -1399,7 +1399,7 @@ export default function MatchDetailClient() {
                             {s.home} - {s.away}
                           </span>
                           {s.tiebreak && (
-                            <span className="text-[11px] font-mono text-primary font-medium">
+                            <span className="text-[11px] font-mono text-text-muted font-medium">
                               [{Math.min(s.tiebreak.home, s.tiebreak.away)}]
                             </span>
                           )}
@@ -1415,23 +1415,23 @@ export default function MatchDetailClient() {
                         <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap justify-between sm:justify-end">
                           {isVolleyballLike ? (
                             <>
-                              <span className="px-2.5 py-1 rounded-lg bg-surface-container-high font-mono text-xs font-black text-on-surface">
+                              <span className="px-2.5 py-0.5 rounded-md bg-surface-container font-mono text-xs text-text-secondary border border-outline-variant">
                                 {t("match.ralliesCount", { count: ralliesCount })}
                               </span>
-                              <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-label text-[9px] font-black uppercase tracking-widest">
+                              <span className="px-2.5 py-0.5 rounded-md bg-surface-container font-mono text-xs text-text-secondary border border-outline-variant">
                                 {t("match.sideoutsCount", { count: sideoutsCount })}
                               </span>
-                              <span className="px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30 font-label text-[9px] font-black uppercase tracking-widest">
+                              <span className="px-2.5 py-0.5 rounded-md bg-surface-container font-mono text-xs text-text-secondary border border-outline-variant">
                                 {t("match.servicePointsCount", { count: servicePointsCount })}
                               </span>
                             </>
                           ) : (
                             <>
-                              <span className="px-2.5 py-1 rounded-lg bg-surface-container-high font-mono text-xs font-black text-on-surface">
+                              <span className="px-2.5 py-0.5 rounded-md bg-surface-container font-mono text-xs text-text-secondary border border-outline-variant">
                                 {t("match.gamesCount", { count: s.gamesHistory.length })}
                               </span>
                               {s.gamesHistory.filter((g: any) => g.is_break).length > 0 && (
-                                <span className="px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-label text-[9px] font-black uppercase tracking-widest">
+                                <span className="px-2.5 py-0.5 rounded-md bg-surface-container font-mono text-xs text-text-secondary border border-outline-variant">
                                   {t("match.breaksCount", { count: s.gamesHistory.filter((g: any) => g.is_break).length })}
                                 </span>
                               )}
@@ -1440,8 +1440,8 @@ export default function MatchDetailClient() {
 
                           {/* Chevron Icon */}
                           <span
-                            className={`material-symbols-outlined text-on-surface-variant text-[20px] transition-transform duration-300 ml-1 ${
-                              isExpanded ? "rotate-180 text-primary" : ""
+                            className={`material-symbols-outlined text-text-muted text-[20px] transition-transform duration-200 ml-1 ${
+                              isExpanded ? "rotate-180 text-text-primary" : ""
                             }`}
                           >
                             expand_more
@@ -1451,7 +1451,7 @@ export default function MatchDetailClient() {
 
                       {/* Expanded Section: Evolution of the score */}
                       {isExpanded && (
-                        <div className="px-5 pb-5 pt-2 border-t border-white/5">
+                        <div className="px-5 pb-5 pt-2 border-t border-outline-variant">
                           {isVolleyballLike ? (
                             s.pointsProgression.length > 0 ? (
                               <div className="pt-2">
@@ -1469,7 +1469,7 @@ export default function MatchDetailClient() {
                                         key={ptIdx}
                                         className={`px-2 py-0.5 rounded text-xs font-digital whitespace-nowrap border ${
                                           isLast
-                                            ? "bg-primary/10 text-primary border-primary/30 font-semibold"
+                                            ? "bg-text-primary text-surface-container-lowest font-bold border-text-primary"
                                             : isServicePoint
                                             ? "bg-surface-container border-outline-variant text-text-primary"
                                             : "bg-surface-container-high/40 border-outline-variant/50 text-text-muted"
@@ -1507,30 +1507,31 @@ export default function MatchDetailClient() {
                                   return (
                                     <div
                                       key={gIdx}
-                                      className="bg-surface-container-low rounded-xl p-3 border border-white/5 flex flex-col gap-2"
+                                      className="bg-surface-container rounded-xl p-3 border border-outline-variant flex flex-col gap-2"
                                     >
                                       <div className="flex flex-wrap items-center justify-between gap-2">
                                         <div className="flex items-center gap-2">
-                                          <span className="px-2 py-0.5 rounded-lg bg-surface-container-high font-mono text-xs font-black text-on-surface">
+                                          <span className="px-2 py-0.5 rounded-md bg-surface-container-high font-mono text-xs font-semibold text-text-primary border border-outline-variant">
                                             {g.is_tiebreak ? "TIEBREAK" : `Game ${g.game_number}`}
                                           </span>
-                                          <span className="text-xs font-bold text-on-surface-variant flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-[14px] text-secondary">
-                                              sports_tennis
-                                            </span>
+                                          <span className="text-xs font-medium text-text-secondary flex items-center gap-1.5">
+                                            <SportIcon
+                                              sport="Tennis"
+                                              className="text-text-muted text-[14px]"
+                                            />
                                             {serverName} {t("match.serving")}
                                           </span>
                                           {g.is_break && (
-                                            <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 font-label text-[9px] font-black uppercase tracking-widest">
+                                            <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-mono text-[10px] uppercase tracking-wider">
                                               Break
                                             </span>
                                           )}
                                         </div>
                                         <div className="flex items-center gap-3">
-                                          <span className="text-[11px] font-bold text-on-surface-variant">
-                                            {t("match.wonBy")} <strong className="text-on-surface">{winnerName}</strong>
+                                          <span className="text-xs text-text-muted">
+                                            {t("match.wonBy")} <strong className="text-text-primary font-medium">{winnerName}</strong>
                                           </span>
-                                          <span className="px-2.5 py-0.5 rounded-lg bg-[#0c1324] border border-white/10 font-mono text-xs font-black text-primary">
+                                          <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high border border-outline-variant font-mono text-xs font-semibold text-text-primary">
                                             {g.games_after?.home ?? 0} - {g.games_after?.away ?? 0}
                                           </span>
                                         </div>
@@ -1539,8 +1540,8 @@ export default function MatchDetailClient() {
                                       {Array.isArray(g.points_progression) &&
                                         g.points_progression.length > 0 && (
                                           <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                                            <span className="font-label text-[9px] font-black uppercase tracking-widest text-on-surface-variant/50 mr-1">
-                                              {t("match.points")}
+                                            <span className="font-mono text-[10px] uppercase tracking-wider text-text-muted mr-1">
+                                              {t("match.points")}:
                                             </span>
                                             {g.points_progression.map((pt: string, ptIdx: number) => {
                                               const isLast = ptIdx === g.points_progression.length - 1;
@@ -1551,10 +1552,10 @@ export default function MatchDetailClient() {
                                                   key={ptIdx}
                                                   className={`px-2 py-0.5 rounded-md font-mono text-[11px] ${
                                                     isLast && !g.is_in_progress
-                                                      ? "bg-primary-container text-on-primary-container font-black"
+                                                      ? "bg-text-primary text-surface-container-lowest font-bold"
                                                       : isDeuceOrAd
-                                                      ? "bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30"
-                                                      : "bg-surface-container-high text-on-surface-variant font-medium"
+                                                      ? "bg-surface-container-highest text-text-primary border border-outline font-semibold"
+                                                      : "bg-surface-container-high text-text-secondary border border-outline-variant font-medium"
                                                   }`}
                                                 >
                                                   {pt}
@@ -1568,9 +1569,9 @@ export default function MatchDetailClient() {
                                 })}
                               </div>
                             ) : (
-                              <div className="pt-2 text-xs text-on-surface-variant">
+                              <div className="pt-2 text-xs text-text-muted">
                                 {t("match.setFinishedWith")}{" "}
-                                <strong className="text-on-surface font-mono">
+                                <strong className="text-text-primary font-mono">
                                   {s.home} - {s.away}
                                 </strong>
                                 .
