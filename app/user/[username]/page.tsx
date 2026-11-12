@@ -706,12 +706,10 @@ function UserProfileContent({
                               {/* Equipas / Jogadores */}
                               <td className="py-4 px-5">
                                 <div className="space-y-1">
-                                  <div className="font-bold text-xs text-on-surface flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />
+                                  <div className="font-medium text-xs text-text-primary">
                                     {formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD"}
                                   </div>
-                                  <div className="font-bold text-xs text-on-surface flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-secondary/40 shrink-0" />
+                                  <div className="font-medium text-xs text-text-primary">
                                     {formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD"}
                                   </div>
                                 </div>
@@ -763,24 +761,16 @@ function UserProfileContent({
 
                               {/* Status */}
                               <td className="py-4 px-4 text-center">
-                                <span
-                                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                                    m.status === "completed"
-                                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                      : m.status === "ongoing"
-                                      ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
-                                      : "bg-white/5 text-on-surface-variant/70 border border-white/10"
-                                  }`}
-                                >
-                                  {m.status === "ongoing" && (
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-ping" />
-                                  )}
-                                  {m.status === "completed"
-                                    ? t("status.completed")
-                                    : m.status === "ongoing"
-                                    ? t("status.live")
-                                    : t("status.scheduled")}
-                                </span>
+                                {m.status === "ongoing" ? (
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                    {t("status.live")}
+                                  </span>
+                                ) : (
+                                  <span className="text-xs text-text-muted">
+                                    {m.status === "completed" ? t("status.completed") : t("status.scheduled")}
+                                  </span>
+                                )}
                               </td>
 
                               {/* Date */}

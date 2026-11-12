@@ -104,8 +104,8 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
             )}
           </div>
           {match.status === 'ongoing' ? (
-            <span className="inline-flex items-center gap-1 font-medium text-success text-[11px]">
-              <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+            <span className="inline-flex items-center gap-1 font-medium text-text-primary text-[11px]">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
               {t("status.live")}
             </span>
           ) : (

@@ -159,7 +159,7 @@ export default function TopNavBar() {
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <p className="text-xs font-medium text-text-muted">{t("nav.signedInAs")}</p>
                       {subscriptionTier === "pro" ? (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-secondary/10 text-success border border-secondary/20">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-medium bg-surface-container-highest text-text-primary border border-outline">
                           PRO
                         </span>
                       ) : (

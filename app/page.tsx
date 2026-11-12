@@ -702,12 +702,10 @@ function HomeContent() {
                               {/* Equipas / Jogadores */}
                               <td className="py-3.5 px-6">
                                 <div className="space-y-1">
-                                  <div className="font-medium text-xs sm:text-sm text-text-primary flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-primary/60 shrink-0" />
+                                  <div className="font-medium text-xs sm:text-sm text-text-primary">
                                     {formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD"}
                                   </div>
-                                  <div className="font-medium text-xs sm:text-sm text-text-primary flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-secondary/60 shrink-0" />
+                                  <div className="font-medium text-xs sm:text-sm text-text-primary">
                                     {formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD"}
                                   </div>
                                 </div>
@@ -766,8 +764,8 @@ function HomeContent() {
                               {/* Status */}
                               <td className="py-3.5 px-4 text-center">
                                 {m.status === "ongoing" ? (
-                                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                                     {t("status.live")}
                                   </span>
                                 ) : (
@@ -849,14 +847,17 @@ function HomeContent() {
                           </div>
                           <div className="flex items-center gap-2">
                             <span
-                              className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                              className={`px-2 py-0.5 rounded-md text-[11px] font-medium border ${
                                 tItem.status === "completed"
-                                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                  ? "bg-surface-container text-text-muted border-outline-variant"
                                   : tItem.status === "ongoing"
-                                  ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
-                                  : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                                  ? "bg-surface-container text-text-primary border-outline-variant inline-flex items-center gap-1.5"
+                                  : "bg-surface-container text-text-secondary border-outline-variant"
                               }`}
                             >
+                              {tItem.status === "ongoing" && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                              )}
                               {tItem.status === "completed"
                                 ? t("status.completed")
                                 : tItem.status === "ongoing"
@@ -1180,12 +1181,10 @@ function HomeContent() {
                                         {/* Equipas / Jogadores */}
                                         <td className="py-3.5 px-6">
                                           <div className="space-y-1">
-                                            <div className="font-medium text-xs sm:text-sm text-text-primary flex items-center gap-2">
-                                              <span className="w-1.5 h-1.5 rounded-full bg-primary/60 shrink-0" />
+                                            <div className="font-medium text-xs sm:text-sm text-text-primary">
                                               {formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD"}
                                             </div>
-                                            <div className="font-medium text-xs sm:text-sm text-text-primary flex items-center gap-2">
-                                              <span className="w-1.5 h-1.5 rounded-full bg-secondary/60 shrink-0" />
+                                            <div className="font-medium text-xs sm:text-sm text-text-primary">
                                               {formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD"}
                                             </div>
                                           </div>
@@ -1233,8 +1232,8 @@ function HomeContent() {
                                         {/* Estado */}
                                         <td className="py-3.5 px-4 text-center">
                                           {m.status === "ongoing" ? (
-                                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
-                                              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary">
+                                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                                               {t("status.live")}
                                             </span>
                                           ) : (
@@ -1391,10 +1390,13 @@ function HomeContent() {
                                           tItem.status === "completed"
                                             ? "bg-surface-container-high text-text-muted border-outline-variant"
                                             : tItem.status === "ongoing"
-                                            ? "bg-surface-container-high text-success border-success/30"
+                                            ? "bg-surface-container-high text-text-primary border-outline-variant"
                                             : "bg-surface-container-high text-text-secondary border-outline-variant"
                                         }`}
                                       >
+                                        {tItem.status === "ongoing" && (
+                                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                        )}
                                         <span>{tItem.status === "completed" ? t("status.completed") : tItem.status === "ongoing" ? t("status.live") : t("status.scheduled")}</span>
                                       </span>
                                     </td>

@@ -219,9 +219,12 @@ export default function GroupMatchesView({
                       <div className="pl-3 border-l border-outline-variant flex flex-col items-center justify-center gap-1 min-w-[70px]">
                         <span className={`px-2 py-0.5 rounded-md text-[10px] font-medium border border-outline-variant ${
                           match.status === 'completed' ? 'bg-surface-container-high text-text-muted' :
-                          match.status === 'ongoing' ? 'bg-success/10 text-success border-success/20' :
+                          match.status === 'ongoing' ? 'bg-surface-container text-text-primary inline-flex items-center gap-1.5' :
                           'bg-surface-container-high text-text-secondary'
                         }`}>
+                          {match.status === 'ongoing' && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                          )}
                           {match.status === 'completed'
                             ? t("status.final")
                             : match.status === 'ongoing'

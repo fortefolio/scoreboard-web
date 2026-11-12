@@ -267,9 +267,12 @@ function MyTournamentsContent() {
                     t.status === 'completed'
                       ? 'bg-surface-container-high text-text-muted border-outline-variant'
                       : t.status === 'ongoing'
-                      ? 'bg-surface-container-high text-success border-success/30'
+                      ? 'bg-surface-container-high text-text-primary border-outline-variant inline-flex items-center gap-1.5'
                       : 'bg-surface-container-high text-text-secondary border-outline-variant'
                   }`}>
+                    {t.status === 'ongoing' && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                    )}
                     {t.status === 'completed' ? tr("status.completed") : t.status === 'ongoing' ? tr("status.live") : tr("status.scheduled")}
                   </span>
                 </div>
@@ -362,10 +365,13 @@ function MyTournamentsContent() {
                           tItem.status === "completed"
                             ? "bg-surface-container-high text-text-muted border-outline-variant"
                             : tItem.status === "ongoing"
-                            ? "bg-surface-container-high text-success border-success/30"
+                            ? "bg-surface-container-high text-text-primary border-outline-variant"
                             : "bg-surface-container-high text-text-secondary border-outline-variant"
                         }`}
                       >
+                        {tItem.status === "ongoing" && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                        )}
                         <span>{tItem.status === "completed" ? tr("status.completed") : tItem.status === "ongoing" ? tr("status.live") : tr("status.scheduled")}</span>
                       </span>
                     </td>

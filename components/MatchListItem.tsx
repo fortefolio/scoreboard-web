@@ -59,12 +59,9 @@ export default function MatchListItem({ match }: { match: any }) {
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           {/* Team 0 */}
           <div className="flex items-center justify-between gap-2 min-w-0">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-primary/70 shrink-0" />
-              <span className="text-xs sm:text-sm font-medium text-text-primary truncate">
-                {name0}
-              </span>
-            </div>
+            <span className="text-xs sm:text-sm font-medium text-text-primary truncate flex-1 min-w-0">
+              {name0}
+            </span>
             <span className="font-mono tabular-nums text-sm font-semibold text-text-primary pl-2">
               {score0}
             </span>
@@ -72,12 +69,9 @@ export default function MatchListItem({ match }: { match: any }) {
 
           {/* Team 1 */}
           <div className="flex items-center justify-between gap-2 min-w-0">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-secondary/70 shrink-0" />
-              <span className="text-xs sm:text-sm font-medium text-text-primary truncate">
-                {name1}
-              </span>
-            </div>
+            <span className="text-xs sm:text-sm font-medium text-text-primary truncate flex-1 min-w-0">
+              {name1}
+            </span>
             <span className="font-mono tabular-nums text-sm font-semibold text-text-primary pl-2">
               {score1}
             </span>
@@ -88,8 +82,8 @@ export default function MatchListItem({ match }: { match: any }) {
       {/* Right: Status Pill & Follow Button */}
       <div className="flex items-center gap-2 shrink-0 pl-2 border-l border-outline-variant">
         {isOngoing ? (
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
-            <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
             {t("status.live")}
           </span>
         ) : (

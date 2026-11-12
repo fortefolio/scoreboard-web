@@ -390,11 +390,10 @@ function TournamentContent() {
              <span className="px-2.5 py-0.5 bg-surface-container rounded-md text-[11px] font-mono font-medium text-text-secondary border border-outline-variant">
                 {t("tournament.idBadge")}: {tournamentId.slice(0,8)}
              </span>
-             <span className={`px-2.5 py-0.5 rounded-md text-[11px] font-medium border border-outline-variant ${
-                tournament?.status === 'pending' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                tournament?.status === 'scheduled' ? 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20' :
-                'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-              }`}>
+             <span className="px-2.5 py-0.5 rounded-md text-[11px] font-medium border border-outline-variant bg-surface-container text-text-secondary inline-flex items-center gap-1.5 capitalize">
+                {tournament?.status === 'ongoing' && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                )}
                 {tournament?.status}
              </span>
              <FollowButton entityId={tournamentId} entityType="tournament" variant="icon" className="w-7 h-7" />

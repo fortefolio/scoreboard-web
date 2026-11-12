@@ -318,12 +318,10 @@ function MyMatchesContent() {
                         {/* Equipas / Jogadores */}
                         <td className="py-3.5 px-6">
                           <div className="space-y-1">
-                            <div className="font-medium text-xs sm:text-sm text-text-primary flex items-center gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-primary/60 shrink-0" />
+                            <div className="font-medium text-xs sm:text-sm text-text-primary">
                               {formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD"}
                             </div>
-                            <div className="font-medium text-xs sm:text-sm text-text-primary flex items-center gap-2">
-                              <span className="w-1.5 h-1.5 rounded-full bg-secondary/60 shrink-0" />
+                            <div className="font-medium text-xs sm:text-sm text-text-primary">
                               {formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD"}
                             </div>
                           </div>
@@ -371,8 +369,8 @@ function MyMatchesContent() {
                         {/* Estado */}
                         <td className="py-3.5 px-4 text-center">
                           {m.status === "ongoing" ? (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-success">
-                              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary">
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                               {t("status.live")}
                             </span>
                           ) : (

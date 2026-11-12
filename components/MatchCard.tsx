@@ -109,8 +109,8 @@ export default function MatchCard({ match }: { match: any }) {
 
           <div className="flex items-center gap-2 shrink-0">
             {isOngoingDisplay ? (
-              <span className="text-xs font-medium text-success flex items-center gap-1.5 shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+              <span className="text-xs font-medium text-text-primary flex items-center gap-1.5 shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
                 {match.sport_type === 'Basketball'
                   ? (match.scores?.basketball?.period || t("status.live"))
                   : match.sport_type !== 'Football'

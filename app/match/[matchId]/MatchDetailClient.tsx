@@ -747,8 +747,8 @@ export default function MatchDetailClient() {
                     <div className="text-xs font-medium text-text-muted">vs</div>
                     {match.status === "ongoing" && (
                       <div className="px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                        <span className="text-[11px] font-medium text-success">{t("status.live")}</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                        <span className="text-[11px] font-medium text-text-primary">{t("status.live")}</span>
                       </div>
                     )}
                   </div>
@@ -1221,10 +1221,7 @@ export default function MatchDetailClient() {
                                           {b.scoreAfter.home} - {b.scoreAfter.away}
                                         </td>
                                         <td className="py-2 px-3 font-medium text-text-primary">
-                                          <div className="flex items-center gap-1.5">
-                                            <span className={`w-1.5 h-1.5 rounded-full ${isHome ? "bg-primary" : "bg-secondary"}`} />
-                                            <span>{teamName}</span>
-                                          </div>
+                                          <span>{teamName}</span>
                                         </td>
                                         <td className="py-2 px-3 text-text-muted">
                                           {actionType}
