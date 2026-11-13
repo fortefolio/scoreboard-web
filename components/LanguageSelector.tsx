@@ -59,12 +59,9 @@ export default function LanguageSelector() {
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-label={`Select language (current: ${currentLanguage.label})`}
-        className="h-8 px-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-text-primary border border-outline-variant text-xs font-mono font-medium transition-colors cursor-pointer flex items-center gap-1.5 focus:outline-none"
+        className="h-8 px-2.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-text-primary border border-outline-variant text-xs font-mono font-medium transition-colors cursor-pointer flex items-center justify-center focus:outline-none"
       >
         <span className="font-semibold">{currentLanguage.code.toUpperCase()}</span>
-        <span className={`material-symbols-outlined text-[14px] text-text-muted transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`}>
-          expand_more
-        </span>
       </button>
 
       {/* Dropdown Menu */}
@@ -75,8 +72,8 @@ export default function LanguageSelector() {
           className="absolute right-0 mt-2 w-48 bg-surface-container border border-outline-variant rounded-xl shadow-2xl p-1.5 z-[120] animate-in fade-in slide-in-from-top-1 duration-150"
         >
           <div className="px-2.5 py-1.5 border-b border-outline-variant mb-1 flex items-center justify-between">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-text-muted">
-              Language / Idioma
+            <span className="text-xs font-medium text-text-muted">
+              {locale === "pt" ? "Idioma" : "Language"}
             </span>
           </div>
 

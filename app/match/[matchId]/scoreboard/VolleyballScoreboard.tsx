@@ -3,8 +3,16 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import SportIcon from "@/components/SportIcon";
+import {
+  ScoreboardHeader,
+  ScoreboardMainCard,
+  ScoreboardSummaryCard,
+  ScoreboardFinalizeButton,
+  ScoreboardActionButton,
+  ScoreboardTeamColumn,
+} from "@/components/scoreboard/ScoreboardLayout";
 import { recordMatchEventAtomic } from "@/lib/scoring/atomicScoring";
+import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 export default function VolleyballScoreboard({ 
   matchData, 
@@ -15,6 +23,7 @@ export default function VolleyballScoreboard({
   rules?: any;
   canEdit: boolean;
 }) {
+  const { t, translations, locale } = useTranslation();
   const isBeachVolleyball = matchData?.sport_type === "Beach Volleyball";
   const defaultMaxSets = rules?.max_sets || (isBeachVolleyball ? 3 : 5);
   const defaultPointsPerSet = rules?.points_per_set || (isBeachVolleyball ? 21 : 25);
@@ -205,14 +214,108 @@ export default function VolleyballScoreboard({
     ? (currentPoints.home + currentPoints.away) > 0 && (currentPoints.home + currentPoints.away) % 7 === 0
     : isDecidingSet && (currentPoints.home === 8 || currentPoints.away === 8);
 
+  const renderTeamColumn = (side: "home" | "away") => {
+    const isHome = side === "home";
+    const idx = isHome ? 0 : 1;
+    const teamName = isHome ? teamHome : teamAway;
+    const isServing = serverIdx === idx;
+    const points = isHome ? currentPoints.home : currentPoints.away;
+    const sets = isHome ? setsWon.home : setsWon.away;
+    const teamTimeouts = isHome ? timeouts.home : timeouts.away;
+
+    return (
+      <ScoreboardTeamColumn
+        teamName={teamName}
+        subLabel={
+          isServing ? (
+            <span className="inline-flex items-center gap-1.5 text-xs compact:text-[11px] font-medium text-text-primary bg-surface-container-high px-2.5 compact:px-2 py-0.5 rounded-md border border-outline-variant">
+              <span className="w-1.5 h-1.5 rounded-full bg-text-primary"></span>
+              {translations.scoreboard.serving}
+            </span>
+          ) : (
+            <span className="inline-flex items-center text-text-muted text-xs compact:text-[11px] font-medium px-2 py-0.5">
+              {locale === "pt" ? "Receção" : "Receiving"}
+            </span>
+          )
+        }
+        score={points}
+        pills={
+          <>
+            <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+              {translations.scoreboard.setsShort} <span className="font-digital text-sm compact:text-xs text-text-primary">{sets}</span>
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+              {translations.scoreboard.timeoutShort} <span className="font-digital text-sm compact:text-xs text-text-primary">{teamTimeouts}/2</span>
+            </span>
+          </>
+        }
+      />
+    );
+  };
+
+  const renderTeamActions = (side: "home" | "away") => {
+    const isHome = side === "home";
+    const idx = isHome ? 0 : 1;
+    const points = isHome ? currentPoints.home : currentPoints.away;
+    const teamTimeouts = isHome ? timeouts.home : timeouts.away;
+
+    return (
+      <div className="flex flex-col items-center gap-2 landscape-compact:gap-1 w-full mt-3 landscape-compact:mt-0">
+        <div className="flex landscape-compact:flex-col items-center gap-2 landscape-compact:gap-1 w-full landscape-compact:w-auto">
+          <ScoreboardActionButton
+            variant="primary"
+            onClick={() => handlePoint(side)}
+            className="flex-1"
+            title={translations.scoreboard.point}
+          >
+            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]">add</span>
+            <span className="landscape-compact:hidden">{translations.scoreboard.point}</span>
+            <span className="hidden landscape-compact:inline">Pt</span>
+          </ScoreboardActionButton>
+          <ScoreboardActionButton
+            variant="secondary"
+            onClick={() => handleUndoPoint(side)}
+            disabled={points <= 0}
+            title={translations.scoreboard.undo}
+          >
+            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]">undo</span>
+            <span>{translations.scoreboard.undo}</span>
+          </ScoreboardActionButton>
+        </div>
+
+        <div className="flex landscape-compact:flex-col items-center gap-2 landscape-compact:gap-1 w-full landscape-compact:w-auto">
+          <ScoreboardActionButton
+            variant="secondary"
+            onClick={() => handleTimeout(side)}
+            disabled={teamTimeouts <= 0}
+            className="flex-1"
+            title={translations.scoreboard.timeout}
+          >
+            <span className="landscape-compact:hidden">{translations.scoreboard.timeout}</span>
+            <span className="hidden landscape-compact:inline">{locale === "pt" ? "Desc" : "TO"}</span>
+          </ScoreboardActionButton>
+          <ScoreboardActionButton
+            variant="secondary"
+            onClick={() => setServerIdx(idx)}
+            className="flex-1"
+            title={translations.scoreboard.volleyball.toggleServe}
+          >
+            <span className="landscape-compact:hidden">{translations.scoreboard.volleyball.toggleServe}</span>
+            <span className="hidden landscape-compact:inline">{locale === "pt" ? "Srv" : "Srv"}</span>
+          </ScoreboardActionButton>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
+    <div className="w-full max-w-5xl mx-auto flex flex-col items-center flex-1 min-h-0">
       {/* Toss Server Banner if serverIdx is null */}
       {serverIdx === null && (
-        <div className="w-full bg-primary/10 border border-primary/25 rounded-2xl p-4 flex flex-col items-center mb-6">
+        <div className="w-full bg-surface-container border border-outline-variant rounded-xl p-4 flex flex-col items-center mb-6">
           <div className="flex items-center gap-2 mb-3">
-            <span className="material-symbols-outlined text-primary text-base">paid</span>
-            <span className="text-xs font-semibold text-primary">
+            <span className="material-symbols-outlined text-text-secondary text-base">paid</span>
+            <span className="text-xs font-medium text-text-primary">
               Selecionar Servidor Inicial
             </span>
           </div>
@@ -222,7 +325,7 @@ export default function VolleyballScoreboard({
                 key={idx}
                 onClick={() => handleToss(idx)}
                 disabled={isTossing || !canEdit}
-                className="flex-1 h-9 bg-primary hover:bg-primary/90 text-on-primary rounded-lg text-xs font-medium transition-colors cursor-pointer disabled:opacity-50"
+                className="flex-1 h-9 bg-text-primary hover:opacity-90 text-surface-container-lowest rounded-lg text-xs font-medium transition-opacity cursor-pointer disabled:opacity-50"
               >
                 {matchData.participants?.[idx]?.name || `Equipa ${idx + 1}`}
               </button>
@@ -232,54 +335,41 @@ export default function VolleyballScoreboard({
       )}
 
       {/* Top Banner / Match Info */}
-      <div className="w-full bg-surface-container rounded-xl border border-outline-variant p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center">
-            <SportIcon sport={matchData.sport_type} className="w-4 h-4 text-text-primary" />
+      <ScoreboardHeader
+        sportType={matchData.sport_type}
+        sportLabel={getSportTranslation(matchData.sport_type, t)}
+        eventName={matchData?.tournaments?.name || (locale === "pt" ? "Jogo Isolado" : "Single Match")}
+        teamHome={teamHome}
+        teamAway={teamAway}
+        rightSlot={
+          <div className="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg border border-outline-variant">
+            {Array.from({ length: defaultMaxSets }).map((_, idx) => {
+              const setNum = idx + 1;
+              const isCurrent = setNum === currentSetNum;
+              const isCompleted = setNum < currentSetNum;
+              return (
+                <span
+                  key={setNum}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                    isCurrent
+                      ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
+                      : isCompleted
+                      ? "text-text-secondary"
+                      : "text-text-muted/50"
+                  }`}
+                >
+                  Set {setNum}
+                  {isCompleted && setHistory[idx] && (
+                    <span className="ml-1.5 font-digital text-xs text-text-muted">
+                      {setHistory[idx].home}-{setHistory[idx].away}
+                    </span>
+                  )}
+                </span>
+              );
+            })}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-text-secondary">
-                {isBeachVolleyball ? "Voleibol de Praia" : "Voleibol"}
-              </span>
-              <span className="text-xs text-text-muted">
-                • {matchData?.tournaments?.name || "Jogo Isolado"}
-              </span>
-            </div>
-            <h2 className="text-sm font-semibold text-text-primary mt-0.5">
-              {teamHome} <span className="text-text-muted font-normal">vs</span> {teamAway}
-            </h2>
-          </div>
-        </div>
-
-        {/* Set Navigator Tabs */}
-        <div className="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg border border-outline-variant">
-          {Array.from({ length: defaultMaxSets }).map((_, idx) => {
-            const setNum = idx + 1;
-            const isCurrent = setNum === currentSetNum;
-            const isCompleted = setNum < currentSetNum;
-            return (
-              <span
-                key={setNum}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                  isCurrent
-                    ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
-                    : isCompleted
-                    ? "text-text-secondary"
-                    : "text-text-muted/50"
-                }`}
-              >
-                Set {setNum}
-                {isCompleted && setHistory[idx] && (
-                  <span className="ml-1.5 font-digital text-xs text-text-muted">
-                    {setHistory[idx].home}-{setHistory[idx].away}
-                  </span>
-                )}
-              </span>
-            );
-          })}
-        </div>
-      </div>
+        }
+      />
 
       {/* Alert Banners */}
       {(isCourtSwitch || isDeuce || isAdvantage || isHardCapReached) && (
@@ -320,200 +410,48 @@ export default function VolleyballScoreboard({
       )}
 
       {/* Main Scoreboard Display (3 Columns) */}
-      <div className="w-full bg-surface-container rounded-2xl border border-outline-variant p-6 md:p-8 relative overflow-hidden mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-          
-          {/* HOME TEAM */}
-          <div className="flex flex-col items-center text-center order-2 md:order-1">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="w-2 h-2 rounded-full bg-primary" />
-              <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
-                {teamHome}
-              </h2>
-            </div>
-
-            {/* Serving / Receiving Indicator */}
-            <div className="h-6 flex items-center mb-3">
-              {serverIdx === 0 ? (
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary bg-surface-container-high px-2 py-0.5 rounded-md border border-outline-variant">
-                  <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
-                  A Servir
-                </span>
-              ) : (
-                <span className="inline-flex items-center text-text-muted text-xs font-medium px-2 py-0.5">
-                  Receção
-                </span>
-              )}
-            </div>
-
-            {/* Sets Won & Timeouts Context Pills */}
-            <div className="flex items-center gap-2 text-xs mb-3">
-              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
-                Sets: <span className="font-digital text-sm text-text-primary">{setsWon.home}</span>
-              </span>
-              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
-                Descontos: <span className="font-digital text-sm text-text-primary">{timeouts.home}/2</span>
-              </span>
-            </div>
-
-            {/* Home Big Point Score */}
-            <div className="text-7xl sm:text-8xl md:text-9xl font-digital text-text-primary tracking-wider my-2 select-none">
-              {currentPoints.home}
-            </div>
-
-            {/* Quick Scoring & Actions */}
-            {canEdit && (
-              <div className="flex flex-col gap-2 w-full max-w-xs mt-3">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handlePoint("home")}
-                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
-                    title="Ponto para Equipa da Casa"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">add</span>
-                    Ponto
-                  </button>
-                  <button
-                    onClick={() => handleUndoPoint("home")}
-                    disabled={currentPoints.home <= 0}
-                    className="bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-2 px-3 rounded-lg font-medium text-xs border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1"
-                    title="Corrigir Ponto (-1)"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">undo</span>
-                    -1
-                  </button>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleTimeout("home")}
-                    disabled={timeouts.home <= 0}
-                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer"
-                  >
-                    Desconto
-                  </button>
-                  <button
-                    onClick={() => setServerIdx(0)}
-                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors cursor-pointer"
-                  >
-                    Marcar Serviço
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* CENTER: CURRENT SET & TARGET */}
-          <div className="flex flex-col items-center text-center order-1 md:order-2 py-4">
+      <ScoreboardMainCard
+        compactHeader={{
+          sportType: matchData.sport_type,
+          sportLabel: getSportTranslation(matchData.sport_type, t),
+          eventName: matchData?.tournaments?.name || (locale === "pt" ? "Jogo Isolado" : "Single Match"),
+          statusBadge: `Set ${currentSetNum}`,
+          onFinish: canEdit ? handleFinalizeMatch : undefined,
+        }}
+        left={renderTeamColumn("home")}
+        leftActions={canEdit ? renderTeamActions("home") : undefined}
+        center={
+          <div className="flex flex-col items-center text-center order-1 md:order-2 py-4 compact:py-0">
             <span className="text-xs font-medium text-text-muted mb-1.5">
-              {isDecidingSet ? "Set Decisivo (Negra)" : `Set ${currentSetNum}`}
+              {isDecidingSet
+                ? translations.scoreboard.volleyball.setDecider.replace("{set}", String(currentSetNum))
+                : `Set ${currentSetNum}`}
             </span>
 
             {/* Target Points */}
-            <div className="flex items-center gap-3 my-2">
-              <div className="text-3xl md:text-4xl font-digital text-text-primary py-2 px-6 rounded-xl bg-surface-container-high border border-outline-variant tracking-wide">
+            <div className="flex items-center gap-3 my-2 compact:my-0.5">
+              <div className="text-3xl md:text-4xl compact:text-2xl font-digital text-text-primary py-2 compact:py-1 px-6 compact:px-4 rounded-xl bg-surface-container-high border border-outline-variant tracking-wide">
                 {activeLimit}
               </div>
             </div>
             <span className="text-[11px] text-text-muted mt-1 font-medium">
-              Pontos Alvo
+              {translations.scoreboard.volleyball.setLimit}
             </span>
 
             {/* Set Match Status Info */}
-            <div className="flex items-center gap-2 mt-3 text-xs text-text-muted">
-              <span>Melhor de {defaultMaxSets} Sets</span>
+            <div className="flex items-center gap-2 mt-3 compact:mt-1.5 text-xs compact:text-[11px] text-text-muted">
+              <span>{locale === "pt" ? `Melhor de ${defaultMaxSets} Sets` : `Best of ${defaultMaxSets} Sets`}</span>
               <span>•</span>
-              <span>Diferença 2 Pts</span>
+              <span>{translations.scoreboard.volleyball.deuceAdv2}</span>
             </div>
           </div>
-
-          {/* AWAY TEAM */}
-          <div className="flex flex-col items-center text-center order-3">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="w-2 h-2 rounded-full bg-secondary" />
-              <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
-                {teamAway}
-              </h2>
-            </div>
-
-            {/* Serving / Receiving Indicator */}
-            <div className="h-6 flex items-center mb-3">
-              {serverIdx === 1 ? (
-                <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary bg-surface-container-high px-2 py-0.5 rounded-md border border-outline-variant">
-                  <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
-                  A Servir
-                </span>
-              ) : (
-                <span className="inline-flex items-center text-text-muted text-xs font-medium px-2 py-0.5">
-                  Receção
-                </span>
-              )}
-            </div>
-
-            {/* Sets Won & Timeouts Context Pills */}
-            <div className="flex items-center gap-2 text-xs mb-3">
-              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
-                Sets: <span className="font-digital text-sm text-text-primary">{setsWon.away}</span>
-              </span>
-              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
-                Descontos: <span className="font-digital text-sm text-text-primary">{timeouts.away}/2</span>
-              </span>
-            </div>
-
-            {/* Away Big Point Score */}
-            <div className="text-7xl sm:text-8xl md:text-9xl font-digital text-text-primary tracking-wider my-2 select-none">
-              {currentPoints.away}
-            </div>
-
-            {/* Quick Scoring & Actions */}
-            {canEdit && (
-              <div className="flex flex-col gap-2 w-full max-w-xs mt-3">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handlePoint("away")}
-                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
-                    title="Ponto para Equipa Visitante"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">add</span>
-                    Ponto
-                  </button>
-                  <button
-                    onClick={() => handleUndoPoint("away")}
-                    disabled={currentPoints.away <= 0}
-                    className="bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-2 px-3 rounded-lg font-medium text-xs border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1"
-                    title="Corrigir Ponto (-1)"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">undo</span>
-                    -1
-                  </button>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleTimeout("away")}
-                    disabled={timeouts.away <= 0}
-                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer"
-                  >
-                    Desconto
-                  </button>
-                  <button
-                    onClick={() => setServerIdx(1)}
-                    className="flex-1 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-1.5 px-2 rounded-lg font-medium text-[11px] border border-outline-variant transition-colors cursor-pointer"
-                  >
-                    Marcar Serviço
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+        }
+        right={renderTeamColumn("away")}
+        rightActions={canEdit ? renderTeamActions("away") : undefined}
+      />
 
       {/* Set by Set Breakdown Table */}
-      <div className="w-full bg-surface-container rounded-2xl border border-outline-variant overflow-hidden p-5 mb-6">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">
-          Resumo por Set
-        </h3>
+      <ScoreboardSummaryCard title="Resumo por Set">
         <div className="overflow-x-auto">
           <table className="w-full text-center text-sm">
             <thead>
@@ -522,65 +460,55 @@ export default function VolleyballScoreboard({
                 {Array.from({ length: defaultMaxSets }).map((_, idx) => (
                   <th key={idx} className="py-2.5 px-3">Set {idx + 1}</th>
                 ))}
-                <th className="py-2.5 px-4 font-semibold text-secondary">Sets</th>
+                <th className="py-2.5 px-4 font-semibold text-text-primary">Sets</th>
                 <th className="py-2.5 px-4 font-semibold text-text-primary">Total Pts</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant font-digital text-base">
               <tr>
-                <td className="py-3 px-4 text-left font-sans text-text-primary font-medium flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-primary" />
+                <td className="py-3 px-4 text-left font-sans text-text-primary font-medium">
                   {teamHome}
                 </td>
                 {Array.from({ length: defaultMaxSets }).map((_, idx) => {
                   const setNum = idx + 1;
                   const pts = setNum === currentSetNum ? currentPoints.home : (setHistory[idx]?.home ?? "-");
                   return (
-                    <td key={idx} className={`py-3 px-3 ${setNum === currentSetNum ? "text-primary font-semibold" : "text-text-secondary"}`}>
+                    <td key={idx} className={`py-3 px-3 ${setNum === currentSetNum ? "text-text-primary font-semibold" : "text-text-secondary"}`}>
                       {pts}
                     </td>
                   );
                 })}
-                <td className="py-3 px-4 font-semibold text-primary">{setsWon.home}</td>
-                <td className="py-3 px-4 font-semibold text-text-primary">
+                <td className="py-3 px-4 font-semibold text-text-primary">{setsWon.home}</td>
+                <td className="py-3 px-4 font-semibold text-text-secondary">
                   {setHistory.reduce((sum, s) => sum + s.home, 0) + currentPoints.home}
                 </td>
               </tr>
               <tr>
-                <td className="py-3 px-4 text-left font-sans text-text-primary font-medium flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-secondary" />
+                <td className="py-3 px-4 text-left font-sans text-text-primary font-medium">
                   {teamAway}
                 </td>
                 {Array.from({ length: defaultMaxSets }).map((_, idx) => {
                   const setNum = idx + 1;
                   const pts = setNum === currentSetNum ? currentPoints.away : (setHistory[idx]?.away ?? "-");
                   return (
-                    <td key={idx} className={`py-3 px-3 ${setNum === currentSetNum ? "text-secondary font-semibold" : "text-text-secondary"}`}>
+                    <td key={idx} className={`py-3 px-3 ${setNum === currentSetNum ? "text-text-primary font-semibold" : "text-text-secondary"}`}>
                       {pts}
                     </td>
                   );
                 })}
-                <td className="py-3 px-4 font-semibold text-secondary">{setsWon.away}</td>
-                <td className="py-3 px-4 font-semibold text-text-primary">
+                <td className="py-3 px-4 font-semibold text-text-primary">{setsWon.away}</td>
+                <td className="py-3 px-4 font-semibold text-text-secondary">
                   {setHistory.reduce((sum, s) => sum + s.away, 0) + currentPoints.away}
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div>
+      </ScoreboardSummaryCard>
 
       {/* Bottom Controls / Finalize */}
       {canEdit && (
-        <div className="w-full flex justify-end gap-3">
-          <button
-            onClick={handleFinalizeMatch}
-            className="h-9 px-4 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5"
-          >
-            <span className="material-symbols-outlined text-[16px]">check_circle</span>
-            Terminar Jogo
-          </button>
-        </div>
+        <ScoreboardFinalizeButton onClick={handleFinalizeMatch} label={translations.scoreboard.endMatch} />
       )}
     </div>
   );

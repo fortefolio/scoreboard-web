@@ -7,6 +7,8 @@ import { useAuth } from "@/components/AuthProvider";
 import MatchCard from "@/components/MatchCard";
 import SportIcon from "@/components/SportIcon";
 import Pagination from "@/components/Pagination";
+import DataTable from "@/components/DataTable";
+import { getMatchColumns, getTournamentColumns } from "@/components/entityTableColumns";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
@@ -242,7 +244,7 @@ function UserProfileContent({
 
       {loading ? (
         <div className="py-24 text-center">
-          <div className="inline-block w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <div className="inline-block w-8 h-8 border-4 border-text-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-4 text-on-surface-variant font-label uppercase tracking-widest text-xs">
             A carregar perfil de @{rawParam}...
           </p>
@@ -536,94 +538,13 @@ function UserProfileContent({
                 </div>
               ) : (
                 /* Tournaments List Table View */
-                <div className="bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                        <tr>
-                          <th className="py-3.5 px-6">{t("common.event")}</th>
-                          <th className="py-3.5 px-4">{t("common.sport")}</th>
-                          <th className="py-3.5 px-4">{t("common.format")}</th>
-                          <th className="py-3.5 px-4 text-center">{t("common.status")}</th>
-                          <th className="py-3.5 px-6 text-right">{t("common.date")}</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5 text-sm font-body">
-                        {paginatedTournaments.map((tItem) => (
-                          <tr
-                            key={tItem.id}
-                            onClick={() => router.push(`/tournament/${tItem.id}`)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                router.push(`/tournament/${tItem.id}`);
-                              }
-                            }}
-                            className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
-                          >
-                            {/* Torneio */}
-                            <td className="py-4 px-5">
-                              <div className="font-headline font-bold text-on-surface text-sm leading-snug group-hover:text-primary transition-colors">
-                                {tItem.name}
-                              </div>
-                            </td>
-
-                            {/* Desporto */}
-                            <td className="py-4 px-4">
-                              <div className="flex items-center gap-2">
-                                <SportIcon sport={tItem.sport_type} className="text-text-muted group-hover:text-text-primary text-[18px] shrink-0" />
-                                <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                                  {getSportTranslation(tItem.sport_type, t)}
-                                </span>
-                              </div>
-                            </td>
-
-                            {/* Formato */}
-                            <td className="py-4 px-4 font-label text-xs uppercase tracking-wider text-on-surface-variant/80">
-                              {tItem.settings?.stage_1?.type === "groups"
-                                ? t("tournament.groupStage")
-                                : tItem.settings?.stage_1?.type === "double_elimination"
-                                ? t("tournament.doubleElimination")
-                                : t("tournament.singleElimination")}
-                            </td>
-
-                            {/* Estado */}
-                            <td className="py-4 px-4 text-center">
-                              <span
-                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                                  tItem.status === "completed"
-                                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                    : tItem.status === "ongoing"
-                                    ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
-                                    : "bg-white/5 text-on-surface-variant/70 border border-white/10"
-                                }`}
-                              >
-                                {tItem.status === "completed"
-                                  ? t("status.completed")
-                                  : tItem.status === "ongoing"
-                                  ? t("status.live")
-                                  : t("status.scheduled")}
-                              </span>
-                            </td>
-
-                            {/* Data */}
-                            <td className="py-4 px-5 text-right font-mono text-xs text-on-surface-variant/70">
-                              {tItem.start_date
-                                ? new Date(tItem.start_date).toLocaleDateString(undefined, {
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "numeric",
-                                  })
-                                : "-"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                <DataTable
+                  data={paginatedTournaments}
+                  columns={getTournamentColumns(t)}
+                  getRowKey={(tItem) => tItem.id}
+                  onRowClick={(tItem) => router.push(`/tournament/${tItem.id}`)}
+                  hideOnMobile={false}
+                />
               )}
             </div>
           )}
@@ -660,134 +581,13 @@ function UserProfileContent({
                 </div>
               ) : (
                 /* List / Table View */
-                <div className="bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                      <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                        <tr>
-                          <th className="py-3.5 px-6">{t("common.teamsOrPlayers")}</th>
-                          <th className="py-3.5 px-6">{t("common.event")}</th>
-                          <th className="py-3.5 px-4">{t("common.sport")}</th>
-                          <th className="py-3.5 px-4 text-center">{t("common.score")}</th>
-                          <th className="py-3.5 px-4 text-center">{t("common.status")}</th>
-                          <th className="py-3.5 px-6 text-right">{t("common.date")}</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5 text-sm font-body">
-                        {paginatedMatches.map((m) => {
-                          const rawSetData = extractSetsData(m.scores);
-                          const isTimedOrPointsSport = m.sport_type === "Football" || m.sport_type === "Basketball";
-                          const setsWon0 = countSetsWon(rawSetData, 0);
-                          const setsWon1 = countSetsWon(rawSetData, 1);
-                          const mainScore0 = isTimedOrPointsSport ? (m.scores?.current?.home ?? 0) : setsWon0;
-                          const mainScore1 = isTimedOrPointsSport ? (m.scores?.current?.away ?? 0) : setsWon1;
-
-                          const setScores = Array.isArray(rawSetData)
-                            ? rawSetData.map((s: any) => ({
-                                t1: s.team1 ?? s.home ?? 0,
-                                t2: s.team2 ?? s.away ?? 0,
-                              }))
-                            : [];
-
-                          return (
-                            <tr
-                              key={m.id}
-                              onClick={() => router.push(`/match/${m.id}`)}
-                              role="button"
-                              tabIndex={0}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault();
-                                  router.push(`/match/${m.id}`);
-                                }
-                              }}
-                              className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
-                            >
-                              {/* Equipas / Jogadores */}
-                              <td className="py-4 px-5">
-                                <div className="space-y-1">
-                                  <div className="font-medium text-xs text-text-primary">
-                                    {formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD"}
-                                  </div>
-                                  <div className="font-medium text-xs text-text-primary">
-                                    {formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD"}
-                                  </div>
-                                </div>
-                              </td>
-
-                              {/* Evento */}
-                              <td className="py-4 px-5">
-                                <div className="font-headline font-bold text-on-surface text-xs leading-snug">
-                                  {m.tournaments?.name || t("home.isolatedMatch")}
-                                </div>
-                                {m.court && (
-                                  <div className="text-[10px] text-on-surface-variant/60 font-label mt-0.5">
-                                    {m.court}
-                                  </div>
-                                )}
-                              </td>
-
-                              {/* Desporto */}
-                              <td className="py-4 px-4">
-                                <div className="flex items-center gap-2">
-                                  <SportIcon sport={m.sport_type} className="text-text-muted group-hover:text-text-primary text-[18px] shrink-0" />
-                                  <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                                    {getSportTranslation(m.sport_type, t)}
-                                  </span>
-                                </div>
-                              </td>
-
-                              {/* Score & Sets */}
-                              <td className="py-4 px-4 text-center">
-                                <div className="inline-flex flex-col items-center">
-                                  <span className="font-mono text-base font-black text-secondary tracking-tight">
-                                    {mainScore0} - {mainScore1}
-                                  </span>
-                                  {!isTimedOrPointsSport && setScores.length > 0 && (
-                                    <span className="font-mono text-[10px] text-on-surface-variant/60 tracking-tighter">
-                                      ({setScores.map((s: any) => `${s.t1}-${s.t2}`).join(", ")})
-                                    </span>
-                                  )}
-                                  {m.sport_type === "Basketball" && m.scores?.basketball?.quarters && (
-                                    <span className="font-mono text-[10px] text-on-surface-variant/60 tracking-tighter">
-                                      ({m.scores.basketball.quarters
-                                        .filter((q: any) => (q.home ?? 0) > 0 || (q.away ?? 0) > 0)
-                                        .map((q: any) => `${q.home}-${q.away}`)
-                                        .join(", ")})
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-
-                              {/* Status */}
-                              <td className="py-4 px-4 text-center">
-                                {m.status === "ongoing" ? (
-                                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                                    {t("status.live")}
-                                  </span>
-                                ) : (
-                                  <span className="text-xs text-text-muted">
-                                    {m.status === "completed" ? t("status.completed") : t("status.scheduled")}
-                                  </span>
-                                )}
-                              </td>
-
-                              {/* Date */}
-                              <td className="py-4 px-6 text-right font-mono text-xs text-on-surface-variant/70">
-                                {new Date(m.scheduled_at || m.created_at).toLocaleDateString(undefined, {
-                                  day: "numeric",
-                                  month: "short",
-                                  year: "numeric",
-                                })}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                <DataTable
+                  data={paginatedMatches}
+                  columns={getMatchColumns(t)}
+                  getRowKey={(m) => m.id}
+                  onRowClick={(m) => router.push(`/match/${m.id}`)}
+                  hideOnMobile={false}
+                />
               )}
             </div>
           )}

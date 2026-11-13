@@ -11,8 +11,11 @@ import MatchCard from "@/components/MatchCard";
 import SportIcon from "@/components/SportIcon";
 import SportFilterBar from "@/components/SportFilterBar";
 import MatchListItem from "@/components/MatchListItem";
+import DataTable from "@/components/DataTable";
+import { getMatchColumns, getTournamentColumns } from "@/components/entityTableColumns";
 import { FollowButton } from "@/components/FollowButton";
 import Pagination from "@/components/Pagination";
+import SelectField from "@/components/SelectField";
 import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
 import { useFollow } from "@/lib/hooks/useFollow";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
@@ -417,7 +420,7 @@ function HomeContent() {
     <div className="relative min-h-screen bg-transparent text-on-surface">
       {/* ATMOSPHERE BACKGROUND */}
       <MatchAtmosphereBackground
-        sportType={sportFilter !== "all" ? sportFilter : "tennis"}
+        sportType={sportFilter !== "all" ? sportFilter : "random"}
         mode="spectator"
       />
 
@@ -434,9 +437,9 @@ function HomeContent() {
         </div>
 
         {/* Precision Controls Toolbar */}
-        <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3 sm:gap-4 mb-6 sm:mb-8 bg-surface-container/70 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-outline-variant shadow-sm">
-          {/* Left: Search & Segmented Controls */}
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 flex-1">
+        <div className="relative z-20 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8 bg-surface-container/70 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-outline-variant shadow-sm">
+          {/* Top (mobile) / Left (desktop): Following Filter + Search */}
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 shrink-0">
             {/* Favorites/Following Type Segmented Control */}
             {activeTab === "following" && user && (followedMatches.length > 0 || followedTournaments.length > 0) && (
               <div className="flex items-center gap-1 p-0.5 rounded-lg bg-surface-container-high border border-outline-variant">
@@ -477,7 +480,7 @@ function HomeContent() {
             )}
 
             {/* Search Box matching reference image */}
-            <div className="relative flex items-center min-w-[140px] sm:min-w-[170px] flex-1 max-w-full sm:max-w-xs">
+            <div className="relative flex items-center w-full sm:w-56 md:w-64">
               <span className="material-symbols-outlined absolute left-2.5 text-[16px] text-text-muted pointer-events-none">
                 search
               </span>
@@ -492,120 +495,65 @@ function HomeContent() {
                 className="w-full bg-surface-container-high/60 text-text-primary text-xs font-medium pl-8 pr-2.5 py-1.5 rounded-lg border border-outline-variant outline-none focus:border-outline transition-colors placeholder:text-text-muted"
               />
             </div>
-
-            {/* Divider */}
-            <div className="hidden sm:block h-6 w-px bg-outline-variant/60 shrink-0" />
-
-            {/* Sport Filter */}
-            <div className="relative flex items-center shrink-0">
-              <div className="flex flex-col text-left pr-1 cursor-pointer pointer-events-none select-none">
-                <span className="text-[10px] font-medium text-text-muted leading-tight">
-                  {t("common.sport")}:
-                </span>
-                <span className="text-xs font-semibold text-text-primary flex items-center gap-1 leading-tight">
-                  {sportFilter === "all" ? t("sports.all") : getSportTranslation(sportFilter, t)}
-                  <span className="material-symbols-outlined text-[14px] text-text-muted">expand_more</span>
-                </span>
-              </div>
-              <select
-                value={sportFilter}
-                onChange={(e) => {
-                  setSportFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-                aria-label={t("common.sport")}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              >
-                <option value="all">{t("sports.all")}</option>
-                <option value="Tennis">{t("sports.tennis")}</option>
-                <option value="Padel">{t("sports.padel")}</option>
-                <option value="Football">{t("sports.football")}</option>
-                <option value="Basketball">{t("sports.basketball")}</option>
-                <option value="Volleyball">{t("sports.volleyball")}</option>
-                <option value="Beach Volleyball">{t("sports.beachVolleyball")}</option>
-              </select>
-            </div>
-
-            {/* Divider */}
-            <div className="hidden sm:block h-6 w-px bg-outline-variant/60 shrink-0" />
-
-            {/* Status Filter */}
-            <div className="relative flex items-center shrink-0">
-              <div className="flex flex-col text-left pr-1 cursor-pointer pointer-events-none select-none">
-                <span className="text-[10px] font-medium text-text-muted leading-tight">
-                  {t("common.status")}:
-                </span>
-                <span className="text-xs font-semibold text-text-primary flex items-center gap-1 leading-tight">
-                  {statusFilter === "all"
-                    ? t("status.all")
-                    : statusFilter === "ongoing"
-                    ? t("status.live")
-                    : statusFilter === "completed"
-                    ? t("status.completed")
-                    : t("status.scheduled")}
-                  <span className="material-symbols-outlined text-[14px] text-text-muted">expand_more</span>
-                </span>
-              </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => {
-                  setStatusFilter(e.target.value);
-                  setCurrentPage(1);
-                }}
-                aria-label={t("common.status")}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              >
-                <option value="all">{t("status.all")}</option>
-                <option value="ongoing">{t("status.live")}</option>
-                <option value="scheduled">{t("status.scheduled")}</option>
-                <option value="completed">{t("status.completed")}</option>
-              </select>
-            </div>
-
-            {/* Divider */}
-            <div className="hidden sm:block h-6 w-px bg-outline-variant/60 shrink-0" />
-
-            {/* Date Sort */}
-            <div className="relative flex items-center shrink-0">
-              <div className="flex flex-col text-left pr-1 cursor-pointer pointer-events-none select-none">
-                <span className="text-[10px] font-medium text-text-muted leading-tight">
-                  {t("common.date")}:
-                </span>
-                <span className="text-xs font-semibold text-text-primary flex items-center gap-1 leading-tight">
-                  {dateSort === "desc" ? t("common.recentFirst") : t("common.oldestFirst")}
-                  <span className="material-symbols-outlined text-[14px] text-text-muted">expand_more</span>
-                </span>
-              </div>
-              <select
-                value={dateSort}
-                onChange={(e) => {
-                  setDateSort(e.target.value as "desc" | "asc");
-                  setCurrentPage(1);
-                }}
-                aria-label={t("common.date")}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              >
-                <option value="desc">{t("common.recentFirst")}</option>
-                <option value="asc">{t("common.oldestFirst")}</option>
-              </select>
-            </div>
-
-            {/* Clear filters button */}
-            {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "" || dateSort !== "desc") && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                title={t("common.clearFilters")}
-                className="text-xs font-medium text-text-muted hover:text-text-primary transition-colors cursor-pointer flex items-center gap-1 shrink-0"
-              >
-                <span className="material-symbols-outlined text-[15px]">close</span>
-                <span className="hidden md:inline">{t("common.clearFilters")}</span>
-              </button>
-            )}
           </div>
 
-          {/* Right: Actions & View Mode Toggle */}
-          <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
+          {/* Bottom (mobile) / Right (desktop): Dropdowns on left, Action + Toggle on right */}
+          <div className="flex items-center justify-between sm:flex-1 gap-3">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+              {/* Divider */}
+              <div className="hidden sm:block h-6 w-px bg-outline-variant/60 shrink-0" />
+
+              {/* Status Filter */}
+              <SelectField
+                variant="inline"
+                label={t("common.status")}
+                value={statusFilter}
+                onChange={(val) => {
+                  setStatusFilter(val);
+                  setCurrentPage(1);
+                }}
+                options={[
+                  { value: "all", label: t("status.all") },
+                  { value: "ongoing", label: t("status.live") },
+                  { value: "scheduled", label: t("status.scheduled") },
+                  { value: "completed", label: t("status.completed") },
+                ]}
+              />
+
+              {/* Divider */}
+              <div className="hidden sm:block h-6 w-px bg-outline-variant/60 shrink-0" />
+
+              {/* Date Sort */}
+              <SelectField
+                variant="inline"
+                label={t("common.date")}
+                value={dateSort}
+                onChange={(val) => {
+                  setDateSort(val as "desc" | "asc");
+                  setCurrentPage(1);
+                }}
+                options={[
+                  { value: "desc", label: t("common.recentFirst") },
+                  { value: "asc", label: t("common.oldestFirst") },
+                ]}
+              />
+
+              {/* Clear filters button */}
+              {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "" || dateSort !== "desc") && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  title={t("common.clearFilters")}
+                  className="text-xs font-medium text-text-muted hover:text-text-primary transition-colors cursor-pointer flex items-center gap-1 shrink-0"
+                >
+                  <span className="material-symbols-outlined text-[15px]">close</span>
+                  <span className="hidden md:inline">{t("common.clearFilters")}</span>
+                </button>
+              )}
+            </div>
+
+            {/* Right: Actions & View Mode Toggle */}
+            <div className="flex items-center gap-2 shrink-0">
             {activeTab === "matches" && (
               <button
                 type="button"
@@ -616,10 +564,12 @@ function HomeContent() {
                     router.push("/my-matches?create=true");
                   }
                 }}
-                className="px-3 py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+                aria-label={t("common.newMatch")}
+                title={t("common.newMatch")}
+                className="h-8 w-8 sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
               >
                 <span className="material-symbols-outlined text-[16px]">add</span>
-                {t("common.newMatch")}
+                <span className="hidden sm:inline">{t("common.newMatch")}</span>
               </button>
             )}
 
@@ -633,27 +583,17 @@ function HomeContent() {
                     router.push("/my-tournaments?create=true");
                   }
                 }}
-                className="px-3 py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+                aria-label={t("common.newTournament")}
+                title={t("common.newTournament")}
+                className="h-8 w-8 sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
               >
                 <span className="material-symbols-outlined text-[16px]">add</span>
-                {t("common.newTournament")}
+                <span className="hidden sm:inline">{t("common.newTournament")}</span>
               </button>
             )}
 
-            {/* View Mode Toggle matching reference image */}
+            {/* View Mode Toggle: List on left, Grid on right */}
             <div className="flex items-center gap-0.5 bg-surface-container-high/50 p-1 rounded-xl border border-outline-variant shrink-0">
-              <button
-                type="button"
-                onClick={() => setViewMode("cards")}
-                title={t("common.viewCards")}
-                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
-                  viewMode === "cards"
-                    ? "bg-surface-container-highest text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-primary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">grid_view</span>
-              </button>
               <button
                 type="button"
                 onClick={() => setViewMode("list")}
@@ -666,14 +606,27 @@ function HomeContent() {
               >
                 <span className="material-symbols-outlined text-[18px]">format_list_bulleted</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("cards")}
+                title={t("common.viewCards")}
+                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
+                  viewMode === "cards"
+                    ? "bg-surface-container-highest text-text-primary shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">grid_view</span>
+              </button>
             </div>
+          </div>
           </div>
         </div>
 
       {/* Loading Indicator */}
       {loading ? (
         <div className="py-24 text-center">
-          <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <div className="inline-block w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-4 text-text-muted text-xs font-medium">
             {t("common.loading")}
           </p>
@@ -720,153 +673,12 @@ function HomeContent() {
                   </div>
 
                   {/* Desktop Data Table View */}
-                  <div className="hidden md:block w-full bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
-                    <div className="w-full overflow-x-auto">
-                      <table className="w-full text-left border-collapse">
-                      <thead className="border-b border-outline-variant bg-surface-container-high/60 text-xs font-medium text-text-muted">
-                        <tr>
-                          <th className="py-3 px-6">{t("common.teamsOrPlayers")}</th>
-                          <th className="py-3 px-6">{t("common.event")}</th>
-                          <th className="py-3 px-4">{t("common.sport")}</th>
-                          <th className="py-3 px-4 text-center">{t("common.score")}</th>
-                          <th className="py-3 px-4 text-center">{t("common.status")}</th>
-                          <th className="py-3 px-6 text-right">{t("common.date")}</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-outline-variant text-sm">
-                        {paginatedMatches.map((m) => {
-                          const rawSetData = extractSetsData(m.scores);
-                          const isTimedOrPointsSport =
-                            m.sport_type === "Football" || m.sport_type === "Basketball";
-                          const setsWon0 = countSetsWon(rawSetData, 0);
-                          const setsWon1 = countSetsWon(rawSetData, 1);
-                          const mainScore0 = isTimedOrPointsSport
-                            ? m.scores?.current?.home ?? 0
-                            : setsWon0;
-                          const mainScore1 = isTimedOrPointsSport
-                            ? m.scores?.current?.away ?? 0
-                            : setsWon1;
-
-                          const setScores = Array.isArray(rawSetData)
-                            ? rawSetData.map((s: any) => ({
-                                t1: s.team1 ?? s.home ?? 0,
-                                t2: s.team2 ?? s.away ?? 0,
-                              }))
-                            : [];
-
-                          return (
-                            <tr
-                              key={m.id}
-                              onClick={() => router.push(`/match/${m.id}`)}
-                              role="button"
-                              tabIndex={0}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter" || e.key === " ") {
-                                  e.preventDefault();
-                                  router.push(`/match/${m.id}`);
-                                }
-                              }}
-                              className="hover:bg-surface-container-high/40 transition-colors cursor-pointer group"
-                            >
-                              {/* Equipas / Jogadores */}
-                              <td className="py-3.5 px-6">
-                                <div className="space-y-1">
-                                  <div className="font-medium text-xs sm:text-sm text-text-primary">
-                                    {formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD"}
-                                  </div>
-                                  <div className="font-medium text-xs sm:text-sm text-text-primary">
-                                    {formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD"}
-                                  </div>
-                                </div>
-                              </td>
-
-                              {/* Evento */}
-                              <td className="py-3.5 px-6">
-                                <div className="font-medium text-text-primary text-xs leading-snug">
-                                  {m.tournaments?.name || t("home.isolatedMatch")}
-                                </div>
-                                {m.court && (
-                                  <div className="text-xs text-text-muted mt-0.5">
-                                    {m.court}
-                                  </div>
-                                )}
-                              </td>
-
-                              {/* Desporto */}
-                              <td className="py-3.5 px-4">
-                                <div className="flex items-center gap-2">
-                                  <SportIcon
-                                    sport={m.sport_type}
-                                    className="text-text-muted group-hover:text-text-primary text-[16px] shrink-0"
-                                  />
-                                  <span className="text-xs font-medium text-text-secondary">
-                                    {getSportTranslation(m.sport_type, t)}
-                                  </span>
-                                </div>
-                              </td>
-
-                              {/* Score & Sets */}
-                              <td className="py-3.5 px-4 text-center">
-                                <div className="inline-flex flex-col items-center">
-                                  <span className="font-mono tabular-nums text-sm font-semibold text-text-primary tracking-tight">
-                                    {mainScore0} - {mainScore1}
-                                  </span>
-                                  {!isTimedOrPointsSport && setScores.length > 0 && (
-                                    <span className="font-mono tabular-nums text-xs text-text-muted">
-                                      ({setScores.map((s: any) => `${s.t1}-${s.t2}`).join(", ")})
-                                    </span>
-                                  )}
-                                  {m.sport_type === "Basketball" && m.scores?.basketball?.quarters && (
-                                    <span className="font-mono tabular-nums text-xs text-text-muted">
-                                      ({m.scores.basketball.quarters
-                                        .filter(
-                                          (q: any) =>
-                                            (q.home ?? 0) > 0 || (q.away ?? 0) > 0
-                                        )
-                                        .map((q: any) => `${q.home}-${q.away}`)
-                                        .join(", ")})
-                                    </span>
-                                  )}
-                                </div>
-                              </td>
-
-                              {/* Status */}
-                              <td className="py-3.5 px-4 text-center">
-                                {m.status === "ongoing" ? (
-                                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                                    {t("status.live")}
-                                  </span>
-                                ) : (
-                                  <span className="text-xs text-text-muted">
-                                    {m.status === "completed" ? t("status.completed") : t("status.scheduled")}
-                                  </span>
-                                )}
-                              </td>
-
-                              {/* Data */}
-                              <td className="py-3.5 px-6 text-right font-mono tabular-nums text-xs text-text-muted">
-                                {m.scheduled_at
-                                  ? new Date(m.scheduled_at).toLocaleDateString(undefined, {
-                                      day: "numeric",
-                                      month: "short",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })
-                                  : m.created_at
-                                  ? new Date(m.created_at).toLocaleDateString(undefined, {
-                                      day: "numeric",
-                                      month: "short",
-                                    })
-                                  : ""}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                      </table>
-                    </div>
-                  </div>
+                  <DataTable
+                    data={paginatedMatches}
+                    columns={getMatchColumns(t)}
+                    getRowKey={(m) => m.id}
+                    onRowClick={(m) => router.push(`/match/${m.id}`)}
+                  />
               </>
               )}
             </div>
@@ -979,140 +791,13 @@ function HomeContent() {
                   ))}
                 </div>
               ) : (
-                <>
-                  {/* Mobile Compact Tournament List View */}
-                  <div className="md:hidden space-y-2.5">
-                    {paginatedTournaments.map((tItem) => (
-                      <Link
-                        key={tItem.id}
-                        href={`/tournament/${tItem.id}`}
-                        className="w-full bg-[#151b2d]/80 backdrop-blur-md rounded-2xl border border-white/5 p-3.5 flex items-center justify-between gap-3 hover:border-primary/30 transition-all shadow-md block"
-                      >
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <div className="w-10 h-10 rounded-xl bg-surface-container-high/40 border border-white/5 flex items-center justify-center shrink-0">
-                            <SportIcon sport={tItem.sport_type} className="text-text-muted group-hover:text-text-primary text-[18px]" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <h4 className="text-xs font-bold text-on-surface truncate">{tItem.name}</h4>
-                            <p className="text-[10px] text-on-surface-variant/60 uppercase font-mono tracking-wider">
-                              {getSportTranslation(tItem.sport_type, t)} • {tItem.settings?.stage_1?.type === "groups" ? t("tournament.groupStage") : tItem.settings?.stage_1?.type === "double_elimination" ? t("tournament.doubleElimination") : t("tournament.singleElimination")}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                              tItem.status === "completed"
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                : tItem.status === "ongoing"
-                                ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
-                                : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                            }`}
-                          >
-                            {tItem.status === "completed"
-                              ? t("status.completed")
-                              : tItem.status === "ongoing"
-                              ? t("status.live")
-                              : t("status.scheduled")}
-                          </span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-
-                  {/* Desktop Data Table View */}
-                  <div className="hidden md:block w-full bg-surface-container-low rounded-3xl border border-white/5 overflow-hidden shadow-xl">
-                    <div className="w-full overflow-x-auto">
-                      <table className="w-full text-left border-collapse">
-                      <thead className="border-b border-white/5 bg-surface-container/50 font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                        <tr>
-                          <th className="py-3.5 px-6">{t("common.event")}</th>
-                          <th className="py-3.5 px-4">{t("common.sport")}</th>
-                          <th className="py-3.5 px-4">{t("common.format")}</th>
-                          <th className="py-3.5 px-4 text-center">{t("common.status")}</th>
-                          <th className="py-3.5 px-6 text-right">{t("common.date")}</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5 text-sm font-body">
-                        {paginatedTournaments.map((tItem) => (
-                          <tr
-                            key={tItem.id}
-                            onClick={() => router.push(`/tournament/${tItem.id}`)}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                router.push(`/tournament/${tItem.id}`);
-                              }
-                            }}
-                            className="hover:bg-white/[0.04] transition-colors cursor-pointer group"
-                          >
-                            {/* Torneio */}
-                            <td className="py-4 px-6">
-                              <div className="font-headline font-bold text-sm text-on-surface">
-                                {tItem.name}
-                              </div>
-                            </td>
-
-                            {/* Desporto */}
-                            <td className="py-4 px-4">
-                              <div className="flex items-center gap-2">
-                                <SportIcon
-                                  sport={tItem.sport_type}
-                                  className="text-text-muted group-hover:text-text-primary text-[18px] shrink-0"
-                                />
-                                <span className="text-xs font-label font-bold uppercase tracking-wider text-on-surface-variant">
-                                  {getSportTranslation(tItem.sport_type, t)}
-                                </span>
-                              </div>
-                            </td>
-
-                            {/* Formato */}
-                            <td className="py-4 px-4 font-label text-xs uppercase tracking-wider text-on-surface-variant/80">
-                              {tItem.settings?.stage_1?.type === "groups"
-                                ? t("tournament.groupStage")
-                                : tItem.settings?.stage_1?.type === "double_elimination"
-                                ? t("tournament.doubleElimination")
-                                : t("tournament.singleElimination")}
-                            </td>
-
-                            {/* Estado */}
-                            <td className="py-4 px-4 text-center">
-                              <span
-                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                                  tItem.status === "completed"
-                                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                    : tItem.status === "ongoing"
-                                    ? "bg-primary/10 text-primary border border-primary/20 animate-pulse"
-                                    : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                }`}
-                              >
-                                {tItem.status === "completed"
-                                  ? t("status.completed")
-                                  : tItem.status === "ongoing"
-                                  ? t("status.live")
-                                  : t("status.scheduled")}
-                              </span>
-                            </td>
-
-                            {/* Data */}
-                            <td className="py-4 px-6 text-right font-mono text-xs text-on-surface-variant/70">
-                              {tItem.start_date
-                                ? new Date(tItem.start_date).toLocaleDateString(undefined, {
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "numeric",
-                                  })
-                                : "-"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </>
+                <DataTable
+                  data={paginatedTournaments}
+                  columns={getTournamentColumns(t)}
+                  getRowKey={(tItem) => tItem.id}
+                  onRowClick={(tItem) => router.push(`/tournament/${tItem.id}`)}
+                  hideOnMobile={false}
+                />
               )}
             </div>
           )}
@@ -1179,7 +864,7 @@ function HomeContent() {
                   {(followingFilter === "all" || followingFilter === "matches") && followedMatches.length > 0 && (
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-xs font-medium text-text-secondary">
-                        <span className="material-symbols-outlined text-[16px] text-primary">sports</span>
+                        <span className="material-symbols-outlined text-[16px] text-text-primary">star</span>
                         <span>{t("home.followedMatchesTitle")} ({followedMatches.length})</span>
                       </div>
 
@@ -1199,142 +884,12 @@ function HomeContent() {
                           </div>
 
                           {/* Desktop Data Table View */}
-                          <div className="hidden md:block w-full bg-surface-container rounded-xl border border-outline-variant overflow-hidden shadow-sm">
-                            <div className="w-full overflow-x-auto">
-                              <table className="w-full text-left border-collapse">
-                                <thead className="border-b border-outline-variant bg-surface-container-high/60 text-xs font-medium text-text-muted">
-                                  <tr>
-                                    <th className="py-3 px-6">{t("common.teamsOrPlayers")}</th>
-                                    <th className="py-3 px-6">{t("common.event")}</th>
-                                    <th className="py-3 px-4">{t("common.sport")}</th>
-                                    <th className="py-3 px-4 text-center">{t("common.score")}</th>
-                                    <th className="py-3 px-4 text-center">{t("common.status")}</th>
-                                    <th className="py-3 px-6 text-right">{t("common.date")}</th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-outline-variant text-sm font-sans">
-                                  {followedMatches.map((m) => {
-                                    const rawSetData = extractSetsData(m.scores);
-                                    const isTimedOrPointsSport =
-                                      m.sport_type === "Football" || m.sport_type === "Basketball";
-                                    const setsWon0 = countSetsWon(rawSetData, 0);
-                                    const setsWon1 = countSetsWon(rawSetData, 1);
-                                    const mainScore0 = isTimedOrPointsSport
-                                      ? m.scores?.current?.home ?? 0
-                                      : setsWon0;
-                                    const mainScore1 = isTimedOrPointsSport
-                                      ? m.scores?.current?.away ?? 0
-                                      : setsWon1;
-
-                                    const setScores = Array.isArray(rawSetData)
-                                      ? rawSetData.map((s: any) => ({
-                                          t1: s.team1 ?? s.home ?? 0,
-                                          t2: s.team2 ?? s.away ?? 0,
-                                        }))
-                                      : [];
-
-                                    return (
-                                      <tr
-                                        key={m.id}
-                                        onClick={() => router.push(`/match/${m.id}`)}
-                                        role="button"
-                                        tabIndex={0}
-                                        onKeyDown={(e) => {
-                                          if (e.key === "Enter" || e.key === " ") {
-                                            e.preventDefault();
-                                            router.push(`/match/${m.id}`);
-                                          }
-                                        }}
-                                        className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
-                                      >
-                                        {/* Equipas / Jogadores */}
-                                        <td className="py-3.5 px-6">
-                                          <div className="space-y-1">
-                                            <div className="font-medium text-xs sm:text-sm text-text-primary">
-                                              {formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD"}
-                                            </div>
-                                            <div className="font-medium text-xs sm:text-sm text-text-primary">
-                                              {formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD"}
-                                            </div>
-                                          </div>
-                                        </td>
-
-                                        {/* Evento */}
-                                        <td className="py-3.5 px-6">
-                                          <div className="font-medium text-text-primary text-xs leading-snug">
-                                            {m.tournaments?.name || t("home.isolatedMatch")}
-                                          </div>
-                                          {m.court && (
-                                            <div className="text-xs text-text-muted mt-0.5">
-                                              {m.court}
-                                            </div>
-                                          )}
-                                        </td>
-
-                                        {/* Desporto */}
-                                        <td className="py-3.5 px-4">
-                                          <div className="flex items-center gap-2">
-                                            <SportIcon
-                                              sport={m.sport_type}
-                                              className="text-text-muted group-hover:text-text-primary text-[16px] shrink-0"
-                                            />
-                                            <span className="text-xs font-medium text-text-secondary">
-                                              {getSportTranslation(m.sport_type, t)}
-                                            </span>
-                                          </div>
-                                        </td>
-
-                                        {/* Score & Sets */}
-                                        <td className="py-3.5 px-4 text-center">
-                                          <div className="inline-flex flex-col items-center">
-                                            <span className="font-mono tabular-nums text-sm font-semibold text-text-primary tracking-tight">
-                                              {mainScore0} - {mainScore1}
-                                            </span>
-                                            {!isTimedOrPointsSport && setScores.length > 0 && (
-                                              <span className="font-mono tabular-nums text-xs text-text-muted">
-                                                ({setScores.map((s: any) => `${s.t1}-${s.t2}`).join(", ")})
-                                              </span>
-                                            )}
-                                          </div>
-                                        </td>
-
-                                        {/* Estado */}
-                                        <td className="py-3.5 px-4 text-center">
-                                          {m.status === "ongoing" ? (
-                                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary">
-                                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                                              {t("status.live")}
-                                            </span>
-                                          ) : (
-                                            <span className="text-xs text-text-muted">
-                                              {m.status === "completed" ? t("status.completed") : t("status.scheduled")}
-                                            </span>
-                                          )}
-                                        </td>
-
-                                        {/* Data */}
-                                        <td className="py-3.5 px-6 text-right font-mono tabular-nums text-xs text-text-muted">
-                                          {m.scheduled_at
-                                            ? new Date(m.scheduled_at).toLocaleDateString(undefined, {
-                                                day: "numeric",
-                                                month: "short",
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                              })
-                                            : m.created_at
-                                            ? new Date(m.created_at).toLocaleDateString(undefined, {
-                                                day: "numeric",
-                                                month: "short",
-                                              })
-                                            : "-"}
-                                        </td>
-                                      </tr>
-                                    );
-                                  })}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
+                          <DataTable
+                            data={followedMatches}
+                            columns={getMatchColumns(t)}
+                            getRowKey={(m) => m.id}
+                            onRowClick={(m) => router.push(`/match/${m.id}`)}
+                          />
                         </>
                       )}
                     </div>
@@ -1344,7 +899,7 @@ function HomeContent() {
                   {(followingFilter === "all" || followingFilter === "tournaments") && followedTournaments.length > 0 && (
                     <div className="space-y-3 pt-4">
                       <div className="flex items-center gap-2 text-xs font-medium text-text-secondary">
-                        <span className="material-symbols-outlined text-[16px] text-primary">emoji_events</span>
+                        <span className="material-symbols-outlined text-[16px] text-text-primary">emoji_events</span>
                         <span>{t("home.followedTournamentsTitle")} ({followedTournaments.length})</span>
                       </div>
 
@@ -1408,82 +963,13 @@ function HomeContent() {
                         </div>
                       ) : (
                         /* Desktop Data Table View for Tournaments */
-                        <div className="w-full bg-surface-container rounded-xl border border-outline-variant overflow-hidden shadow-sm">
-                          <div className="w-full overflow-x-auto">
-                            <table className="w-full text-left border-collapse">
-                              <thead className="border-b border-outline-variant bg-surface-container-high/60 text-[11px] font-medium text-text-muted">
-                                <tr>
-                                  <th className="py-3 px-6">{t("common.event")}</th>
-                                  <th className="py-3 px-4">{t("common.sport")}</th>
-                                  <th className="py-3 px-4">{t("common.format")}</th>
-                                  <th className="py-3 px-4 text-center">{t("common.status")}</th>
-                                  <th className="py-3 px-6 text-right">{t("common.date")}</th>
-                                </tr>
-                              </thead>
-                              <tbody className="divide-y divide-outline-variant text-sm font-sans">
-                                {followedTournaments.map((tItem) => (
-                                  <tr
-                                    key={tItem.id}
-                                    onClick={() => router.push(`/tournament/${tItem.id}`)}
-                                    role="button"
-                                    tabIndex={0}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter" || e.key === " ") {
-                                        e.preventDefault();
-                                        router.push(`/tournament/${tItem.id}`);
-                                      }
-                                    }}
-                                    className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
-                                  >
-                                    <td className="py-3.5 px-6">
-                                      <div className="font-medium text-sm text-text-primary group-hover:text-primary transition-colors">
-                                        {tItem.name}
-                                      </div>
-                                    </td>
-                                    <td className="py-3.5 px-4">
-                                      <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-                                        <SportIcon sport={tItem.sport_type} className="text-text-muted text-[16px]" />
-                                        <span>{getSportTranslation(tItem.sport_type, t)}</span>
-                                      </div>
-                                    </td>
-                                    <td className="py-3.5 px-4 text-xs text-text-muted">
-                                      {tItem.settings?.stage_1?.type === "groups"
-                                        ? t("tournament.groupStage")
-                                        : tItem.settings?.stage_1?.type === "double_elimination"
-                                        ? t("tournament.doubleElimination")
-                                        : t("tournament.singleElimination")}
-                                    </td>
-                                    <td className="py-3.5 px-4 text-center">
-                                      <span
-                                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
-                                          tItem.status === "completed"
-                                            ? "bg-surface-container-high text-text-muted border-outline-variant"
-                                            : tItem.status === "ongoing"
-                                            ? "bg-surface-container-high text-text-primary border-outline-variant"
-                                            : "bg-surface-container-high text-text-secondary border-outline-variant"
-                                        }`}
-                                      >
-                                        {tItem.status === "ongoing" && (
-                                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                                        )}
-                                        <span>{tItem.status === "completed" ? t("status.completed") : tItem.status === "ongoing" ? t("status.live") : t("status.scheduled")}</span>
-                                      </span>
-                                    </td>
-                                    <td className="py-3.5 px-6 text-right font-mono text-xs text-text-muted">
-                                      {tItem.start_date
-                                        ? new Date(tItem.start_date).toLocaleDateString(undefined, {
-                                            day: "numeric",
-                                            month: "short",
-                                            year: "numeric",
-                                          })
-                                        : "-"}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
+                        <DataTable
+                          data={followedTournaments}
+                          columns={getTournamentColumns(t)}
+                          getRowKey={(tItem) => tItem.id}
+                          onRowClick={(tItem) => router.push(`/tournament/${tItem.id}`)}
+                          hideOnMobile={false}
+                        />
                       )}
                     </div>
                   )}

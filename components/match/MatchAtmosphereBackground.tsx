@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useScreenOrientation, ScreenOrientation } from "@/lib/hooks/useScreenOrientation";
 
@@ -11,6 +11,15 @@ export type SportType =
   | "volleyball"
   | "basketball"
   | "padel";
+
+const ALL_SPORTS: SportType[] = [
+  "football",
+  "tennis",
+  "beach_volleyball",
+  "volleyball",
+  "basketball",
+  "padel",
+];
 
 export interface MatchAtmosphereBackgroundProps {
   sportType?: string | null;
@@ -50,7 +59,16 @@ function MatchAtmosphereBackgroundComponent({
 }: MatchAtmosphereBackgroundProps) {
   const detectedOrientation = useScreenOrientation();
   const orientation = forcedOrientation || detectedOrientation;
-  const normalizedSport = normalizeSportType(sportType);
+  const isRandom = (sportType || "").toLowerCase().trim() === "random";
+  const [randomSport, setRandomSport] = useState<SportType>("tennis");
+
+  useEffect(() => {
+    if (isRandom) {
+      setRandomSport(ALL_SPORTS[Math.floor(Math.random() * ALL_SPORTS.length)]);
+    }
+  }, [isRandom]);
+
+  const normalizedSport = isRandom ? randomSport : normalizeSportType(sportType);
 
   const imageSrc = `/backgrounds/${normalizedSport}-${orientation}.webp`;
   const isUmpire = mode === "umpire";

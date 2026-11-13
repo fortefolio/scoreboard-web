@@ -65,7 +65,7 @@ function ConfirmContent() {
   if (status === "loading") {
     return (
       <div className="w-full max-w-md bg-surface-container-low border border-outline-variant/10 rounded-[2.5rem] p-8 text-center shadow-2xl animate-in zoom-in-95 duration-200">
-        <div className="w-16 h-16 mx-auto mb-6 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        <div className="w-16 h-16 mx-auto mb-6 border-4 border-text-muted/30 border-t-text-primary rounded-full animate-spin" />
         <h2 className="font-headline text-2xl font-black uppercase tracking-tight text-on-surface mb-2">
           A Verificar Conta...
         </h2>
@@ -159,7 +159,7 @@ export default function AuthConfirmPage() {
       <Suspense
         fallback={
           <div className="w-full max-w-md bg-surface-container-low border border-outline-variant/10 rounded-[2.5rem] p-8 text-center shadow-2xl">
-            <div className="w-16 h-16 mx-auto mb-6 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+            <div className="w-16 h-16 mx-auto mb-6 border-4 border-text-muted/30 border-t-text-primary rounded-full animate-spin" />
             <h2 className="font-headline text-2xl font-black uppercase tracking-tight text-on-surface mb-2">
               A Carregar...
             </h2>

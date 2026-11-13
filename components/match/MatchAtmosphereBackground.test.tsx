@@ -88,4 +88,15 @@ describe("MatchAtmosphereBackground component", () => {
     const img = screen.getByTestId("background-image");
     expect(img).toHaveAttribute("src", "/backgrounds/basketball-landscape.webp");
   });
+
+  it("picks a valid sport when sportType is random", () => {
+    const mathRandomSpy = vi.spyOn(Math, "random").mockReturnValue(0.5);
+    render(<MatchAtmosphereBackground sportType="random" forcedOrientation="landscape" />);
+
+    const bg = screen.getByTestId("match-atmosphere-background");
+    expect(["football", "tennis", "beach_volleyball", "volleyball", "basketball", "padel"]).toContain(
+      bg.getAttribute("data-sport")
+    );
+    mathRandomSpy.mockRestore();
+  });
 });

@@ -28,6 +28,7 @@ export default function NotificationsPage() {
   const router = useRouter();
   const {
     notifications,
+    pendingInvitationMatchIds,
     loading,
     markAsRead,
     markAllAsRead,
@@ -193,9 +194,36 @@ export default function NotificationsPage() {
 
                   {/* Right Side: Unread Dot + 3-Dot Action Menu Button */}
                   <div className="relative flex items-center gap-1.5 shrink-0 self-start">
-                    {isUnread && (
-                      <span className="w-2 h-2 rounded-full bg-success shrink-0" />
-                    )}
+                    {isInvitation && matchId && pendingInvitationMatchIds.has(matchId) ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleInvitation(n.id, matchId, "accept");
+                          }}
+                          title={t("notifications.accept")}
+                          aria-label={t("notifications.accept")}
+                          className="w-7 h-7 rounded-md bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-secondary hover:text-text-primary flex items-center justify-center transition-colors cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[15px] leading-none">check</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleInvitation(n.id, matchId, "refuse");
+                          }}
+                          title={t("notifications.decline")}
+                          aria-label={t("notifications.decline")}
+                          className="w-7 h-7 rounded-md bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-muted hover:text-text-primary flex items-center justify-center transition-colors cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[15px] leading-none">close</span>
+                        </button>
+                      </>
+                    ) : isUnread ? (
+                      <span className="w-2 h-2 rounded-full bg-text-primary/70 shrink-0" />
+                    ) : null}
 
                     <button
                       type="button"
@@ -216,36 +244,6 @@ export default function NotificationsPage() {
                         className="absolute right-0 top-8 z-40 w-44 bg-surface-container border border-outline-variant rounded-xl shadow-xl p-1 text-xs animate-in fade-in duration-150"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {/* Invitation Accept */}
-                        {isInvitation && !n.read_at && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleInvitation(n.id, matchId, "accept");
-                                setActiveMenuId(null);
-                              }}
-                              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-success hover:bg-success/10 rounded-md transition-colors cursor-pointer text-left"
-                            >
-                              <span className="material-symbols-outlined text-[15px]">check</span>
-                              {t("notifications.accept")}
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleInvitation(n.id, matchId, "refuse");
-                                setActiveMenuId(null);
-                              }}
-                              className="w-full flex items-center gap-2 px-2.5 py-1.5 font-medium text-error hover:bg-error/10 rounded-md transition-colors cursor-pointer text-left"
-                            >
-                              <span className="material-symbols-outlined text-[15px]">close</span>
-                              {t("notifications.decline")}
-                            </button>
-                            <div className="h-px bg-outline-variant my-1" />
-                          </>
-                        )}
-
                         {/* View Match / Details */}
                         {matchId && (
                           <button
@@ -311,7 +309,7 @@ export default function NotificationsPage() {
             </div>
           ) : (
             <div className="py-20 text-center">
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+              <div className="w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
               <p className="text-text-muted text-xs">
                 {t("notifications.syncing")}
               </p>

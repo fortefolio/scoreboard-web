@@ -46,7 +46,7 @@ export default function BottomTabBar() {
             {t("nav.matches")}
           </span>
           {isMatchesActive && (
-            <span className="w-1 h-1 rounded-full bg-primary mt-0.5" />
+            <span className="w-1 h-1 rounded-full bg-text-primary mt-0.5" />
           )}
         </Link>
 
@@ -65,7 +65,7 @@ export default function BottomTabBar() {
             {t("nav.tournaments")}
           </span>
           {isTournamentsActive && (
-            <span className="w-1 h-1 rounded-full bg-primary mt-0.5" />
+            <span className="w-1 h-1 rounded-full bg-text-primary mt-0.5" />
           )}
         </Link>
 
@@ -84,7 +84,7 @@ export default function BottomTabBar() {
             {t("nav.following")}
           </span>
           {isFollowingActive && (
-            <span className="w-1 h-1 rounded-full bg-primary mt-0.5" />
+            <span className="w-1 h-1 rounded-full bg-text-primary mt-0.5" />
           )}
         </Link>
 
@@ -101,7 +101,7 @@ export default function BottomTabBar() {
           <div className="relative">
             <span className="material-symbols-outlined text-[20px]">notifications</span>
             {user && unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] bg-primary text-white text-[9px] font-semibold flex items-center justify-center rounded-full px-0.5 border border-[#0b0d14]">
+              <span className="absolute -top-1 -right-1.5 min-w-[14px] h-[14px] bg-error text-white text-[9px] font-semibold flex items-center justify-center rounded-full px-0.5 border border-[#0b0d14]">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
@@ -110,7 +110,7 @@ export default function BottomTabBar() {
             {t("nav.notifications")}
           </span>
           {isNotificationsActive && (
-            <span className="w-1 h-1 rounded-full bg-primary mt-0.5" />
+            <span className="w-1 h-1 rounded-full bg-text-primary mt-0.5" />
           )}
         </Link>
       </div>

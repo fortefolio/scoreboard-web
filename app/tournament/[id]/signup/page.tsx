@@ -6,6 +6,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
+import SelectField from "@/components/SelectField";
 
 function SignupContent() {
   const { t } = useTranslation();
@@ -18,6 +19,7 @@ function SignupContent() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const tournamentId = Array.isArray(id) ? id[0] : id;
 
@@ -28,6 +30,15 @@ function SignupContent() {
       else initialData[field.id] = "";
     });
     return initialData;
+  };
+
+  const refreshParticipantCount = async () => {
+    if (!tournamentId) return;
+    const { count } = await supabase
+      .from("tournament_participants")
+      .select("id", { count: 'exact', head: true })
+      .eq("tournament_id", tournamentId);
+    setParticipantCount(count || 0);
   };
 
   useEffect(() => {
@@ -44,12 +55,7 @@ function SignupContent() {
           setFormResponses(buildInitialFormResponses(data.signup_schema || []));
         }
 
-        const { count } = await supabase
-          .from("tournament_participants")
-          .select("id", { count: 'exact', head: true })
-          .eq("tournament_id", tournamentId);
-        
-        setParticipantCount(count || 0);
+        await refreshParticipantCount();
         setLoading(false);
       };
       fetchTournament();
@@ -57,17 +63,24 @@ function SignupContent() {
   }, [tournamentId]);
 
   const maxTeams = tournament?.settings?.max_teams ?? tournament?.settings?.stage_1?.max_teams ?? 16;
+  const isFull = participantCount >= maxTeams;
+  const isClosed = tournament?.status !== "pending";
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
     if (!teamName.trim() || !contactEmail.trim()) return;
     if (tournament?.status !== 'pending') {
-      toast.error("Signups are closed for this tournament.");
+      const msg = "Signups are closed for this tournament.";
+      setSubmitError(msg);
+      toast.error(msg);
       return;
     }
 
     if (participantCount >= maxTeams) {
-      toast.error("This tournament has reached its maximum number of teams.");
+      const msg = "This tournament has reached its maximum number of teams.";
+      setSubmitError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -88,7 +101,10 @@ function SignupContent() {
       setSuccess(true);
       toast.success("Successfully registered for the tournament!");
     } catch (err: any) {
-      toast.error(`Registration failed: ${err.message}`);
+      const message = err?.message || "Could not complete registration. Please try again.";
+      setSubmitError(message);
+      toast.error(`Registration failed: ${message}`);
+      await refreshParticipantCount();
     } finally {
       setSubmitting(false);
     }
@@ -97,7 +113,7 @@ function SignupContent() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-text-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -115,18 +131,19 @@ function SignupContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-on-background font-sans selection:bg-primary selection:text-white flex flex-col items-center justify-center p-4 sm:p-6">
+    <div className="min-h-screen bg-background text-on-background font-sans selection:bg-text-primary selection:text-surface-container-lowest flex flex-col items-center pt-10 sm:pt-14 pb-12 px-4 sm:px-6">
       <main className="w-full max-w-md relative z-10">
-        <header className="text-center mb-8">
-          <Link href="/" className="text-xl font-digital text-text-primary tracking-wider mb-4 inline-block hover:opacity-80 transition-opacity">
-            SCORE:BOARD
-          </Link>
+        <header className="text-center mb-6">
           <p className="text-text-muted font-medium text-xs uppercase tracking-wider mb-1.5">
             {getSportTranslation(tournament.sport_type, t)} Registration
           </p>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary">
             {tournament.name}
           </h1>
+          <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container border border-outline-variant text-xs font-medium text-text-secondary">
+            <span className="material-symbols-outlined text-sm text-text-muted">groups</span>
+            <span>{participantCount} / {maxTeams} teams registered</span>
+          </div>
         </header>
 
         {success ? (
@@ -153,7 +170,7 @@ function SignupContent() {
                   setFormResponses(buildInitialFormResponses(tournament?.signup_schema || []));
                   setSuccess(false);
                 }}
-                className="text-primary hover:underline text-xs font-medium py-1"
+                className="text-text-secondary hover:text-text-primary hover:underline text-xs font-medium py-1"
               >
                 Register another team
               </button>
@@ -161,113 +178,127 @@ function SignupContent() {
           </div>
         ) : (
           <div className="bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant shadow-2xl relative">
-            <form onSubmit={handleSignup} className="space-y-4">
-              {participantCount >= maxTeams ? (
-                <div className="text-center py-6">
-                  <div className="w-12 h-12 bg-amber-500/10 border border-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-3 text-amber-400">
-                    <span className="material-symbols-outlined text-2xl">lock</span>
-                  </div>
-                  <h2 className="text-base font-semibold mb-1 text-text-primary">Tournament Full</h2>
-                  <p className="text-text-muted text-xs mb-4">
+            {isFull && (
+              <div className="mb-5 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-start gap-2.5">
+                <span className="material-symbols-outlined text-amber-400 text-lg shrink-0 mt-0.5">warning</span>
+                <div className="text-xs">
+                  <p className="font-semibold text-text-primary">Tournament Full</p>
+                  <p className="text-text-muted mt-0.5 leading-relaxed">
                     The maximum number of teams ({maxTeams}) has already registered for this tournament.
                   </p>
-                  <Link href={`/tournament/${tournamentId}/teams`} className="inline-flex items-center gap-1.5 text-primary font-medium text-xs hover:underline">
+                  <Link
+                    href={`/tournament/${tournamentId}/teams`}
+                    className="inline-flex items-center gap-1 text-text-secondary hover:text-text-primary font-medium mt-2 hover:underline"
+                  >
                     <span className="material-symbols-outlined text-sm">groups</span>
                     View Registered Teams
                   </Link>
                 </div>
-              ) : (
-                <>
-                  <div>
-                    <label className="block text-xs font-medium text-text-muted mb-1.5">Team or Player Name</label>
-                    <input 
-                      autoFocus
-                      required
-                      className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-primary transition-colors placeholder:text-text-muted/40"
-                      placeholder="e.g. Lisbon Masters"
-                      value={teamName}
-                      onChange={(e) => setTeamName(e.target.value)}
-                    />
-                  </div>
+              </div>
+            )}
 
-                  <div>
-                    <label className="block text-xs font-medium text-text-muted mb-1.5">Contact Email</label>
-                    <input 
-                      required
-                      type="email"
-                      className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-primary transition-colors placeholder:text-text-muted/40"
-                      placeholder="manager@team.com"
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                    />
-                  </div>
-
-                  {/* Dynamic Fields */}
-                  {(tournament.signup_schema || []).map((field: any) => (
-                    <div key={field.id}>
-                      <label className="block text-xs font-medium text-text-muted mb-1.5">
-                        {field.label} {field.required && <span className="text-primary">*</span>}
-                      </label>
-                      {field.type === 'select' ? (
-                        <select 
-                          required={field.required}
-                          className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-primary transition-colors appearance-none"
-                          value={formResponses[field.id] || ""}
-                          onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.value })}
-                        >
-                          <option value="" disabled>Select an option</option>
-                          {(field.options || []).map((opt: string) => (
-                            <option key={opt} value={opt}>{opt}</option>
-                          ))}
-                        </select>
-                      ) : field.type === 'checkbox' ? (
-                        <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant">
-                          <input 
-                            type="checkbox"
-                            required={field.required}
-                            className="w-4 h-4 rounded bg-surface-container border-outline-variant text-primary focus:ring-0"
-                            checked={formResponses[field.id] || false}
-                            onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.checked })}
-                          />
-                          <span className="text-text-secondary text-xs font-medium">{field.description || `I agree to ${field.label}`}</span>
-                        </div>
-                      ) : (
-                        <input 
-                          required={field.required}
-                          type={field.type}
-                          min={field.type === 'number' && field.min != null ? field.min : undefined}
-                          max={field.type === 'number' && field.max != null ? field.max : undefined}
-                          className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-primary transition-colors placeholder:text-text-muted/40"
-                          placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
-                          value={formResponses[field.id] || ""}
-                          onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.value })}
-                        />
-                      )}
-                    </div>
-                  ))}
-
-                  <div className="pt-2">
-                    <button 
-                      type="submit"
-                      disabled={submitting || tournament.status !== 'pending'}
-                      className="w-full bg-text-primary hover:bg-white text-surface-container-lowest py-2.5 px-4 rounded-lg font-medium text-xs transition-colors disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      {submitting ? (
-                        <div className="w-4 h-4 border-2 border-surface-container-lowest border-t-transparent rounded-full animate-spin"></div>
-                      ) : (
-                        <>
-                          <span className="material-symbols-outlined text-sm">how_to_reg</span>
-                          Register for Tournament
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </>
-              )}
-              {tournament.status !== 'pending' && participantCount < (tournament?.settings?.max_teams || 16) && (
-                <p className="text-center text-xs font-medium text-error">
-                  Signups are currently closed
+            {!isFull && isClosed && (
+              <div className="mb-5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-center gap-2.5">
+                <span className="material-symbols-outlined text-rose-400 text-lg shrink-0">lock</span>
+                <p className="text-xs font-medium text-text-primary">
+                  Signups are currently closed for this tournament.
                 </p>
+              </div>
+            )}
+
+            <form onSubmit={handleSignup}>
+              <fieldset disabled={isFull || isClosed || submitting} className="space-y-4 disabled:opacity-50">
+                <div>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">Team or Player Name</label>
+                  <input 
+                    autoFocus={!isFull && !isClosed}
+                    required
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-outline-focus transition-colors placeholder:text-text-muted/40 disabled:cursor-not-allowed"
+                    placeholder="e.g. Lisbon Masters"
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">Contact Email</label>
+                  <input 
+                    required
+                    type="email"
+                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-outline-focus transition-colors placeholder:text-text-muted/40 disabled:cursor-not-allowed"
+                    placeholder="manager@team.com"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                  />
+                </div>
+
+                {/* Dynamic Fields */}
+                {(tournament.signup_schema || []).map((field: any) => (
+                  <div key={field.id}>
+                    <label className="block text-xs font-medium text-text-muted mb-1.5">
+                      {field.label} {field.required && <span className="text-text-primary">*</span>}
+                    </label>
+                    {field.type === 'select' ? (
+                      <SelectField
+                        required={field.required}
+                        disabled={isFull || isClosed || submitting}
+                        value={formResponses[field.id] || ""}
+                        onChange={(val) => setFormResponses({ ...formResponses, [field.id]: val })}
+                        options={field.options || []}
+                        placeholder="Select an option"
+                      />
+                    ) : field.type === 'checkbox' ? (
+                      <div className="flex items-center gap-2.5 px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant">
+                        <input 
+                          type="checkbox"
+                          required={field.required}
+                          className="w-4 h-4 rounded bg-surface-container border-outline-variant text-text-primary focus:ring-0 disabled:cursor-not-allowed"
+                          checked={formResponses[field.id] || false}
+                          onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.checked })}
+                        />
+                        <span className="text-text-secondary text-xs font-medium">{field.description || `I agree to ${field.label}`}</span>
+                      </div>
+                    ) : (
+                      <input 
+                        required={field.required}
+                        type={field.type}
+                        min={field.type === 'number' && field.min != null ? field.min : undefined}
+                        max={field.type === 'number' && field.max != null ? field.max : undefined}
+                        className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-outline-focus transition-colors placeholder:text-text-muted/40 disabled:cursor-not-allowed"
+                        placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}`}
+                        value={formResponses[field.id] || ""}
+                        onChange={(e) => setFormResponses({ ...formResponses, [field.id]: e.target.value })}
+                      />
+                    )}
+                  </div>
+                ))}
+
+                <div className="pt-2">
+                  <button 
+                    type="submit"
+                    disabled={submitting || isFull || isClosed}
+                    className="w-full bg-text-primary hover:bg-white text-surface-container-lowest py-2.5 px-4 rounded-lg font-medium text-xs transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {submitting ? (
+                      <div className="w-4 h-4 border-2 border-surface-container-lowest border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-sm">how_to_reg</span>
+                        Register for Tournament
+                      </>
+                    )}
+                  </button>
+                </div>
+              </fieldset>
+
+              {submitError && !isFull && (
+                <div
+                  role="alert"
+                  className="mt-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/25 flex items-start gap-2.5 text-xs"
+                >
+                  <span className="material-symbols-outlined text-rose-400 text-base shrink-0 mt-0.5">error</span>
+                  <p className="text-text-primary leading-relaxed">{submitError}</p>
+                </div>
               )}
             </form>
           </div>
@@ -281,7 +312,7 @@ export default function TournamentSignupPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-text-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     }>
       <SignupContent />

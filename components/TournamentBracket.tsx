@@ -425,7 +425,7 @@ export default function TournamentBracket({
 
   if (loading) return (
     <div className="flex flex-col items-center py-20 opacity-50">
-       <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+       <div className="w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
        <p className="mt-4 font-label text-[10px] uppercase tracking-widest">Synchronizing Bracket...</p>
     </div>
   );

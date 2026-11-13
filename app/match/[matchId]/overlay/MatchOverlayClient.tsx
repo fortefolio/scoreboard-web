@@ -164,6 +164,67 @@ export default function MatchOverlayClient() {
 
   const positionClasses = pos === "bottom" ? "items-end pb-8" : "items-start pt-6";
 
+  const renderTeamRow = (idx: 0 | 1) => {
+    const teamName = idx === 0 ? team1Name : team2Name;
+    const setsWon = idx === 0 ? team1SetsWon : team2SetsWon;
+    const livePoint = idx === 0 ? point1 : point2;
+    const isServing =
+      serverIdx === idx ||
+      (isVolleyball && volleyServer === (idx === 0 ? "team1" : "team2"));
+
+    return (
+      <div className="flex items-center justify-between px-4 py-2">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-3">
+          {isServing && (
+            <span className="w-1.5 h-1.5 rounded-full bg-text-primary shrink-0" title="Serving" />
+          )}
+          <span className="font-medium text-sm text-text-primary truncate">
+            {teamName}
+          </span>
+        </div>
+
+        {/* Scores Cluster */}
+        <div className="flex items-center gap-1.5 shrink-0 font-mono tabular-nums">
+          {(isTennisOrPadel || isVolleyball) && (
+            <div className="w-7 h-7 rounded-md bg-surface-container-high flex items-center justify-center font-medium text-xs text-text-secondary border border-outline-variant">
+              {setsWon}
+            </div>
+          )}
+
+          {isTennisOrPadel && (
+            <div className="w-8 h-8 rounded-md bg-surface-container-highest text-text-primary flex items-center justify-center font-semibold text-sm border border-outline-variant">
+              {currentGames[idx]}
+            </div>
+          )}
+
+          {isTennisOrPadel && (
+            <div className="w-9 h-8 rounded-md bg-text-primary text-surface-container-lowest flex items-center justify-center font-bold text-sm">
+              {livePoint}
+            </div>
+          )}
+
+          {isVolleyball && (
+            <div className="w-9 h-8 rounded-md bg-text-primary text-surface-container-lowest flex items-center justify-center font-bold text-sm">
+              {volleyPoints[idx]}
+            </div>
+          )}
+
+          {isBasketball && (
+            <div className="w-11 h-8 rounded-md bg-text-primary text-surface-container-lowest flex items-center justify-center font-bold text-sm">
+              {basketballScore[idx]}
+            </div>
+          )}
+
+          {isFootball && (
+            <div className="w-9 h-8 rounded-md bg-text-primary text-surface-container-lowest flex items-center justify-center font-bold text-sm">
+              {footballScore[idx]}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className={`fixed inset-0 pointer-events-none bg-transparent flex justify-center ${positionClasses} font-sans select-none overflow-hidden z-[9999]`}>
       <div className={`transition-transform duration-300 ${scaleClasses}`}>
@@ -173,12 +234,12 @@ export default function MatchOverlayClient() {
           <div className="flex items-center justify-between px-4 py-1.5 bg-surface-container-high/60 border-b border-outline-variant text-xs font-medium">
             <div className="flex items-center gap-2">
               {isLive ? (
-                <span className="flex items-center gap-1.5 text-success font-medium">
-                  <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                  LIVE
+                <span className="flex items-center gap-1.5 text-text-primary font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                  Live
                 </span>
               ) : (
-                <span className="text-text-muted font-medium">
+                <span className="text-text-muted font-medium capitalize">
                   {match.status}
                 </span>
               )}
@@ -199,141 +260,33 @@ export default function MatchOverlayClient() {
             </div>
           </div>
 
-          {/* Teams & Scores Row */}
+          {/* Teams & Scores Rows */}
           <div className="flex flex-col divide-y divide-outline-variant">
-            {/* Team 1 Row */}
-            <div className="flex items-center justify-between px-4 py-2 hover:bg-surface-container-high/20">
-              <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-3">
-                {serverIdx === 0 && (
-                  <span className="w-2 h-2 rounded-full bg-warning shrink-0" title="Serving" />
-                )}
-                {isVolleyball && volleyServer === "team1" && (
-                  <span className="w-2 h-2 rounded-full bg-warning shrink-0" title="Serving" />
-                )}
-                <span className="font-medium text-sm text-text-primary truncate">
-                  {team1Name}
-                </span>
-              </div>
-
-              {/* Scores Cluster */}
-              <div className="flex items-center gap-1.5 shrink-0 font-mono tabular-nums">
-                {/* Sets won (for racket/volleyball) */}
-                {(isTennisOrPadel || isVolleyball) && (
-                  <div className="w-7 h-7 rounded-md bg-surface-container-high flex items-center justify-center font-medium text-xs text-text-secondary border border-outline-variant">
-                    {isTennisOrPadel ? team1SetsWon : team1SetsWon}
-                  </div>
-                )}
-
-                {/* Tennis/Padel current games */}
-                {isTennisOrPadel && (
-                  <div className="w-8 h-8 rounded-md bg-surface-container-highest text-text-primary flex items-center justify-center font-semibold text-sm border border-outline-variant">
-                    {currentGames[0]}
-                  </div>
-                )}
-
-                {/* Tennis/Padel live points */}
-                {isTennisOrPadel && (
-                  <div className="w-9 h-8 rounded-md bg-warning text-[#0b0d14] flex items-center justify-center font-bold text-sm">
-                    {point1}
-                  </div>
-                )}
-
-                {/* Volleyball current set points */}
-                {isVolleyball && (
-                  <div className="w-9 h-8 rounded-md bg-success text-[#0b0d14] flex items-center justify-center font-bold text-sm">
-                    {volleyPoints[0]}
-                  </div>
-                )}
-
-                {/* Basketball / Football score */}
-                {isBasketball && (
-                  <div className="w-11 h-8 rounded-md bg-warning text-[#0b0d14] flex items-center justify-center font-bold text-sm">
-                    {basketballScore[0]}
-                  </div>
-                )}
-
-                {isFootball && (
-                  <div className="w-9 h-8 rounded-md bg-success text-[#0b0d14] flex items-center justify-center font-bold text-sm">
-                    {footballScore[0]}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Team 2 Row */}
-            <div className="flex items-center justify-between px-4 py-2 hover:bg-surface-container-high/20">
-              <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-3">
-                {serverIdx === 1 && (
-                  <span className="w-2 h-2 rounded-full bg-warning shrink-0" title="Serving" />
-                )}
-                {isVolleyball && volleyServer === "team2" && (
-                  <span className="w-2 h-2 rounded-full bg-warning shrink-0" title="Serving" />
-                )}
-                <span className="font-medium text-sm text-text-primary truncate">
-                  {team2Name}
-                </span>
-              </div>
-
-              {/* Scores Cluster */}
-              <div className="flex items-center gap-1.5 shrink-0 font-mono tabular-nums">
-                {(isTennisOrPadel || isVolleyball) && (
-                  <div className="w-7 h-7 rounded-md bg-surface-container-high flex items-center justify-center font-medium text-xs text-text-secondary border border-outline-variant">
-                    {isTennisOrPadel ? team2SetsWon : team2SetsWon}
-                  </div>
-                )}
-
-                {isTennisOrPadel && (
-                  <div className="w-8 h-8 rounded-md bg-surface-container-highest text-text-primary flex items-center justify-center font-semibold text-sm border border-outline-variant">
-                    {currentGames[1]}
-                  </div>
-                )}
-
-                {isTennisOrPadel && (
-                  <div className="w-9 h-8 rounded-md bg-warning text-[#0b0d14] flex items-center justify-center font-bold text-sm">
-                    {point2}
-                  </div>
-                )}
-
-                {isVolleyball && (
-                  <div className="w-9 h-8 rounded-md bg-success text-[#0b0d14] flex items-center justify-center font-bold text-sm">
-                    {volleyPoints[1]}
-                  </div>
-                )}
-
-                {isBasketball && (
-                  <div className="w-11 h-8 rounded-md bg-warning text-[#0b0d14] flex items-center justify-center font-bold text-sm">
-                    {basketballScore[1]}
-                  </div>
-                )}
-
-                {isFootball && (
-                  <div className="w-9 h-8 rounded-md bg-success text-[#0b0d14] flex items-center justify-center font-bold text-sm">
-                    {footballScore[1]}
-                  </div>
-                )}
-              </div>
-            </div>
+            {renderTeamRow(0)}
+            {renderTeamRow(1)}
           </div>
 
           {/* Bottom Game Context Strip */}
-          {(isBasketball || isTennisOrPadel) && (
-            <div className="px-4 py-1 bg-black/50 border-t border-white/10 flex items-center justify-between text-[9px] font-bold text-slate-400">
+          {(isBasketball || (isTennisOrPadel && (setsData.length > 0 || isGoldenPoint))) && (
+            <div className="px-4 py-1.5 bg-surface-container-high/60 border-t border-outline-variant flex items-center justify-between text-[11px] font-medium text-text-muted">
               {isBasketball && (
-                <span>Period: <strong className="text-white">{currentPeriod}</strong></span>
+                <span>
+                  Period: <span className="text-text-primary font-semibold">{currentPeriod}</span>
+                </span>
               )}
               {isTennisOrPadel && setsData.length > 0 && (
                 <div className="flex items-center gap-2">
                   <span>Previous Sets:</span>
                   {setsData.map((s: any, idx: number) => (
-                    <span key={idx} className="text-slate-300 font-mono">
+                    <span key={idx} className="text-text-secondary font-mono tabular-nums">
                       {s.team1 ?? s.home ?? 0}-{s.team2 ?? s.away ?? 0}
                     </span>
                   ))}
                 </div>
               )}
               {isGoldenPoint && (
-                <span className="text-amber-400 font-black uppercase tracking-wider">
-                  ★ Golden Point Active
+                <span className="text-text-primary font-medium">
+                  Golden Point
                 </span>
               )}
             </div>

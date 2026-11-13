@@ -1,20 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 
 export default function TermsPage() {
   const { locale } = useTranslation();
-  const [selectedLang, setSelectedLang] = useState<"en" | "pt">(locale === "pt" ? "pt" : "en");
-
-  const isPt = selectedLang === "pt";
+  const isPt = locale === "pt";
 
   return (
-    <div className="min-h-screen bg-background text-text-primary font-sans p-4 sm:p-8 pt-20 sm:pt-24">
+    <div className="min-h-screen bg-background text-text-primary font-sans py-6 sm:py-8 px-4 sm:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Navigation / Header */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8 pb-4 border-b border-outline-variant">
+        <div className="flex items-center mb-6 pb-4 border-b border-outline-variant">
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 text-xs font-medium text-text-muted hover:text-text-primary transition-colors"
@@ -22,38 +19,10 @@ export default function TermsPage() {
             <span className="material-symbols-outlined text-[16px] leading-none">arrow_back</span>
             <span>{isPt ? "Voltar ao ScoreBoard" : "Back to ScoreBoard"}</span>
           </Link>
-
-          {/* Language Switcher */}
-          <div className="flex items-center gap-1 p-0.5 bg-surface-container-low border border-outline-variant rounded-lg">
-            <button
-              onClick={() => setSelectedLang("en")}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
-                selectedLang === "en"
-                  ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
-                  : "text-text-muted hover:text-text-primary"
-              }`}
-            >
-              EN
-            </button>
-            <button
-              onClick={() => setSelectedLang("pt")}
-              className={`px-3 py-1 text-xs font-medium rounded-md transition-colors cursor-pointer ${
-                selectedLang === "pt"
-                  ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
-                  : "text-text-muted hover:text-text-primary"
-              }`}
-            >
-              PT
-            </button>
-          </div>
         </div>
 
         {/* Title & Meta */}
         <div className="mb-8">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-surface-container text-text-secondary border border-outline-variant mb-2">
-            <span className="material-symbols-outlined text-[13px] text-text-muted leading-none">gavel</span>
-            <span>{isPt ? "Termos Oficiais de Serviço & Privacidade" : "Official Terms of Service & Privacy"}</span>
-          </div>
           <h1 className="text-2xl sm:text-3xl font-semibold text-text-primary tracking-tight">
             {isPt ? "Termos & Condições de Utilização" : "Terms & Conditions of Service"}
           </h1>
@@ -234,16 +203,6 @@ export default function TermsPage() {
               <p>Privacy & Data Protection: <span className="text-text-primary">privacy@scoreboard.app</span></p>
             </div>
           </section>
-        </div>
-
-        {/* Footer Back */}
-        <div className="mt-8 text-center">
-          <Link
-            href="/"
-            className="text-xs text-text-muted hover:text-text-primary transition-colors"
-          >
-            © 2026 ScoreBoard. {isPt ? "Todos os direitos reservados." : "All rights reserved."}
-          </Link>
         </div>
       </div>
     </div>

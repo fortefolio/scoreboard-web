@@ -26,7 +26,7 @@ export default function ConfirmationModal({
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] animate-in fade-in duration-200">
       <div className="bg-surface-container rounded-2xl p-6 sm:p-7 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-outline-variant animate-in zoom-in-95 duration-200">
-        <h2 className={`text-lg sm:text-xl font-semibold mb-2 tracking-tight ${isDanger ? 'text-error' : 'text-text-primary'}`}>
+        <h2 className="text-lg sm:text-xl font-semibold mb-2 tracking-tight text-text-primary">
           {title}
         </h2>
         <p className="text-text-muted text-xs sm:text-sm mb-6 leading-relaxed">
@@ -36,7 +36,7 @@ export default function ConfirmationModal({
         <div className="flex gap-3">
           <button 
             onClick={onClose} 
-            className="flex-1 py-2.5 px-4 bg-transparent hover:bg-surface-container-high border border-outline-variant text-text-secondary rounded-lg font-medium text-xs transition-colors"
+            className="flex-1 py-2.5 px-4 bg-transparent hover:bg-surface-container-high border border-outline-variant text-text-secondary rounded-lg font-medium text-xs transition-colors cursor-pointer"
           >
             {cancelText}
           </button>
@@ -47,7 +47,7 @@ export default function ConfirmationModal({
             }} 
             className={`flex-1 py-2.5 px-4 rounded-lg font-medium text-xs transition-colors cursor-pointer ${
               isDanger 
-                ? 'bg-error hover:bg-error/90 text-white' 
+                ? 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 border border-rose-500/30' 
                 : 'bg-text-primary hover:bg-white text-surface-container-lowest'
             }`}
           >

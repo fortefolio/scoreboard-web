@@ -63,7 +63,7 @@ function ParticipantsContent() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-text-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -111,7 +111,7 @@ function ParticipantsContent() {
         <div className="mt-8 text-center">
           <Link 
             href={`/tournament/${tournamentId}/signup`}
-            className="text-primary hover:underline text-xs font-medium inline-flex items-center gap-1.5"
+            className="text-text-secondary hover:text-text-primary hover:underline text-xs font-medium inline-flex items-center gap-1.5"
           >
             <span className="material-symbols-outlined text-sm">how_to_reg</span>
             Back to Registration
@@ -126,7 +126,7 @@ export default function PublicParticipantsPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-text-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     }>
       <ParticipantsContent />

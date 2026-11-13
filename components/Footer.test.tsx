@@ -19,7 +19,7 @@ function renderFooter() {
 }
 
 describe("Footer Component", () => {
-  it("renders global branding, nav links, status, and copyright on standard pages", () => {
+  it("renders global branding, nav links, and copyright on standard pages", () => {
     mockPathname = "/";
     renderFooter();
 
@@ -28,7 +28,7 @@ describe("Footer Component", () => {
     expect(screen.getByRole("link", { name: /^Tournaments$/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Terms & Privacy/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /^Settings$/i })).toBeInTheDocument();
-    expect(screen.getByText(/SYSTEM OPERATIONAL/i)).toBeInTheDocument();
+    expect(screen.getByText(/All rights reserved/i)).toBeInTheDocument();
   });
 
   it("hides completely on live broadcast overlay routes", () => {

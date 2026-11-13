@@ -373,7 +373,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-text-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -394,7 +394,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-text-primary font-sans p-4 sm:p-8 pt-20 sm:pt-24">
+    <div className="min-h-screen bg-background text-text-primary font-sans py-6 sm:py-8 px-4 sm:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Navigation Breadcrumb / Back Link */}
         <div className="mb-6">
@@ -833,14 +833,6 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
-
-        {/* Footer Legal Link */}
-        <div className="mt-8 pt-4 border-t border-outline-variant flex justify-between items-center text-xs text-text-muted">
-          <span>ScoreBoard</span>
-          <Link href="/terms" target="_blank" className="hover:text-text-primary transition-colors underline">
-            {locale === "pt" ? "Termos & Condições / Política RGPD" : "Terms & Conditions / GDPR Policy"}
-          </Link>
-        </div>
       </div>
 
       {/* UPGRADE / PAYWALL MODAL */}

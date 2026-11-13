@@ -30,6 +30,7 @@ export default function NotificationBell() {
   const { 
     notifications, 
     unreadCount, 
+    pendingInvitationMatchIds,
     markAsRead, 
     markAllAsRead,
     handleInvitation
@@ -133,7 +134,7 @@ export default function NotificationBell() {
                       </div>
                       
                       <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-                        {isInvitation && isUnread ? (
+                        {isInvitation && matchId && pendingInvitationMatchIds.has(matchId) ? (
                           <>
                             <button 
                               onClick={() => handleInvitation(n.id, matchId, 'accept')}
@@ -159,7 +160,7 @@ export default function NotificationBell() {
                     </div>
 
                     {/* Notification Title */}
-                    <h4 className={`text-xs font-semibold leading-snug line-clamp-2 ${isUnread ? "text-text-primary group-hover:text-primary transition-colors" : "text-text-secondary"}`}>
+                    <h4 className={`text-xs font-semibold leading-snug line-clamp-2 ${isUnread ? "text-text-primary group-hover:text-white transition-colors" : "text-text-secondary"}`}>
                       {formatVersusTitle(isInvitation ? (matchDetails.teams || n.title) : n.title)}
                     </h4>
                   </div>

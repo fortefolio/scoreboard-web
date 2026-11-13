@@ -64,12 +64,8 @@ export default function Footer() {
             </Link>
           </nav>
 
-          {/* Telemetry Status & Copyright */}
-          <div className="flex flex-col items-center md:items-end gap-1.5 text-center md:text-right">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-md bg-surface-container text-[11px] font-mono text-text-secondary border border-outline-variant">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{t("footer.statusOnline")}</span>
-            </div>
+          {/* Copyright */}
+          <div className="flex flex-col items-center md:items-end text-center md:text-right">
             <p className="font-mono text-[11px] text-text-tertiary">
               © {currentYear} ScoreBoard · {t("footer.allRightsReserved")}
             </p>

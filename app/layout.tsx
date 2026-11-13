@@ -80,7 +80,26 @@ export default function RootLayout({
             <Suspense fallback={null}>
               <BottomTabBar />
             </Suspense>
-            <Toaster richColors position="bottom-right" closeButton />
+            <Toaster
+              theme="dark"
+              position="bottom-right"
+              closeButton
+              toastOptions={{
+                classNames: {
+                  toast:
+                    "!bg-surface-container !border !border-outline-variant !text-text-primary !rounded-xl !shadow-2xl !font-sans",
+                  title: "!text-xs !font-medium !text-text-primary",
+                  description: "!text-xs !text-text-muted",
+                  closeButton:
+                    "!bg-surface-container-high !border-outline-variant !text-text-muted hover:!text-text-primary",
+                  error: "!border-rose-500/30",
+                  actionButton:
+                    "!bg-text-primary !text-surface-container-lowest !text-xs !font-medium !rounded-lg",
+                  cancelButton:
+                    "!bg-surface-container-high !text-text-secondary !text-xs !font-medium !rounded-lg",
+                },
+              }}
+            />
           </AuthProvider>
         </LanguageProvider>
       </body>

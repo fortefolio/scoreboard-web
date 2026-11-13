@@ -3,8 +3,16 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
-import SportIcon from "@/components/SportIcon";
+import {
+  ScoreboardHeader,
+  ScoreboardMainCard,
+  ScoreboardSummaryCard,
+  ScoreboardFinalizeButton,
+  ScoreboardActionButton,
+  ScoreboardTeamColumn,
+} from "@/components/scoreboard/ScoreboardLayout";
 import { recordMatchEventAtomic } from "@/lib/scoring/atomicScoring";
+import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 export default function FootballScoreboard({ 
   matchData, 
@@ -13,6 +21,7 @@ export default function FootballScoreboard({
   matchData: any; 
   canEdit: boolean;
 }) {
+  const { t, translations, locale } = useTranslation();
   // Scoring & Match State
   const [goals, setGoals] = useState({ home: 0, away: 0 });
   const [period, setPeriod] = useState("1ª Parte");
@@ -252,151 +261,156 @@ export default function FootballScoreboard({
     }
   };
 
-  return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col items-center">
-      {/* Top Banner / Match Info */}
-      <div className="w-full bg-surface-container rounded-xl border border-outline-variant p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center">
-            <SportIcon sport="Football" className="w-4 h-4 text-text-primary" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-text-secondary">
-                Futebol
+  const renderTeamColumn = (side: "home" | "away") => {
+    const isHome = side === "home";
+    const teamName = isHome ? teamHome : teamAway;
+    const teamGoals = isHome ? goals.home : goals.away;
+    const teamYellows = isHome ? yellowCards.home : yellowCards.away;
+    const teamReds = isHome ? redCards.home : redCards.away;
+    const teamCorners = isHome ? corners.home : corners.away;
+    const teamFouls = isHome ? fouls.home : fouls.away;
+
+    return (
+      <ScoreboardTeamColumn
+        teamName={teamName}
+        subLabel={
+          <span className="inline-flex items-center text-text-muted text-xs font-medium px-2 py-0.5">
+            {isHome ? (locale === "pt" ? "Casa" : "Home") : (locale === "pt" ? "Visitante" : "Away")}
+          </span>
+        }
+        score={teamGoals}
+        pills={
+          <>
+            {teamYellows > 0 && (
+              <span className="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300 border border-amber-500/30 font-medium flex items-center gap-1">
+                <span className="w-2 h-3 bg-amber-400 rounded-xs inline-block" />
+                <span className="font-digital text-sm compact:text-xs">{teamYellows}</span>
               </span>
-              <span className="text-xs text-text-muted">
-                • {matchData?.tournaments?.name || "Jogo Isolado"}
+            )}
+            {teamReds > 0 && (
+              <span className="px-2 py-0.5 rounded-md bg-rose-500/15 text-rose-300 border border-rose-500/30 font-medium flex items-center gap-1">
+                <span className="w-2 h-3 bg-rose-500 rounded-xs inline-block" />
+                <span className="font-digital text-sm compact:text-xs">{teamReds}</span>
               </span>
-            </div>
-            <h2 className="text-sm font-semibold text-text-primary mt-0.5">
-              {teamHome} <span className="text-text-muted font-normal">vs</span> {teamAway}
-            </h2>
-          </div>
+            )}
+            <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+              {locale === "pt" ? "Cantos:" : "Corners:"} <span className="font-digital text-sm compact:text-xs text-text-primary">{teamCorners}</span>
+            </span>
+            <span className="px-2 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant font-medium">
+              {translations.scoreboard.foulsShort} <span className="font-digital text-sm compact:text-xs text-text-primary">{teamFouls}</span>
+            </span>
+          </>
+        }
+      />
+    );
+  };
+
+  const renderTeamActions = (side: "home" | "away") => {
+    const teamGoals = side === "home" ? goals.home : goals.away;
+    return (
+      <div className="flex flex-col items-center gap-2 landscape-compact:gap-1 w-full mt-3 landscape-compact:mt-0">
+        <div className="flex landscape-compact:flex-col items-center gap-2 landscape-compact:gap-1 w-full landscape-compact:w-auto">
+          <ScoreboardActionButton
+            variant="primary"
+            onClick={() => handleGoal(side, 1)}
+            className="flex-1"
+            title={translations.scoreboard.football.plusGoal}
+          >
+            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]">add</span>
+            <span className="landscape-compact:hidden">{translations.scoreboard.football.plusGoal}</span>
+            <span className="hidden landscape-compact:inline">{locale === "pt" ? "Golo" : "Goal"}</span>
+          </ScoreboardActionButton>
+          <ScoreboardActionButton
+            variant="secondary"
+            onClick={() => handleGoal(side, -1)}
+            disabled={teamGoals <= 0}
+            title={translations.scoreboard.undo}
+          >
+            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]">undo</span>
+            <span>{translations.scoreboard.undo}</span>
+          </ScoreboardActionButton>
         </div>
 
-        {/* Period Selector Tabs */}
-        <div className="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg border border-outline-variant">
-          {["1ª Parte", "Intervalo", "2ª Parte", "Prol.", "Penáltis", "Fim"].map((p) => (
-            <button
-              key={p}
-              onClick={() => changePeriod(p === "Prol." ? "Prolongamento" : p)}
-              disabled={!canEdit}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
-                (period === p || (p === "Prol." && period === "Prolongamento"))
-                  ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
-                  : "text-text-muted hover:text-text-primary"
-              } ${!canEdit ? "cursor-default" : "cursor-pointer"}`}
-            >
-              {p}
-            </button>
-          ))}
+        <div className="grid grid-cols-4 landscape-compact:grid-cols-1 gap-1.5 landscape-compact:gap-1 w-full landscape-compact:w-auto">
+          <ScoreboardActionButton
+            variant="warning"
+            onClick={() => handleCard(side, "yellow")}
+            title={translations.scoreboard.football.yellowCard}
+          >
+            <span className="landscape-compact:hidden">{translations.scoreboard.football.yellowCard}</span>
+            <span className="hidden landscape-compact:inline">{locale === "pt" ? "Am" : "YC"}</span>
+          </ScoreboardActionButton>
+          <ScoreboardActionButton
+            variant="danger"
+            onClick={() => handleCard(side, "red")}
+            title={translations.scoreboard.football.redCard}
+          >
+            <span className="landscape-compact:hidden">{translations.scoreboard.football.redCard}</span>
+            <span className="hidden landscape-compact:inline">{locale === "pt" ? "Vm" : "RC"}</span>
+          </ScoreboardActionButton>
+          <ScoreboardActionButton
+            variant="secondary"
+            onClick={() => handleStat(side, "corner")}
+            title={translations.scoreboard.football.plusCorner}
+          >
+            <span className="landscape-compact:hidden">{translations.scoreboard.football.plusCorner}</span>
+            <span className="hidden landscape-compact:inline">+C</span>
+          </ScoreboardActionButton>
+          <ScoreboardActionButton
+            variant="secondary"
+            onClick={() => handleStat(side, "foul")}
+            title={translations.scoreboard.football.plusFoul}
+          >
+            <span className="landscape-compact:hidden">{translations.scoreboard.football.plusFoul}</span>
+            <span className="hidden landscape-compact:inline">+F</span>
+          </ScoreboardActionButton>
         </div>
       </div>
+    );
+  };
+
+  return (
+    <div className="w-full max-w-5xl mx-auto flex flex-col items-center flex-1 min-h-0">
+      {/* Top Banner / Match Info */}
+      <ScoreboardHeader
+        sportType="Football"
+        sportLabel={getSportTranslation("Football", t)}
+        eventName={matchData?.tournaments?.name || (locale === "pt" ? "Jogo Isolado" : "Single Match")}
+        teamHome={teamHome}
+        teamAway={teamAway}
+        rightSlot={
+          <div className="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg border border-outline-variant">
+            {["1ª Parte", "Intervalo", "2ª Parte", "Prol.", "Penáltis", "Fim"].map((p) => (
+              <button
+                key={p}
+                onClick={() => changePeriod(p === "Prol." ? "Prolongamento" : p)}
+                disabled={!canEdit}
+                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${
+                  period === p || (p === "Prol." && period === "Prolongamento")
+                    ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
+                    : "text-text-muted hover:text-text-primary"
+                } ${!canEdit ? "cursor-default" : "cursor-pointer"}`}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        }
+      />
 
       {/* Main Scoreboard Display (3 Columns) */}
-      <div className="w-full bg-surface-container rounded-2xl border border-outline-variant p-6 md:p-8 relative overflow-hidden mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-          
-          {/* HOME TEAM */}
-          <div className="flex flex-col items-center text-center order-2 md:order-1">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="w-2 h-2 rounded-full bg-primary" />
-              <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
-                {teamHome}
-              </h2>
-            </div>
-
-            {/* Sub-label row */}
-            <div className="h-6 flex items-center mb-3">
-              <span className="inline-flex items-center text-text-muted text-xs font-medium px-2 py-0.5">
-                Casa
-              </span>
-            </div>
-
-            {/* Home Discipline Pills */}
-            <div className="flex items-center gap-2 text-xs mb-3">
-              {yellowCards.home > 0 && (
-                <span className="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-xs font-medium flex items-center gap-1">
-                  <span className="w-2 h-3 bg-amber-400 rounded-xs inline-block" />
-                  <span className="font-digital text-sm">{yellowCards.home}</span>
-                </span>
-              )}
-              {redCards.home > 0 && (
-                <span className="px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30 text-xs font-medium flex items-center gap-1">
-                  <span className="w-2 h-3 bg-rose-500 rounded-xs inline-block" />
-                  <span className="font-digital text-sm">{redCards.home}</span>
-                </span>
-              )}
-              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant text-xs font-medium">
-                Cantos: <span className="font-digital text-sm text-text-primary">{corners.home}</span> • Faltas: <span className="font-digital text-sm text-text-primary">{fouls.home}</span>
-              </span>
-            </div>
-
-            {/* Home Big Score (Goals) */}
-            <div className="text-7xl sm:text-8xl md:text-9xl font-digital text-text-primary tracking-wider my-2 select-none">
-              {goals.home}
-            </div>
-
-            {/* Quick Scoring & Action Buttons */}
-            {canEdit && (
-              <div className="flex flex-col gap-2 w-full max-w-xs mt-3">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleGoal("home", 1)}
-                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
-                    title="Registar Golo (+1)"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">sports_soccer</span>
-                    Golo
-                  </button>
-                  <button
-                    onClick={() => handleGoal("home", -1)}
-                    disabled={goals.home <= 0}
-                    className="bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-2 px-3 rounded-lg font-medium text-xs border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1"
-                    title="Anular Golo (-1)"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">undo</span>
-                    -1
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-4 gap-1.5">
-                  <button
-                    onClick={() => handleCard("home", "yellow")}
-                    className="h-8 bg-surface-container-high hover:bg-amber-500/20 text-amber-300 border border-outline-variant rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
-                    title="Cartão Amarelo"
-                  >
-                    Amarelo
-                  </button>
-                  <button
-                    onClick={() => handleCard("home", "red")}
-                    className="h-8 bg-surface-container-high hover:bg-rose-500/20 text-rose-300 border border-outline-variant rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
-                    title="Cartão Vermelho"
-                  >
-                    Vermelho
-                  </button>
-                  <button
-                    onClick={() => handleStat("home", "corner")}
-                    className="h-8 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-text-primary rounded-lg border border-outline-variant text-[11px] font-medium transition-colors cursor-pointer"
-                    title="+1 Canto"
-                  >
-                    + Canto
-                  </button>
-                  <button
-                    onClick={() => handleStat("home", "foul")}
-                    className="h-8 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-text-primary rounded-lg border border-outline-variant text-[11px] font-medium transition-colors cursor-pointer"
-                    title="+1 Falta"
-                  >
-                    + Falta
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* CENTER: MATCH CLOCK & PERIOD */}
-          <div className="flex flex-col items-center text-center order-1 md:order-2 py-4">
+      <ScoreboardMainCard
+        compactHeader={{
+          sportType: "Football",
+          sportLabel: getSportTranslation("Football", t),
+          eventName: matchData?.tournaments?.name || (locale === "pt" ? "Jogo Isolado" : "Single Match"),
+          statusBadge: period,
+          onFinish: canEdit ? handleFinalizeMatch : undefined,
+        }}
+        left={renderTeamColumn("home")}
+        leftActions={canEdit ? renderTeamActions("home") : undefined}
+        center={
+          <div className="flex flex-col items-center text-center order-1 md:order-2 py-4 compact:py-0">
             <span className="text-xs font-medium text-text-muted mb-1.5">
               {period}
             </span>
@@ -414,8 +428,8 @@ export default function FootballScoreboard({
 
             {/* Stoppage Time Badge */}
             {stoppageMinutes > 0 && (
-              <span className="mt-1 text-xs font-digital text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-md border border-amber-500/20">
-                +{stoppageMinutes} min compensação
+              <span className="mt-1 text-xs font-digital text-text-secondary bg-surface-container-high px-2.5 py-0.5 rounded-md border border-outline-variant">
+                {translations.scoreboard.football.stoppageShort.replace("{min}", String(stoppageMinutes))}
               </span>
             )}
 
@@ -424,18 +438,18 @@ export default function FootballScoreboard({
               <div className="flex items-center gap-2 mt-3">
                 <button
                   onClick={toggleClock}
-                  className={`h-8 px-3.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  className={`h-8 px-3.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
                     isClockRunning
-                      ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                      : "bg-primary text-on-primary hover:bg-primary/90"
+                      ? "bg-surface-container-high text-text-primary border border-outline-variant"
+                      : "bg-text-primary text-surface-container-lowest hover:opacity-90"
                   }`}
                 >
                   <span className="material-symbols-outlined text-sm">
                     {isClockRunning ? "pause" : "play_arrow"}
                   </span>
-                  {isClockRunning ? "Pausar" : "Iniciar"}
+                  {isClockRunning ? (locale === "pt" ? "Pausar" : "Pause") : (locale === "pt" ? "Iniciar" : "Start")}
                 </button>
-                
+
                 <button
                   onClick={() => {
                     const nextStoppage = (stoppageMinutes + 1) % 10;
@@ -462,111 +476,13 @@ export default function FootballScoreboard({
               </div>
             )}
           </div>
-
-          {/* AWAY TEAM */}
-          <div className="flex flex-col items-center text-center order-3">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="w-2 h-2 rounded-full bg-secondary" />
-              <h2 className="text-lg md:text-xl font-semibold text-text-primary truncate max-w-[240px]">
-                {teamAway}
-              </h2>
-            </div>
-
-            {/* Sub-label row */}
-            <div className="h-6 flex items-center mb-3">
-              <span className="inline-flex items-center text-text-muted text-xs font-medium px-2 py-0.5">
-                Visitante
-              </span>
-            </div>
-
-            {/* Away Discipline Pills */}
-            <div className="flex items-center gap-2 text-xs mb-3">
-              {yellowCards.away > 0 && (
-                <span className="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-xs font-medium flex items-center gap-1">
-                  <span className="w-2 h-3 bg-amber-400 rounded-xs inline-block" />
-                  <span className="font-digital text-sm">{yellowCards.away}</span>
-                </span>
-              )}
-              {redCards.away > 0 && (
-                <span className="px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30 text-xs font-medium flex items-center gap-1">
-                  <span className="w-2 h-3 bg-rose-500 rounded-xs inline-block" />
-                  <span className="font-digital text-sm">{redCards.away}</span>
-                </span>
-              )}
-              <span className="px-2.5 py-0.5 rounded-md bg-surface-container-high text-text-secondary border border-outline-variant text-xs font-medium">
-                Cantos: <span className="font-digital text-sm text-text-primary">{corners.away}</span> • Faltas: <span className="font-digital text-sm text-text-primary">{fouls.away}</span>
-              </span>
-            </div>
-
-            {/* Away Big Score (Goals) */}
-            <div className="text-7xl sm:text-8xl md:text-9xl font-digital text-text-primary tracking-wider my-2 select-none">
-              {goals.away}
-            </div>
-
-            {/* Quick Scoring & Action Buttons */}
-            {canEdit && (
-              <div className="flex flex-col gap-2 w-full max-w-xs mt-3">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleGoal("away", 1)}
-                    className="flex-1 bg-primary hover:bg-primary/90 text-white py-2 px-3 rounded-lg font-medium text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer shadow-sm"
-                    title="Registar Golo (+1)"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">sports_soccer</span>
-                    Golo
-                  </button>
-                  <button
-                    onClick={() => handleGoal("away", -1)}
-                    disabled={goals.away <= 0}
-                    className="bg-surface-container-high hover:bg-surface-container-highest text-text-secondary py-2 px-3 rounded-lg font-medium text-xs border border-outline-variant transition-colors disabled:opacity-40 cursor-pointer flex items-center gap-1"
-                    title="Anular Golo (-1)"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">undo</span>
-                    -1
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-4 gap-1.5">
-                  <button
-                    onClick={() => handleCard("away", "yellow")}
-                    className="h-8 bg-surface-container-high hover:bg-amber-500/20 text-amber-300 border border-outline-variant rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
-                    title="Cartão Amarelo"
-                  >
-                    Amarelo
-                  </button>
-                  <button
-                    onClick={() => handleCard("away", "red")}
-                    className="h-8 bg-surface-container-high hover:bg-rose-500/20 text-rose-300 border border-outline-variant rounded-lg text-[11px] font-medium transition-colors cursor-pointer"
-                    title="Cartão Vermelho"
-                  >
-                    Vermelho
-                  </button>
-                  <button
-                    onClick={() => handleStat("away", "corner")}
-                    className="h-8 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-text-primary rounded-lg border border-outline-variant text-[11px] font-medium transition-colors cursor-pointer"
-                    title="+1 Canto"
-                  >
-                    + Canto
-                  </button>
-                  <button
-                    onClick={() => handleStat("away", "foul")}
-                    className="h-8 bg-surface-container-high hover:bg-surface-container-highest text-text-secondary hover:text-text-primary rounded-lg border border-outline-variant text-[11px] font-medium transition-colors cursor-pointer"
-                    title="+1 Falta"
-                  >
-                    + Falta
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+        }
+        right={renderTeamColumn("away")}
+        rightActions={canEdit ? renderTeamActions("away") : undefined}
+      />
 
       {/* Match Statistics & Summary Table */}
-      <div className="w-full bg-surface-container rounded-2xl border border-outline-variant overflow-hidden p-5 mb-6">
-        <h3 className="text-xs font-semibold uppercase tracking-wider text-text-muted mb-4">
-          Estatísticas Oficiais do Encontro
-        </h3>
+      <ScoreboardSummaryCard title="Estatísticas Oficiais do Encontro">
         <div className="overflow-x-auto">
           <table className="w-full text-center text-sm">
             <thead>
@@ -581,43 +497,33 @@ export default function FootballScoreboard({
             </thead>
             <tbody className="divide-y divide-outline-variant font-digital text-base">
               <tr>
-                <td className="py-3 px-4 text-left font-sans text-text-primary font-medium flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-primary" />
+                <td className="py-3 px-4 text-left font-sans text-text-primary font-medium">
                   {teamHome}
                 </td>
-                <td className="py-3 px-3 text-primary font-semibold text-lg">{goals.home}</td>
-                <td className="py-3 px-3 text-amber-400">{yellowCards.home}</td>
-                <td className="py-3 px-3 text-rose-400">{redCards.home}</td>
+                <td className="py-3 px-3 text-text-primary font-semibold text-lg">{goals.home}</td>
+                <td className="py-3 px-3 text-text-secondary">{yellowCards.home}</td>
+                <td className="py-3 px-3 text-text-secondary">{redCards.home}</td>
                 <td className="py-3 px-3 text-text-secondary">{corners.home}</td>
                 <td className="py-3 px-3 text-text-secondary">{fouls.home}</td>
               </tr>
               <tr>
-                <td className="py-3 px-4 text-left font-sans text-text-primary font-medium flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-secondary" />
+                <td className="py-3 px-4 text-left font-sans text-text-primary font-medium">
                   {teamAway}
                 </td>
-                <td className="py-3 px-3 text-secondary font-semibold text-lg">{goals.away}</td>
-                <td className="py-3 px-3 text-amber-400">{yellowCards.away}</td>
-                <td className="py-3 px-3 text-rose-400">{redCards.away}</td>
+                <td className="py-3 px-3 text-text-primary font-semibold text-lg">{goals.away}</td>
+                <td className="py-3 px-3 text-text-secondary">{yellowCards.away}</td>
+                <td className="py-3 px-3 text-text-secondary">{redCards.away}</td>
                 <td className="py-3 px-3 text-text-secondary">{corners.away}</td>
                 <td className="py-3 px-3 text-text-secondary">{fouls.away}</td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div>
+      </ScoreboardSummaryCard>
 
       {/* Bottom Controls / Finalize */}
       {canEdit && (
-        <div className="w-full flex justify-end gap-3">
-          <button
-            onClick={handleFinalizeMatch}
-            className="h-9 px-4 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5"
-          >
-            <span className="material-symbols-outlined text-[16px]">check_circle</span>
-            Terminar Jogo
-          </button>
-        </div>
+        <ScoreboardFinalizeButton onClick={handleFinalizeMatch} label={translations.scoreboard.endMatch} />
       )}
     </div>
   );

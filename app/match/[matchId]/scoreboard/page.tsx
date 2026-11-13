@@ -13,6 +13,7 @@ import FootballScoreboard from "./FootballScoreboard";
 import BasketballScoreboard from "./BasketballScoreboard";
 import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
 import StreamOverlayModal from "@/components/match/StreamOverlayModal";
+import { ScoreboardProvider } from "@/components/scoreboard/ScoreboardLayout";
 
 function ScoreboardContent() {
   const { matchId } = useParams();
@@ -122,12 +123,12 @@ function ScoreboardContent() {
   if (!match || !rules) return <div className="p-10 text-white bg-gray-950 min-h-screen text-center">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-transparent text-on-background p-4 md:p-6 flex flex-col items-center relative">
+    <div className="flex-1 min-h-0 bg-transparent text-on-background p-4 md:p-6 compact:p-2 flex flex-col items-center relative overflow-hidden">
       <MatchAtmosphereBackground
         sportType={match.sport_type}
         mode={canEdit ? "umpire" : "spectator"}
       />
-      <div className="w-full max-w-5xl mb-6 flex items-center justify-between relative z-10">
+      <div className="w-full max-w-5xl mb-6 compact:hidden flex items-center justify-between relative z-10 shrink-0">
         <button 
           onClick={() => router.push(`/match/${matchIdStr}`)}
           className="text-text-muted hover:text-text-primary text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
@@ -135,54 +136,59 @@ function ScoreboardContent() {
           <span className="material-symbols-outlined text-sm">arrow_back</span>
           Match Overview
         </button>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3">
           <button
             onClick={() => setIsStreamModalOpen(true)}
-            className="px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-text-primary border border-outline-variant text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-2.5 md:px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-text-secondary hover:text-text-primary border border-outline-variant text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
             title="OBS / vMix Overlay"
           >
             <span className="material-symbols-outlined text-[16px]">podcasts</span>
-            <span>OBS Overlay</span>
+            <span className="hidden sm:inline">OBS Overlay</span>
           </button>
           <OfflineSyncBadge matchId={matchIdStr} />
         </div>
       </div>
 
-      <div className="w-full max-w-5xl relative z-10 flex flex-col items-center">
-        {match.sport_type === 'Basketball' && (
-          <BasketballScoreboard 
-            matchData={match} 
-            canEdit={canEdit} 
-            rules={rules} 
-          />
-        )}
+      <ScoreboardProvider
+        onBack={() => router.push(`/match/${matchIdStr}`)}
+        onOpenObs={() => setIsStreamModalOpen(true)}
+      >
+        <div className="w-full max-w-5xl relative z-10 flex flex-col items-center flex-1 min-h-0">
+          {match.sport_type === 'Basketball' && (
+            <BasketballScoreboard 
+              matchData={match} 
+              canEdit={canEdit} 
+              rules={rules} 
+            />
+          )}
 
-        {match.sport_type === 'Football' && (
-          <FootballScoreboard 
-            matchData={match} 
-            canEdit={canEdit} 
-          />
-        )}
+          {match.sport_type === 'Football' && (
+            <FootballScoreboard 
+              matchData={match} 
+              canEdit={canEdit} 
+            />
+          )}
 
-        {(match.sport_type === 'Tennis' || match.sport_type === 'Padel') && (
-          <TennisScoreboard 
-            matchData={match} 
-            rules={rules}
-            canEdit={canEdit} 
-          />
-        )}
+          {(match.sport_type === 'Tennis' || match.sport_type === 'Padel') && (
+            <TennisScoreboard 
+              matchData={match} 
+              rules={rules}
+              canEdit={canEdit}
+            />
+          )}
 
-        {match.sport_type !== 'Basketball' && 
-         match.sport_type !== 'Football' && 
-         match.sport_type !== 'Tennis' && 
-         match.sport_type !== 'Padel' && (
-          <VolleyballScoreboard 
-            matchData={match} 
-            rules={rules} 
-            canEdit={canEdit} 
-          />
-        )}
-      </div>
+          {match.sport_type !== 'Basketball' && 
+           match.sport_type !== 'Football' && 
+           match.sport_type !== 'Tennis' && 
+           match.sport_type !== 'Padel' && (
+            <VolleyballScoreboard 
+              matchData={match} 
+              rules={rules} 
+              canEdit={canEdit} 
+            />
+          )}
+        </div>
+      </ScoreboardProvider>
 
       <StreamOverlayModal
         isOpen={isStreamModalOpen}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -8,6 +8,8 @@ import { useAuth } from "@/components/AuthProvider";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
 import SportIcon from "@/components/SportIcon";
+import DataTable from "@/components/DataTable";
+import { getTournamentColumns } from "@/components/entityTableColumns";
 import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
 
 export default function MyTournamentsPage() {
@@ -22,7 +24,8 @@ function MyTournamentsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, supabase } = useAuth();
-  const { t: tr } = useTranslation();
+  const { t: tr, locale } = useTranslation();
+  const isPt = locale === "pt";
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"list" | "cards">("list");
@@ -30,6 +33,8 @@ function MyTournamentsContent() {
   const [showModal, setShowModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
+  const [tierLoaded, setTierLoaded] = useState(false);
+  const hasHandledCreateParam = useRef(false);
   const [newName, setNewName] = useState("");
   const [newSport, setNewSport] = useState("Tennis");
   const [stage1Type, setStage1Type] = useState<'bracket' | 'groups' | 'double_elimination'>('bracket');
@@ -65,6 +70,7 @@ function MyTournamentsContent() {
 
     if (tRes.data) setTournaments(tRes.data);
     if (uRes.data?.subscription_tier) setSubscriptionTier(uRes.data.subscription_tier);
+    setTierLoaded(true);
     setLoading(false);
   }, [supabase]);
 
@@ -82,17 +88,20 @@ function MyTournamentsContent() {
       return;
     }
     if (subscriptionTier !== "pro") {
+      setShowModal(false);
       setShowUpgradeModal(true);
     } else {
+      setShowUpgradeModal(false);
       setShowModal(true);
     }
   }, [user, subscriptionTier]);
 
   useEffect(() => {
-    if (searchParams.get("create") === "true") {
+    if (searchParams.get("create") === "true" && user && tierLoaded && !hasHandledCreateParam.current) {
+      hasHandledCreateParam.current = true;
       handleOpenCreate();
     }
-  }, [searchParams, handleOpenCreate]);
+  }, [searchParams, user, tierLoaded, handleOpenCreate]);
 
   const handleCreate = async () => {
     if (!user) {
@@ -173,7 +182,7 @@ function MyTournamentsContent() {
     return (
       <div className="min-h-screen bg-background text-on-background p-8 pt-24 max-w-7xl mx-auto flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
+          <div className="w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin mb-3"></div>
           <p className="text-xs text-text-muted">Loading your events...</p>
         </div>
       </div>
@@ -185,9 +194,9 @@ function MyTournamentsContent() {
   return (
     <div className="relative min-h-screen bg-transparent text-on-background">
       {/* ATMOSPHERE BACKGROUND */}
-      <MatchAtmosphereBackground sportType="tennis" mode="spectator" />
+      <MatchAtmosphereBackground sportType="random" mode="spectator" />
 
-      <div className="relative z-10 p-4 sm:p-8 pt-20 sm:pt-24 max-w-7xl mx-auto">
+      <div className="relative z-10 p-4 sm:p-8 max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
@@ -199,13 +208,15 @@ function MyTournamentsContent() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
             <button 
               onClick={handleOpenCreate}
-              className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+              aria-label={tr("common.newTournament")}
+              title={tr("common.newTournament")}
+              className="h-8 w-8 sm:h-auto sm:w-auto sm:px-3.5 sm:py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
             >
               <span className="material-symbols-outlined text-[16px]">add</span>
-              {tr("common.newTournament")}
+              <span className="hidden sm:inline">{tr("common.newTournament")}</span>
             </button>
 
             {/* View Mode Toggle matching reference image */}
@@ -240,7 +251,7 @@ function MyTournamentsContent() {
 
       {loading ? (
         <div className="py-20 text-center">
-          <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <div className="inline-block w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-3 text-text-muted text-xs">Loading tournaments...</p>
         </div>
       ) : tournaments.length === 0 ? (
@@ -318,92 +329,13 @@ function MyTournamentsContent() {
         </div>
       ) : (
         /* Desktop & Mobile Data Table */
-        <div className="w-full bg-surface-container rounded-xl border border-outline-variant overflow-hidden shadow-sm">
-          <div className="w-full overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead className="border-b border-outline-variant bg-surface-container-high/60 text-[11px] font-medium text-text-muted">
-                <tr>
-                  <th className="py-3 px-6">{tr("common.event")}</th>
-                  <th className="py-3 px-4">{tr("common.sport")}</th>
-                  <th className="py-3 px-4">{tr("common.format")}</th>
-                  <th className="py-3 px-4 text-center">{tr("common.status")}</th>
-                  <th className="py-3 px-6 text-right">{tr("common.date")}</th>
-                  <th className="py-3 px-4 text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant text-sm font-sans">
-                {tournaments.map((tItem) => (
-                  <tr
-                    key={tItem.id}
-                    onClick={() => router.push(`/tournament/${tItem.id}`)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        router.push(`/tournament/${tItem.id}`);
-                      }
-                    }}
-                    className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
-                  >
-                    <td className="py-3.5 px-6">
-                      <div className="font-medium text-sm text-text-primary group-hover:text-primary transition-colors">
-                        {tItem.name}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-1.5 text-xs text-text-secondary">
-                        <SportIcon sport={tItem.sport_type} className="text-text-muted text-[16px]" />
-                        <span>{getSportTranslation(tItem.sport_type, tr)}</span>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-xs text-text-muted">
-                      {tItem.settings?.stage_1?.type === "groups"
-                        ? tr("tournament.groupStage")
-                        : tItem.settings?.stage_1?.type === "double_elimination"
-                        ? tr("tournament.doubleElimination")
-                        : tr("tournament.singleElimination")}
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
-                          tItem.status === "completed"
-                            ? "bg-surface-container-high text-text-muted border-outline-variant"
-                            : tItem.status === "ongoing"
-                            ? "bg-surface-container-high text-text-primary border-outline-variant"
-                            : "bg-surface-container-high text-text-secondary border-outline-variant"
-                        }`}
-                      >
-                        {tItem.status === "ongoing" && (
-                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                        )}
-                        <span>{tItem.status === "completed" ? tr("status.completed") : tItem.status === "ongoing" ? tr("status.live") : tr("status.scheduled")}</span>
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-6 text-right font-mono text-xs text-text-muted">
-                      {tItem.start_date
-                        ? new Date(tItem.start_date).toLocaleDateString(undefined, {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })
-                        : "-"}
-                    </td>
-                    <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                      <Link
-                        href={`/tournament/${tItem.id}`}
-                        className="p-1.5 rounded-lg text-text-secondary hover:text-primary hover:bg-surface-container-highest transition-colors inline-flex"
-                        title="View Dashboard"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">visibility</span>
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <DataTable
+          data={tournaments}
+          columns={getTournamentColumns(tr)}
+          getRowKey={(tItem) => tItem.id}
+          onRowClick={(tItem) => router.push(`/tournament/${tItem.id}`)}
+          hideOnMobile={false}
+        />
       )}
 
       {/* UPGRADE / PAYWALL MODAL */}
@@ -421,7 +353,7 @@ function MyTournamentsContent() {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-[100]">
           <div className="bg-surface-container rounded-2xl p-6 sm:p-8 max-w-lg w-full border border-outline-variant shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-text-primary">New Tournament</h2>
+              <h2 className="text-lg font-semibold text-text-primary">{tr("common.newTournament")}</h2>
               <button
                 type="button"
                 onClick={() => {
@@ -436,10 +368,12 @@ function MyTournamentsContent() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-text-muted mb-1.5">Tournament Name</label>
+                <label className="block text-xs font-medium text-text-muted mb-1.5">
+                  {isPt ? "Nome do Torneio" : "Tournament Name"}
+                </label>
                 <input 
                   className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors" 
-                  placeholder="e.g. Summer Open 2026"
+                  placeholder={isPt ? "ex: Open de Verão 2026" : "e.g. Summer Open 2026"}
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
                 />
@@ -447,36 +381,41 @@ function MyTournamentsContent() {
               
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-text-muted mb-1.5">Sport Type</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">
+                    {isPt ? "Modalidade" : "Sport Type"}
+                  </label>
                   <select 
                     className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
                     value={newSport}
                     onChange={e => setNewSport(e.target.value)}
                   >
-                    <option value="Tennis">Tennis</option>
-                    <option value="Padel">Padel</option>
-                    <option value="Basketball">Basketball</option>
-                    <option value="Volleyball">Volleyball</option>
-                    <option value="Beach Volleyball">Beach Volleyball</option>
-                    <option value="Football">Football</option>
+                    {["Tennis", "Padel", "Basketball", "Volleyball", "Beach Volleyball", "Football"].map((s) => (
+                      <option key={s} value={s}>
+                        {getSportTranslation(s, tr)}
+                      </option>
+                    ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-text-muted mb-1.5">Initial Format</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">
+                    {isPt ? "Formato Inicial" : "Initial Format"}
+                  </label>
                   <select
                     className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
                     value={stage1Type}
                     onChange={(e) => setStage1Type(e.target.value as any)}
                   >
-                    <option value="bracket">Single Elimination (Bracket)</option>
-                    <option value="double_elimination">Double Elimination</option>
-                    <option value="groups">Groups + Playoffs</option>
+                    <option value="bracket">{isPt ? "Eliminação Direta (Quadro)" : "Single Elimination (Bracket)"}</option>
+                    <option value="double_elimination">{isPt ? "Dupla Eliminação" : "Double Elimination"}</option>
+                    <option value="groups">{isPt ? "Grupos + Playoffs" : "Groups + Playoffs"}</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-text-muted mb-1.5">Max Teams</label>
+                <label className="block text-xs font-medium text-text-muted mb-1.5">
+                  {isPt ? "Máximo de Equipas" : "Max Teams"}
+                </label>
                 <input 
                   type="number" 
                   value={maxTeams} 
@@ -488,7 +427,9 @@ function MyTournamentsContent() {
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-text-muted mb-1.5">Start Date</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">
+                    {isPt ? "Data de Início" : "Start Date"}
+                  </label>
                   <input 
                     type="date"
                     className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
@@ -497,7 +438,9 @@ function MyTournamentsContent() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-text-muted mb-1.5">End Date</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1.5">
+                    {isPt ? "Data de Fim" : "End Date"}
+                  </label>
                   <input 
                     type="date"
                     className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
@@ -508,36 +451,37 @@ function MyTournamentsContent() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-text-muted mb-1.5">Tournament Visibility</label>
+                <label className="block text-xs font-medium text-text-muted mb-1.5">
+                  {isPt ? "Visibilidade do Torneio" : "Tournament Visibility"}
+                </label>
                 <div className="grid grid-cols-3 gap-2">
-                  <button 
-                    type="button"
-                    onClick={() => setVisibility('public')}
-                    className={`py-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${visibility === 'public' ? 'bg-surface-container-high text-text-primary border-primary/50' : 'bg-surface-container text-text-muted border-outline-variant'}`}
-                  >
-                    Public
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => setVisibility('unlisted')}
-                    className={`py-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${visibility === 'unlisted' ? 'bg-surface-container-high text-text-primary border-primary/50' : 'bg-surface-container text-text-muted border-outline-variant'}`}
-                  >
-                    Unlisted
-                  </button>
-                  <button 
-                    type="button"
-                    onClick={() => setVisibility('private')}
-                    className={`py-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${visibility === 'private' ? 'bg-surface-container-high text-text-primary border-primary/50' : 'bg-surface-container text-text-muted border-outline-variant'}`}
-                  >
-                    Private
-                  </button>
+                  {(
+                    [
+                      { value: "public", label: isPt ? "Público" : "Public" },
+                      { value: "unlisted", label: isPt ? "Não Listado" : "Unlisted" },
+                      { value: "private", label: isPt ? "Privado" : "Private" },
+                    ] as const
+                  ).map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setVisibility(opt.value)}
+                      className={`py-2 rounded-lg border text-xs font-medium transition-colors cursor-pointer ${
+                        visibility === opt.value
+                          ? "bg-surface-container-high text-text-primary border-text-primary/40"
+                          : "bg-surface-container text-text-muted border-outline-variant hover:text-text-secondary"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
                 </div>
                 <p className="mt-1.5 text-[11px] text-text-muted">
                   {visibility === 'public'
-                    ? 'Visible to everyone on the landing page'
+                    ? (isPt ? 'Visível para todos na página inicial' : 'Visible to everyone on the landing page')
                     : visibility === 'unlisted'
-                    ? 'Hidden from landing page; accessible via direct link'
-                    : 'Only visible to you (organizer)'}
+                    ? (isPt ? 'Oculto da página inicial; acessível via link direto' : 'Hidden from landing page; accessible via direct link')
+                    : (isPt ? 'Visível apenas para si (organizador)' : 'Only visible to you (organizer)')}
                 </p>
               </div>
 
@@ -550,14 +494,14 @@ function MyTournamentsContent() {
                   }} 
                   className="px-4 py-2 rounded-lg text-text-muted hover:text-text-primary text-xs font-medium transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {tr("common.cancel")}
                 </button>
                 <button 
                   type="button"
                   onClick={handleCreate} 
                   className="px-4 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest text-xs font-medium transition-colors cursor-pointer shadow-sm"
                 >
-                  Create Tournament
+                  {isPt ? "Criar Torneio" : "Create Tournament"}
                 </button>
               </div>
             </div>

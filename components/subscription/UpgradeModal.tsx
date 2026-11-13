@@ -122,11 +122,7 @@ export default function UpgradeModal({ isOpen, onClose, onSuccess, isAlreadyPro 
         </button>
 
         {/* Header */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-[11px] font-mono text-text-secondary bg-surface-container-high border border-outline-variant mb-2.5">
-            <span className="material-symbols-outlined text-[13px] text-text-muted leading-none">workspace_premium</span>
-            <span>{isPt ? "Plano Pro Organizador" : "Pro Organizer"}</span>
-          </div>
+        <div className="text-center mb-6 pr-6 pl-6">
           <h2 className="text-xl sm:text-2xl font-semibold text-text-primary tracking-tight">
             {isAlreadyPro 
               ? (isPt ? "O seu Plano Pro está Ativo" : "You Are On The Pro Plan")
@@ -149,10 +145,10 @@ export default function UpgradeModal({ isOpen, onClose, onSuccess, isAlreadyPro 
               <button
                 type="button"
                 onClick={() => setBillingCycle("monthly")}
-                className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                className={`flex-1 h-8 text-xs font-medium rounded-lg border transition-colors cursor-pointer flex items-center justify-center ${
                   billingCycle === "monthly"
-                    ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
-                    : "text-text-muted hover:text-text-primary"
+                    ? "bg-surface-container text-text-primary border-outline-variant shadow-sm"
+                    : "border-transparent text-text-muted hover:text-text-primary"
                 }`}
               >
                 {isPt ? "Mensal" : "Monthly"}
@@ -160,14 +156,14 @@ export default function UpgradeModal({ isOpen, onClose, onSuccess, isAlreadyPro 
               <button
                 type="button"
                 onClick={() => setBillingCycle("annual")}
-                className={`flex-1 py-1.5 text-xs font-medium rounded-lg transition-colors relative flex items-center justify-center gap-1.5 cursor-pointer ${
+                className={`flex-1 h-8 text-xs font-medium rounded-lg border transition-colors relative flex items-center justify-center gap-1.5 cursor-pointer ${
                   billingCycle === "annual"
-                    ? "bg-surface-container text-text-primary border border-outline-variant shadow-sm"
-                    : "text-text-muted hover:text-text-primary"
+                    ? "bg-surface-container text-text-primary border-outline-variant shadow-sm"
+                    : "border-transparent text-text-muted hover:text-text-primary"
                 }`}
               >
                 <span>{isPt ? "Anual" : "Annual"}</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-surface-container-high text-text-secondary border border-outline-variant">
+                <span className="text-[10px] font-mono px-1.5 py-0.5 leading-none rounded bg-surface-container-high text-text-secondary border border-outline-variant">
                   -27%
                 </span>
               </button>
@@ -175,11 +171,11 @@ export default function UpgradeModal({ isOpen, onClose, onSuccess, isAlreadyPro 
 
             {/* Price Tag */}
             <div className="text-center mb-6">
-              <div className="flex items-baseline justify-center gap-1.5">
-                <span className="font-mono text-4xl sm:text-5xl font-bold text-text-primary tracking-tight">
+              <div className="flex items-baseline justify-center gap-1.5 min-h-[48px]">
+                <span className="font-mono text-4xl sm:text-5xl font-bold text-text-primary tracking-tight tabular-nums">
                   {billingCycle === "annual" ? "€34.99" : "€3.99"}
                 </span>
-                <span className="font-mono text-xs text-text-muted">
+                <span className="font-mono text-xs text-text-muted whitespace-nowrap">
                   {billingCycle === "annual" 
                     ? (isPt ? "/ ano (~€2.91/mês)" : "/ year (~€2.91/mo)") 
                     : (isPt ? "/ mês" : "/ month")}
@@ -291,18 +287,6 @@ export default function UpgradeModal({ isOpen, onClose, onSuccess, isAlreadyPro 
               )}
             </form>
           )}
-        </div>
-
-        {/* Terms Link */}
-        <div className="mt-4 text-center">
-          <a
-            href="/terms"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[10px] font-mono text-text-muted hover:text-text-primary transition-colors underline"
-          >
-            {isPt ? "Termos e Condições & Política GDPR" : "Terms & Conditions & GDPR Policy"}
-          </a>
         </div>
       </div>
     </div>

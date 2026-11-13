@@ -7,6 +7,8 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import MatchCard from "@/components/MatchCard";
 import MatchListItem from "@/components/MatchListItem";
+import DataTable from "@/components/DataTable";
+import { getMatchColumns } from "@/components/entityTableColumns";
 import SportIcon from "@/components/SportIcon";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
@@ -168,7 +170,7 @@ function MyMatchesContent() {
     return (
       <div className="min-h-screen bg-background text-on-background p-8 pt-24 max-w-7xl mx-auto flex items-center justify-center">
         <div className="flex flex-col items-center">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-3"></div>
+          <div className="w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin mb-3"></div>
           <p className="text-xs text-text-muted">Initializing account...</p>
         </div>
       </div>
@@ -180,7 +182,7 @@ function MyMatchesContent() {
   return (
     <div className="relative min-h-screen bg-transparent text-on-background">
       {/* ATMOSPHERE BACKGROUND */}
-      <MatchAtmosphereBackground sportType="tennis" mode="spectator" />
+      <MatchAtmosphereBackground sportType="random" mode="spectator" />
 
       <div className="relative z-10 p-4 sm:p-8 pt-20 sm:pt-24 max-w-7xl mx-auto">
         {/* Header */}
@@ -203,20 +205,8 @@ function MyMatchesContent() {
               {t("common.newMatch")}
             </button>
 
-            {/* View Mode Toggle matching reference image */}
+            {/* View Mode Toggle: List on left, Grid on right */}
             <div className="flex items-center gap-0.5 bg-surface-container-high/50 p-1 rounded-xl border border-outline-variant shrink-0">
-              <button
-                type="button"
-                onClick={() => setViewMode("cards")}
-                title={t("common.viewCards")}
-                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
-                  viewMode === "cards"
-                    ? "bg-surface-container-highest text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-primary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">grid_view</span>
-              </button>
               <button
                 type="button"
                 onClick={() => setViewMode("list")}
@@ -229,13 +219,25 @@ function MyMatchesContent() {
               >
                 <span className="material-symbols-outlined text-[18px]">format_list_bulleted</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("cards")}
+                title={t("common.viewCards")}
+                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
+                  viewMode === "cards"
+                    ? "bg-surface-container-highest text-text-primary shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">grid_view</span>
+              </button>
             </div>
           </div>
         </div>
 
       {loading ? (
         <div className="py-20 text-center">
-          <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <div className="inline-block w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-3 text-text-muted text-xs">Loading matches...</p>
         </div>
       ) : matches.length === 0 ? (
@@ -268,166 +270,39 @@ function MyMatchesContent() {
           </div>
 
           {/* Desktop Data Table View */}
-          <div className="hidden md:block w-full bg-surface-container rounded-xl border border-outline-variant overflow-hidden shadow-sm">
-            <div className="w-full overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead className="border-b border-outline-variant bg-surface-container-high/60 text-xs font-medium text-text-muted">
-                  <tr>
-                    <th className="py-3 px-6">{t("common.teamsOrPlayers")}</th>
-                    <th className="py-3 px-6">{t("common.event")}</th>
-                    <th className="py-3 px-4">{t("common.sport")}</th>
-                    <th className="py-3 px-4 text-center">{t("common.score")}</th>
-                    <th className="py-3 px-4 text-center">{t("common.status")}</th>
-                    <th className="py-3 px-6 text-right">{t("common.date")}</th>
-                    <th className="py-3 px-4 text-center">{t("common.action")}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant text-sm font-sans">
-                  {matches.map((m) => {
-                    const rawSetData = extractSetsData(m.scores);
-                    const isTimedOrPointsSport = m.sport_type === "Football" || m.sport_type === "Basketball";
-                    const setsWon0 = countSetsWon(rawSetData, 0);
-                    const setsWon1 = countSetsWon(rawSetData, 1);
-                    const mainScore0 = m.sport_type === "Football"
-                      ? (m.scores?.football?.goals?.[0] ?? m.scores?.goals?.[0] ?? m.scores?.current?.home ?? 0)
-                      : m.sport_type === "Basketball"
-                      ? (m.scores?.basketball?.total_points?.[0] ?? m.scores?.total_points?.[0] ?? m.scores?.current?.home ?? 0)
-                      : setsWon0;
-                    const mainScore1 = m.sport_type === "Football"
-                      ? (m.scores?.football?.goals?.[1] ?? m.scores?.goals?.[1] ?? m.scores?.current?.away ?? 0)
-                      : m.sport_type === "Basketball"
-                      ? (m.scores?.basketball?.total_points?.[1] ?? m.scores?.total_points?.[1] ?? m.scores?.current?.away ?? 0)
-                      : setsWon1;
-
-                    const setScores = Array.isArray(rawSetData)
-                      ? rawSetData.map((s: any) => ({
-                          t1: s.team1 ?? s.home ?? 0,
-                          t2: s.team2 ?? s.away ?? 0,
-                        }))
-                      : [];
-
-                    return (
-                      <tr
-                        key={m.id}
-                        onClick={() => router.push(`/match/${m.id}`)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            router.push(`/match/${m.id}`);
-                          }
-                        }}
-                        className="hover:bg-surface-container-high/50 transition-colors cursor-pointer group"
-                      >
-                        {/* Equipas / Jogadores */}
-                        <td className="py-3.5 px-6">
-                          <div className="space-y-1">
-                            <div className="font-medium text-xs sm:text-sm text-text-primary">
-                              {formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD"}
-                            </div>
-                            <div className="font-medium text-xs sm:text-sm text-text-primary">
-                              {formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD"}
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* Evento */}
-                        <td className="py-3.5 px-6">
-                          <div className="font-medium text-text-primary text-xs leading-snug">
-                            {m.tournaments?.name || t("home.isolatedMatch")}
-                          </div>
-                          {m.court && (
-                            <div className="text-xs text-text-muted mt-0.5">
-                              {m.court}
-                            </div>
-                          )}
-                        </td>
-
-                        {/* Desporto */}
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center gap-2">
-                            <SportIcon
-                              sport={m.sport_type}
-                              className="text-text-muted group-hover:text-text-primary text-[16px] shrink-0"
-                            />
-                            <span className="text-xs font-medium text-text-secondary">
-                              {getSportTranslation(m.sport_type, t)}
-                            </span>
-                          </div>
-                        </td>
-
-                        {/* Score & Sets */}
-                        <td className="py-3.5 px-4 text-center">
-                          <div className="inline-flex flex-col items-center">
-                            <span className="font-mono tabular-nums text-sm font-semibold text-text-primary tracking-tight">
-                              {mainScore0} - {mainScore1}
-                            </span>
-                            {!isTimedOrPointsSport && setScores.length > 0 && (
-                              <span className="font-mono tabular-nums text-xs text-text-muted">
-                                ({setScores.map((s: any) => `${s.t1}-${s.t2}`).join(", ")})
-                              </span>
-                            )}
-                          </div>
-                        </td>
-
-                        {/* Estado */}
-                        <td className="py-3.5 px-4 text-center">
-                          {m.status === "ongoing" ? (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-text-primary">
-                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                              {t("status.live")}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-text-muted">
-                              {m.status === "completed" ? t("status.completed") : t("status.scheduled")}
-                            </span>
-                          )}
-                        </td>
-
-                        {/* Data */}
-                        <td className="py-3.5 px-6 text-right font-mono tabular-nums text-xs text-text-muted">
-                          {m.scheduled_at
-                            ? new Date(m.scheduled_at).toLocaleDateString(undefined, {
-                                day: "numeric",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })
-                            : m.created_at
-                            ? new Date(m.created_at).toLocaleDateString(undefined, {
-                                day: "numeric",
-                                month: "short",
-                              })
-                            : "-"}
-                        </td>
-
-                        {/* Ações */}
-                        <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center justify-center gap-1">
-                            <button
-                              onClick={() => router.push(`/match/${m.id}/scoreboard`)}
-                              className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors cursor-pointer"
-                              title="Score Match"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">scoreboard</span>
-                            </button>
-                            <button
-                              onClick={() => setMatchToDelete(m)}
-                              className="p-1.5 rounded-lg text-text-muted hover:text-error hover:bg-error/10 transition-colors cursor-pointer"
-                              title="Delete Match"
-                            >
-                              <span className="material-symbols-outlined text-[16px]">delete</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <DataTable
+            data={matches}
+            columns={getMatchColumns(t, [
+              {
+                key: "action",
+                header: t("common.action"),
+                align: "center",
+                headerClassName: "w-24",
+                cellClassName: "w-24",
+                stopRowClick: true,
+                render: (m) => (
+                  <div className="flex items-center justify-center gap-1">
+                    <button
+                      onClick={() => router.push(`/match/${m.id}/scoreboard`)}
+                      className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors cursor-pointer"
+                      title="Score Match"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">scoreboard</span>
+                    </button>
+                    <button
+                      onClick={() => setMatchToDelete(m)}
+                      className="p-1.5 rounded-lg text-text-muted hover:text-error hover:bg-error/10 transition-colors cursor-pointer"
+                      title="Delete Match"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                  </div>
+                ),
+              },
+            ])}
+            getRowKey={(m) => m.id}
+            onRowClick={(m) => router.push(`/match/${m.id}`)}
+          />
         </>
       )}
 
@@ -563,7 +438,7 @@ export default function MyMatchesPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
         <p className="mt-3 text-text-muted text-xs">Loading matches...</p>
       </div>
     }>

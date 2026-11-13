@@ -20,6 +20,20 @@ export default function TopNavBar() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    const query = searchParams?.toString();
+    const fullPath = query ? `${pathname}?${query}` : pathname || "/";
+    try {
+      const curr = sessionStorage.getItem("sb:currPath");
+      if (curr && curr.split("?")[0] !== pathname) {
+        sessionStorage.setItem("sb:prevPath", curr);
+      }
+      sessionStorage.setItem("sb:currPath", fullPath);
+    } catch {
+      // ignore storage errors
+    }
+  }, [pathname, searchParams]);
+
+  useEffect(() => {
     if (!user) {
       setSubscriptionTier("free");
       return;

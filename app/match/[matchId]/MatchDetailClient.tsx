@@ -136,6 +136,18 @@ export default function MatchDetailClient() {
   const [matchEvents, setMatchEvents] = useState<any[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDetailTab, setActiveDetailTab] = useState<"progress" | "rules" | "official">("progress");
+  const [prevPath, setPrevPath] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("sb:prevPath");
+      if (stored && !stored.startsWith(`/match/${matchIdStr}`)) {
+        setPrevPath(stored);
+      }
+    } catch {
+      // ignore storage errors
+    }
+  }, [matchIdStr]);
   const [isChangingUmpire, setIsChangingUmpire] = useState(false);
   const [isStreamModalOpen, setIsStreamModalOpen] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
@@ -550,8 +562,21 @@ export default function MatchDetailClient() {
   ];
   const isCompleted = match.status === 'completed';
 
-  // Determine back tab
+  // Determine back destination and label
   const backTab = match.group_label ? 'group_matches' : 'bracket';
+  const fallbackHref = match.tournament_id ? `/tournament/${match.tournament_id}?tab=${backTab}` : "/";
+  const backHref = prevPath || fallbackHref;
+
+  const getBackLabel = (path: string | null): string => {
+    if (!path) return match.tournament_id ? "Back to Tournament" : "Back to Matches";
+    if (path.startsWith("/my-matches")) return "Back to My Matches";
+    if (path.startsWith("/notifications")) return "Back to Notifications";
+    if (path.startsWith("/tournament/")) return "Back to Tournament";
+    if (path.startsWith("/user/")) return "Back to Profile";
+    if (path.includes("tab=following")) return "Back to Favorites";
+    if (path.includes("tab=tournaments")) return "Back to Tournaments";
+    return "Back to Matches";
+  };
 
   return (
     <div className="min-h-screen bg-transparent text-on-surface px-4 sm:px-6 py-8 flex flex-col items-center relative">
@@ -561,11 +586,11 @@ export default function MatchDetailClient() {
       <div className="w-full max-w-4xl relative z-10">
         <div className="mb-6">
           <Link
-            href={match.tournament_id ? `/tournament/${match.tournament_id}?tab=${backTab}` : "/my-matches"}
+            href={backHref}
             className="text-text-muted hover:text-text-primary text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
           >
             <span aria-hidden>←</span>
-            {match.tournament_id ? "Back to Tournament" : "Back to My Matches"}
+            {getBackLabel(prevPath)}
           </Link>
         </div>
 
@@ -578,10 +603,13 @@ export default function MatchDetailClient() {
           <div className="relative z-20 flex items-start justify-between gap-3 mb-6 sm:mb-8">
             {/* Left Chips: Sport -> Author -> Status */}
             <div className="flex flex-wrap items-center gap-2">
-              {/* 1. Sport Pill */}
-              <div className="h-6 px-2.5 rounded-md bg-surface-container-high border border-outline-variant inline-flex items-center gap-1.5">
+              {/* 1. Sport Pill (icon-only on mobile) */}
+              <div
+                className="h-6 px-2 sm:px-2.5 rounded-md bg-surface-container-high border border-outline-variant inline-flex items-center gap-1.5"
+                title={getSportTranslation(match.sport_type || "Tennis", t)}
+              >
                 <SportIcon sport={match.sport_type} className="text-text-secondary text-[13px] leading-none" />
-                <span className="text-xs font-medium text-text-secondary leading-none">
+                <span className="hidden sm:inline text-xs font-medium text-text-secondary leading-none">
                   {getSportTranslation(match.sport_type || "Tennis", t)}
                 </span>
               </div>
@@ -599,22 +627,6 @@ export default function MatchDetailClient() {
                   </span>
                 </Link>
               )}
-
-              {/* 3. Status Badge */}
-              <div
-                className={`h-6 px-2.5 rounded-md border inline-flex items-center gap-1.5 text-xs font-medium leading-none ${
-                  isCompleted
-                    ? "bg-surface-container-high text-text-muted border-outline-variant"
-                    : match.status === "ongoing"
-                    ? "bg-surface-container-high text-success border-success/30"
-                    : "bg-surface-container-high text-text-secondary border-outline-variant"
-                }`}
-              >
-                {match.status === "ongoing" && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-success" />
-                )}
-                <span>{getStatusTranslation(match.status, t)}</span>
-              </div>
             </div>
 
             {/* Top-Right: Follow Button & 3-Dots Dropdown Menu */}
@@ -738,20 +750,36 @@ export default function MatchDetailClient() {
                 </h2>
               </div>
 
-              {/* Center - Countdown or VS */}
-              <div className="flex flex-col items-center justify-center min-w-[44px] sm:min-w-[80px] md:min-w-[100px]">
+              {/* Center - Countdown or VS + Status & Date */}
+              <div className="flex flex-col items-center justify-center gap-1.5 min-w-[60px] sm:min-w-[100px] md:min-w-[120px] text-center">
                 {match.status !== "ongoing" && match.status !== "completed" ? (
-                  <CountdownTimer scheduledAt={match.scheduled_at} />
+                  <>
+                    <CountdownTimer scheduledAt={match.scheduled_at} />
+                    <span className="text-[11px] font-medium text-text-muted">
+                      {getStatusTranslation(match.status, t)}
+                    </span>
+                  </>
                 ) : (
-                  <div className="flex flex-col items-center gap-2">
+                  <>
                     <div className="text-xs font-medium text-text-muted">vs</div>
-                    {match.status === "ongoing" && (
-                      <div className="px-2.5 py-1 rounded-full bg-surface-container border border-outline-variant flex items-center gap-1.5">
+                    <div className="inline-flex items-center gap-1.5 text-[11px] font-medium">
+                      {match.status === "ongoing" && (
                         <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                        <span className="text-[11px] font-medium text-text-primary">{t("status.live")}</span>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                      <span className={match.status === "ongoing" ? "text-text-primary" : "text-text-muted"}>
+                        {getStatusTranslation(match.status, t)}
+                      </span>
+                    </div>
+                  </>
+                )}
+                {(match.scheduled_at || match.created_at) && (
+                  <span className="text-[11px] font-mono tabular-nums text-text-muted/80 whitespace-nowrap">
+                    {new Date(match.scheduled_at || match.created_at).toLocaleDateString(undefined, {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                  </span>
                 )}
               </div>
 
@@ -859,7 +887,7 @@ export default function MatchDetailClient() {
                           ) : (
                             <th className="py-2.5 px-3 text-center text-text-secondary font-medium min-w-[50px] bg-surface-container-high/40">
                               <span className="inline-flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                                 Set {setsData.length + 1}
                               </span>
                             </th>
@@ -884,7 +912,7 @@ export default function MatchDetailClient() {
                               </span>
                               {isServing && (
                                 <span
-                                  className="w-1.5 h-1.5 rounded-full bg-success shrink-0"
+                                  className="w-1.5 h-1.5 rounded-full bg-text-primary shrink-0"
                                   title="Serving"
                                 />
                               )}
@@ -1135,8 +1163,8 @@ export default function MatchDetailClient() {
                             {q.home} - {q.away}
                           </span>
                           {q.isLive && (
-                            <span className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-surface-container border border-success/30 text-success flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                            <span className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-surface-container border border-outline-variant text-text-primary flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
                               Live
                             </span>
                           )}
@@ -1401,8 +1429,8 @@ export default function MatchDetailClient() {
                             </span>
                           )}
                           {s.isLive && (
-                            <span className="px-2 py-0.5 rounded-md bg-surface-container border border-success/30 text-success text-[11px] font-medium flex items-center gap-1">
-                              <span className="w-1.5 h-1.5 rounded-full bg-success"></span>
+                            <span className="px-2 py-0.5 rounded-md bg-surface-container border border-outline-variant text-text-primary text-[11px] font-medium flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
                               Live
                             </span>
                           )}
@@ -1828,17 +1856,7 @@ export default function MatchDetailClient() {
                     {currentUser?.id === match.umpire.id && ` (${locale === "pt" ? "Você" : "You"})`}
                   </p>
                 </div>
-                <span className="material-symbols-outlined text-success text-[18px]" aria-hidden>check_circle</span>
-                {canManageOfficial && (
-                  <button
-                    type="button"
-                    onClick={() => setIsChangingUmpire(!isChangingUmpire)}
-                    className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container transition-colors cursor-pointer"
-                    title={t("match.changeReferee")}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">edit</span>
-                  </button>
-                )}
+                <span className="material-symbols-outlined text-text-secondary text-[18px]" aria-hidden>check_circle</span>
               </div>
             ) : (
               <div className="bg-surface-container-high rounded-xl p-5 text-center border border-outline-variant">

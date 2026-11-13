@@ -4,16 +4,27 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 
-function notifySync(detail: { type: string; id?: string }) {
+function notifySync(detail: { type: string; id?: string; matchId?: string }) {
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("scoreboard:notifications-changed", { detail }));
   }
+}
+
+function getInvitationMatchId(n: any): string | null {
+  const data = n?.data || {};
+  const type = data.type || "";
+  const isInvitation =
+    type.includes("umpire") &&
+    (type.includes("invitation") || type.includes("assignment"));
+  if (!isInvitation) return null;
+  return data.match_id || data.matchId || null;
 }
 
 export function useNotifications() {
   const { user, supabase } = useAuth();
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pendingInvitationMatchIds, setPendingInvitationMatchIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
 
   const fetchNotifications = useCallback(async (userId: string) => {
@@ -27,6 +38,27 @@ export function useNotifications() {
     if (data) {
       setNotifications(data);
       setUnreadCount(data.filter(n => !n.read_at).length);
+
+      const invitationMatchIds = Array.from(
+        new Set(data.map(getInvitationMatchId).filter((id): id is string => Boolean(id)))
+      );
+      if (invitationMatchIds.length > 0) {
+        const { data: matchRows } = await supabase
+          .from("matches")
+          .select("id, umpire_id, umpire_invite_status")
+          .in("id", invitationMatchIds);
+        if (matchRows) {
+          setPendingInvitationMatchIds(
+            new Set(
+              matchRows
+                .filter((m: any) => m.umpire_id === userId && m.umpire_invite_status === "pending")
+                .map((m: any) => m.id)
+            )
+          );
+        }
+      } else {
+        setPendingInvitationMatchIds(new Set());
+      }
     }
     setLoading(false);
   }, [supabase]);
@@ -68,6 +100,23 @@ export function useNotifications() {
           )
         );
         setUnreadCount((c) => Math.max(0, c - 1));
+      } else if (detail.type === "INVITATION_HANDLED" && detail.matchId) {
+        setPendingInvitationMatchIds((prev) => {
+          const next = new Set(prev);
+          next.delete(detail.matchId);
+          return next;
+        });
+        if (detail.id) {
+          setNotifications((prev) =>
+            prev.map((n) => {
+              if (n.id === detail.id && !n.read_at) {
+                setUnreadCount((c) => Math.max(0, c - 1));
+                return { ...n, read_at: new Date().toISOString() };
+              }
+              return n;
+            })
+          );
+        }
       } else if (detail.type === "REFRESH" && user) {
         fetchNotifications(user.id);
       }
@@ -100,6 +149,10 @@ export function useNotifications() {
             if (payload.eventType === 'INSERT') {
               setNotifications(prev => [payload.new, ...prev.slice(0, 19)]);
               setUnreadCount(prev => prev + 1);
+              const invMatchId = getInvitationMatchId(payload.new);
+              if (invMatchId) {
+                setPendingInvitationMatchIds((prev) => new Set(prev).add(invMatchId));
+              }
               toast.info(`New Notification: ${payload.new.title}`);
             } else if (payload.eventType === 'UPDATE') {
               setNotifications(prev => 
@@ -251,7 +304,21 @@ export function useNotifications() {
 
     if (!error) {
       toast.success(action === 'accept' ? "Invitation accepted!" : "Invitation declined");
-      // The Realtime listener will handle state update for setNotifications and unreadCount
+      setPendingInvitationMatchIds((prev) => {
+        const next = new Set(prev);
+        next.delete(matchId);
+        return next;
+      });
+      setNotifications((prev) =>
+        prev.map((n) => {
+          if (n.id === notificationId && !n.read_at) {
+            setUnreadCount((c) => Math.max(0, c - 1));
+            return { ...n, read_at: new Date().toISOString() };
+          }
+          return n;
+        })
+      );
+      notifySync({ type: "INVITATION_HANDLED", id: notificationId, matchId });
     } else {
       console.error(`Error ${action}ing invitation:`, error);
       toast.error(`Failed to ${action} invitation`);
@@ -261,6 +328,7 @@ export function useNotifications() {
   return {
     notifications,
     unreadCount,
+    pendingInvitationMatchIds,
     loading,
     markAsRead,
     markAllAsRead,
