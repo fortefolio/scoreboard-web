@@ -13,6 +13,7 @@ import SportFilterBar from "@/components/SportFilterBar";
 import MatchListItem from "@/components/MatchListItem";
 import { FollowButton } from "@/components/FollowButton";
 import Pagination from "@/components/Pagination";
+import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
 import { useFollow } from "@/lib/hooks/useFollow";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import { validatePassword } from "@/lib/auth/passwordValidation";
@@ -413,193 +414,261 @@ function HomeContent() {
   }, [filteredTournaments, safePage]);
 
   return (
-    <div className="w-full min-h-screen bg-background text-on-surface py-4 sm:py-6 px-3 sm:px-8 max-w-7xl mx-auto">
-      {/* Horizontal Sport Filter Bar (mirrors scoreboard-mobile) */}
-      <div className="mb-3 sm:mb-4">
-        <SportFilterBar
-          selectedSport={sportFilter}
-          onSelectSport={(sport) => {
-            setSportFilter(sport);
-            setCurrentPage(1);
-          }}
-        />
-      </div>
+    <div className="relative min-h-screen bg-transparent text-on-surface">
+      {/* ATMOSPHERE BACKGROUND */}
+      <MatchAtmosphereBackground
+        sportType={sportFilter !== "all" ? sportFilter : "tennis"}
+        mode="spectator"
+      />
 
-      {/* Filter, Search & View Controls Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8 bg-surface-container p-3 sm:p-4 rounded-xl border border-outline-variant">
-        {/* Search & Filters */}
-        <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 flex-1">
-          {/* Favorites/Following Type Segmented Control: All (X) | Matches (Y) | Tournaments (Z) */}
-          {activeTab === "following" && user && (followedMatches.length > 0 || followedTournaments.length > 0) && (
-            <div className="flex items-center gap-1 p-0.5 rounded-lg bg-surface-container-high border border-outline-variant">
+      <div className="relative z-10 w-full py-4 sm:py-6 px-3 sm:px-8 max-w-7xl mx-auto">
+        {/* Horizontal Sport Filter Bar (mirrors scoreboard-mobile) */}
+        <div className="mb-3 sm:mb-4">
+          <SportFilterBar
+            selectedSport={sportFilter}
+            onSelectSport={(sport) => {
+              setSportFilter(sport);
+              setCurrentPage(1);
+            }}
+          />
+        </div>
+
+        {/* Precision Controls Toolbar */}
+        <div className="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3 sm:gap-4 mb-6 sm:mb-8 bg-surface-container/70 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-outline-variant shadow-sm">
+          {/* Left: Search & Segmented Controls */}
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 flex-1">
+            {/* Favorites/Following Type Segmented Control */}
+            {activeTab === "following" && user && (followedMatches.length > 0 || followedTournaments.length > 0) && (
+              <div className="flex items-center gap-1 p-0.5 rounded-lg bg-surface-container-high border border-outline-variant">
+                <button
+                  type="button"
+                  onClick={() => setFollowingFilter("all")}
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                    followingFilter === "all"
+                      ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
+                      : "text-text-muted hover:text-text-primary"
+                  }`}
+                >
+                  {t("home.allFollowed")} ({followedMatches.length + followedTournaments.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFollowingFilter("matches")}
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                    followingFilter === "matches"
+                      ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
+                      : "text-text-muted hover:text-text-primary"
+                  }`}
+                >
+                  {t("home.matchesTab")} ({followedMatches.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFollowingFilter("tournaments")}
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
+                    followingFilter === "tournaments"
+                      ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
+                      : "text-text-muted hover:text-text-primary"
+                  }`}
+                >
+                  {t("home.tournamentsTab")} ({followedTournaments.length})
+                </button>
+              </div>
+            )}
+
+            {/* Search Box matching reference image */}
+            <div className="relative flex items-center min-w-[140px] sm:min-w-[170px] flex-1 max-w-full sm:max-w-xs">
+              <span className="material-symbols-outlined absolute left-2.5 text-[16px] text-text-muted pointer-events-none">
+                search
+              </span>
+              <input
+                type="text"
+                placeholder={t("common.searchPlaceholder")}
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full bg-surface-container-high/60 text-text-primary text-xs font-medium pl-8 pr-2.5 py-1.5 rounded-lg border border-outline-variant outline-none focus:border-outline transition-colors placeholder:text-text-muted"
+              />
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-6 w-px bg-outline-variant/60 shrink-0" />
+
+            {/* Sport Filter */}
+            <div className="relative flex items-center shrink-0">
+              <div className="flex flex-col text-left pr-1 cursor-pointer pointer-events-none select-none">
+                <span className="text-[10px] font-medium text-text-muted leading-tight">
+                  {t("common.sport")}:
+                </span>
+                <span className="text-xs font-semibold text-text-primary flex items-center gap-1 leading-tight">
+                  {sportFilter === "all" ? t("sports.all") : getSportTranslation(sportFilter, t)}
+                  <span className="material-symbols-outlined text-[14px] text-text-muted">expand_more</span>
+                </span>
+              </div>
+              <select
+                value={sportFilter}
+                onChange={(e) => {
+                  setSportFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                aria-label={t("common.sport")}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              >
+                <option value="all">{t("sports.all")}</option>
+                <option value="Tennis">{t("sports.tennis")}</option>
+                <option value="Padel">{t("sports.padel")}</option>
+                <option value="Football">{t("sports.football")}</option>
+                <option value="Basketball">{t("sports.basketball")}</option>
+                <option value="Volleyball">{t("sports.volleyball")}</option>
+                <option value="Beach Volleyball">{t("sports.beachVolleyball")}</option>
+              </select>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-6 w-px bg-outline-variant/60 shrink-0" />
+
+            {/* Status Filter */}
+            <div className="relative flex items-center shrink-0">
+              <div className="flex flex-col text-left pr-1 cursor-pointer pointer-events-none select-none">
+                <span className="text-[10px] font-medium text-text-muted leading-tight">
+                  {t("common.status")}:
+                </span>
+                <span className="text-xs font-semibold text-text-primary flex items-center gap-1 leading-tight">
+                  {statusFilter === "all"
+                    ? t("status.all")
+                    : statusFilter === "ongoing"
+                    ? t("status.live")
+                    : statusFilter === "completed"
+                    ? t("status.completed")
+                    : t("status.scheduled")}
+                  <span className="material-symbols-outlined text-[14px] text-text-muted">expand_more</span>
+                </span>
+              </div>
+              <select
+                value={statusFilter}
+                onChange={(e) => {
+                  setStatusFilter(e.target.value);
+                  setCurrentPage(1);
+                }}
+                aria-label={t("common.status")}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              >
+                <option value="all">{t("status.all")}</option>
+                <option value="ongoing">{t("status.live")}</option>
+                <option value="scheduled">{t("status.scheduled")}</option>
+                <option value="completed">{t("status.completed")}</option>
+              </select>
+            </div>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-6 w-px bg-outline-variant/60 shrink-0" />
+
+            {/* Date Sort */}
+            <div className="relative flex items-center shrink-0">
+              <div className="flex flex-col text-left pr-1 cursor-pointer pointer-events-none select-none">
+                <span className="text-[10px] font-medium text-text-muted leading-tight">
+                  {t("common.date")}:
+                </span>
+                <span className="text-xs font-semibold text-text-primary flex items-center gap-1 leading-tight">
+                  {dateSort === "desc" ? t("common.recentFirst") : t("common.oldestFirst")}
+                  <span className="material-symbols-outlined text-[14px] text-text-muted">expand_more</span>
+                </span>
+              </div>
+              <select
+                value={dateSort}
+                onChange={(e) => {
+                  setDateSort(e.target.value as "desc" | "asc");
+                  setCurrentPage(1);
+                }}
+                aria-label={t("common.date")}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              >
+                <option value="desc">{t("common.recentFirst")}</option>
+                <option value="asc">{t("common.oldestFirst")}</option>
+              </select>
+            </div>
+
+            {/* Clear filters button */}
+            {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "" || dateSort !== "desc") && (
               <button
                 type="button"
-                onClick={() => setFollowingFilter("all")}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                  followingFilter === "all"
-                    ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
+                onClick={clearFilters}
+                title={t("common.clearFilters")}
+                className="text-xs font-medium text-text-muted hover:text-text-primary transition-colors cursor-pointer flex items-center gap-1 shrink-0"
+              >
+                <span className="material-symbols-outlined text-[15px]">close</span>
+                <span className="hidden md:inline">{t("common.clearFilters")}</span>
+              </button>
+            )}
+          </div>
+
+          {/* Right: Actions & View Mode Toggle */}
+          <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
+            {activeTab === "matches" && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!user) {
+                    setAuthModal("login");
+                  } else {
+                    router.push("/my-matches?create=true");
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[16px]">add</span>
+                {t("common.newMatch")}
+              </button>
+            )}
+
+            {activeTab === "tournaments" && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!user) {
+                    setAuthModal("login");
+                  } else {
+                    router.push("/my-tournaments?create=true");
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[16px]">add</span>
+                {t("common.newTournament")}
+              </button>
+            )}
+
+            {/* View Mode Toggle matching reference image */}
+            <div className="flex items-center gap-0.5 bg-surface-container-high/50 p-1 rounded-xl border border-outline-variant shrink-0">
+              <button
+                type="button"
+                onClick={() => setViewMode("cards")}
+                title={t("common.viewCards")}
+                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
+                  viewMode === "cards"
+                    ? "bg-surface-container-highest text-text-primary shadow-sm"
                     : "text-text-muted hover:text-text-primary"
                 }`}
               >
-                {t("home.allFollowed")} ({followedMatches.length + followedTournaments.length})
+                <span className="material-symbols-outlined text-[18px]">grid_view</span>
               </button>
               <button
                 type="button"
-                onClick={() => setFollowingFilter("matches")}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                  followingFilter === "matches"
-                    ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
+                onClick={() => setViewMode("list")}
+                title={t("common.viewList")}
+                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
+                  viewMode === "list"
+                    ? "bg-surface-container-highest text-text-primary shadow-sm"
                     : "text-text-muted hover:text-text-primary"
                 }`}
               >
-                {t("home.matchesTab")} ({followedMatches.length})
-              </button>
-              <button
-                type="button"
-                onClick={() => setFollowingFilter("tournaments")}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
-                  followingFilter === "tournaments"
-                    ? "bg-surface-container text-text-primary shadow-sm border border-outline-variant"
-                    : "text-text-muted hover:text-text-primary"
-                }`}
-              >
-                {t("home.tournamentsTab")} ({followedTournaments.length})
+                <span className="material-symbols-outlined text-[18px]">format_list_bulleted</span>
               </button>
             </div>
-          )}
-
-          {/* Search Box */}
-          <div className="relative w-full sm:w-auto sm:min-w-[180px] flex-1 max-w-full sm:max-w-xs">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-text-muted">
-              search
-            </span>
-            <input
-              type="text"
-              placeholder={t("common.searchPlaceholder")}
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full bg-surface-container-high text-text-primary text-xs font-medium pl-9 pr-3 py-1.5 rounded-lg border border-outline-variant outline-none focus:border-outline transition-colors placeholder:text-text-muted"
-            />
-          </div>
-
-          {/* Status Filter */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-text-secondary">
-              {t("common.status")}:
-            </span>
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="bg-surface-container-high text-text-primary text-xs font-medium px-3 py-1.5 rounded-lg border border-outline-variant outline-none focus:border-outline transition-colors cursor-pointer"
-            >
-              <option value="all">{t("status.all")}</option>
-              <option value="scheduled">{t("status.scheduled")}</option>
-              <option value="ongoing">{t("status.ongoing")}</option>
-              <option value="completed">{t("status.completed")}</option>
-            </select>
-          </div>
-
-          {/* Date Sort */}
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-text-secondary">
-              {t("common.date")}:
-            </span>
-            <select
-              value={dateSort}
-              onChange={(e) => {
-                setDateSort(e.target.value as "desc" | "asc");
-                setCurrentPage(1);
-              }}
-              className="bg-surface-container-high text-text-primary text-xs font-medium px-3 py-1.5 rounded-lg border border-outline-variant outline-none focus:border-outline transition-colors cursor-pointer"
-            >
-              <option value="desc">{t("common.recentFirst")}</option>
-              <option value="asc">{t("common.oldestFirst")}</option>
-            </select>
-          </div>
-
-          {/* Clear filters button */}
-          {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "" || dateSort !== "desc") && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="text-xs font-medium text-primary hover:underline cursor-pointer"
-            >
-              {t("common.clearFilters")}
-            </button>
-          )}
-        </div>
-
-        {/* Actions & View Mode Toggle */}
-        <div className="flex items-center gap-2.5 self-start sm:self-auto shrink-0">
-          {activeTab === "matches" && (
-            <button
-              type="button"
-              onClick={() => {
-                if (!user) {
-                  setAuthModal("login");
-                } else {
-                  router.push("/my-matches?create=true");
-                }
-              }}
-              className="px-3 py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[16px]">add</span>
-              {t("common.newMatch")}
-            </button>
-          )}
-
-          {activeTab === "tournaments" && (
-            <button
-              type="button"
-              onClick={() => {
-                if (!user) {
-                  setAuthModal("login");
-                } else {
-                  router.push("/my-tournaments?create=true");
-                }
-              }}
-              className="px-3 py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[16px]">add</span>
-              {t("common.newTournament")}
-            </button>
-          )}
-
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 bg-surface-container-high p-1 rounded-lg border border-outline-variant shrink-0">
-            <button
-              type="button"
-              onClick={() => setViewMode("list")}
-              title={t("common.viewList")}
-              className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
-                viewMode === "list"
-                  ? "bg-surface-container-highest text-text-primary shadow-sm"
-                  : "text-text-muted hover:text-text-primary"
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">view_list</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("cards")}
-              title={t("common.viewCards")}
-              className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
-                viewMode === "cards"
-                  ? "bg-surface-container-highest text-text-primary shadow-sm"
-                  : "text-text-muted hover:text-text-primary"
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">grid_view</span>
-            </button>
           </div>
         </div>
-      </div>
 
       {/* Loading Indicator */}
       {loading ? (
@@ -1627,6 +1696,7 @@ function HomeContent() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
 import SportIcon from "@/components/SportIcon";
+import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
 
 export default function MyTournamentsPage() {
   return (
@@ -182,56 +183,60 @@ function MyTournamentsContent() {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-background text-on-background p-4 sm:p-8 pt-20 sm:pt-24 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary">
-            My Tournaments
-          </h1>
-          <p className="text-xs sm:text-sm text-text-muted mt-1">
-            Manage your active events and create new competitions.
-          </p>
-        </div>
+    <div className="relative min-h-screen bg-transparent text-on-background">
+      {/* ATMOSPHERE BACKGROUND */}
+      <MatchAtmosphereBackground sportType="tennis" mode="spectator" />
 
-        <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-          <button 
-            onClick={handleOpenCreate}
-            className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
-          >
-            <span className="material-symbols-outlined text-[16px]">add</span>
-            {tr("common.newTournament")}
-          </button>
+      <div className="relative z-10 p-4 sm:p-8 pt-20 sm:pt-24 max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary">
+              My Tournaments
+            </h1>
+            <p className="text-xs sm:text-sm text-text-muted mt-1">
+              Manage your active events and create new competitions.
+            </p>
+          </div>
 
-          {/* View Mode Toggle (Defaults to list) */}
-          <div className="inline-flex p-1 rounded-xl bg-surface-container border border-outline-variant gap-1 shrink-0">
-            <button
-              type="button"
-              onClick={() => setViewMode("list")}
-              title={tr("common.viewList")}
-              className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
-                viewMode === "list"
-                  ? "bg-surface-container-highest text-text-primary shadow-sm"
-                  : "text-text-muted hover:text-text-primary"
-              }`}
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            <button 
+              onClick={handleOpenCreate}
+              className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
             >
-              <span className="material-symbols-outlined text-[18px]">view_list</span>
+              <span className="material-symbols-outlined text-[16px]">add</span>
+              {tr("common.newTournament")}
             </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("cards")}
-              title={tr("common.viewCards")}
-              className={`p-1.5 rounded-md transition-colors flex items-center cursor-pointer ${
-                viewMode === "cards"
-                  ? "bg-surface-container-highest text-text-primary shadow-sm"
-                  : "text-text-muted hover:text-text-primary"
-              }`}
-            >
-              <span className="material-symbols-outlined text-[18px]">grid_view</span>
-            </button>
+
+            {/* View Mode Toggle matching reference image */}
+            <div className="flex items-center gap-0.5 bg-surface-container-high/50 p-1 rounded-xl border border-outline-variant shrink-0">
+              <button
+                type="button"
+                onClick={() => setViewMode("cards")}
+                title={tr("common.viewCards")}
+                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
+                  viewMode === "cards"
+                    ? "bg-surface-container-highest text-text-primary shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">grid_view</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                title={tr("common.viewList")}
+                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
+                  viewMode === "list"
+                    ? "bg-surface-container-highest text-text-primary shadow-sm"
+                    : "text-text-muted hover:text-text-primary"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[18px]">format_list_bulleted</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
       {loading ? (
         <div className="py-20 text-center">
@@ -559,6 +564,7 @@ function MyTournamentsContent() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
