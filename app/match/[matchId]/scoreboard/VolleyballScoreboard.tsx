@@ -268,9 +268,9 @@ export default function VolleyballScoreboard({
             className="flex-1"
             title={translations.scoreboard.point}
           >
-            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]">add</span>
+            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]" aria-hidden="true">add</span>
             <span className="landscape-compact:hidden">{translations.scoreboard.point}</span>
-            <span className="hidden landscape-compact:inline">Pt</span>
+            <span className="hidden landscape-compact:inline" aria-hidden="true">Pt</span>
           </ScoreboardActionButton>
           <ScoreboardActionButton
             variant="secondary"
@@ -278,7 +278,7 @@ export default function VolleyballScoreboard({
             disabled={points <= 0}
             title={translations.scoreboard.undo}
           >
-            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]">undo</span>
+            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]" aria-hidden="true">undo</span>
             <span>{translations.scoreboard.undo}</span>
           </ScoreboardActionButton>
         </div>
@@ -292,7 +292,7 @@ export default function VolleyballScoreboard({
             title={translations.scoreboard.timeout}
           >
             <span className="landscape-compact:hidden">{translations.scoreboard.timeout}</span>
-            <span className="hidden landscape-compact:inline">{locale === "pt" ? "Desc" : "TO"}</span>
+            <span className="hidden landscape-compact:inline" aria-hidden="true">{locale === "pt" ? "Desc" : "TO"}</span>
           </ScoreboardActionButton>
           <ScoreboardActionButton
             variant="secondary"
@@ -301,7 +301,7 @@ export default function VolleyballScoreboard({
             title={translations.scoreboard.volleyball.toggleServe}
           >
             <span className="landscape-compact:hidden">{translations.scoreboard.volleyball.toggleServe}</span>
-            <span className="hidden landscape-compact:inline">{locale === "pt" ? "Srv" : "Srv"}</span>
+            <span className="hidden landscape-compact:inline" aria-hidden="true">{locale === "pt" ? "Srv" : "Srv"}</span>
           </ScoreboardActionButton>
         </div>
       </div>

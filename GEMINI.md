@@ -36,3 +36,8 @@ This project uses `@supabase/ssr`. Do not regress to the patterns below.
 - Always read keys strictly via environment variables:
   `process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""`
 - All secret keys for local development and testing belong strictly in `.env.local` or `.env.test.local`, which are gitignored.
+
+## Test Integrity (No Silent Test Modifications)
+- **NEVER modify, update, weaken, or delete existing tests** during new feature development or bug fixes unless the user explicitly asks to update tests.
+- Always run affected tests (`npm run test:affected`) after changes.
+- **If existing tests fail after new developments or bug fixes, STOP and report the failing tests and root cause back to the user** instead of editing the test files to make them pass.

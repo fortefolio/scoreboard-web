@@ -91,7 +91,7 @@ export default function TopNavBar() {
   return (
     <nav className="fixed top-0 w-full z-50 bg-[#0b0d14]/90 backdrop-blur-md border-b border-outline-variant">
       <div className="flex justify-between items-center px-4 sm:px-8 py-3 max-w-7xl mx-auto font-sans tracking-tight">
-        <Link href="/" className="text-2xl sm:text-3xl font-digital text-text-primary tracking-tighter shrink-0">
+        <Link href="/" className="text-2xl sm:text-3xl font-digital-logo text-text-primary tracking-tighter shrink-0">
           SCORE:BOARD
         </Link>
 
@@ -153,17 +153,11 @@ export default function TopNavBar() {
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 aria-label="User menu"
-                className="flex items-center gap-1.5 group focus:outline-none cursor-pointer"
+                aria-expanded={isMenuOpen}
+                className="w-8 h-8 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-secondary hover:text-text-primary flex items-center justify-center transition-colors focus:outline-none cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-full bg-surface-container-high border border-outline-variant flex items-center justify-center text-text-secondary font-medium group-hover:border-outline transition-colors overflow-hidden text-xs">
-                  {user.user_metadata?.avatar_url ? (
-                    <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    user.email?.charAt(0).toUpperCase()
-                  )}
-                </div>
-                <span className="material-symbols-outlined text-text-muted group-hover:text-text-primary transition-colors text-lg">
-                  {isMenuOpen ? 'expand_less' : 'expand_more'}
+                <span className="material-symbols-outlined text-[20px]">
+                  {isMenuOpen ? "close" : "menu"}
                 </span>
               </button>
 

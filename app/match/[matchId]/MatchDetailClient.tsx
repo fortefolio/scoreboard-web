@@ -11,7 +11,7 @@ import ConfirmationModal from "@/components/ConfirmationModal";
 import SportIcon from "@/components/SportIcon";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
-import { FollowButton } from "@/components/FollowButton";
+import { SportFavoriteButton } from "@/components/FollowButton";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
 import StreamOverlayModal from "@/components/match/StreamOverlayModal";
@@ -579,46 +579,66 @@ export default function MatchDetailClient() {
   };
 
   return (
-    <div className="min-h-screen bg-transparent text-on-surface px-4 sm:px-6 py-8 flex flex-col items-center relative">
+    <div className="min-h-screen bg-transparent text-on-surface px-4 sm:px-6 py-3 sm:py-6 flex flex-col items-center relative">
       {/* MATCH ATMOSPHERE BACKGROUND */}
       <MatchAtmosphereBackground sportType={match.sport_type} mode="spectator" />
 
       <div className="w-full max-w-4xl relative z-10">
-        <div className="mb-6">
+        <div className="mb-3 sm:mb-5 grid grid-cols-[32px_1fr_32px] items-center gap-3">
           <Link
             href={backHref}
-            className="text-text-muted hover:text-text-primary text-xs font-medium inline-flex items-center gap-1.5 transition-colors"
+            aria-label={getBackLabel(prevPath)}
+            title={getBackLabel(prevPath)}
+            className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant text-text-secondary hover:text-text-primary inline-flex items-center justify-center transition-colors shrink-0"
           >
-            <span aria-hidden>←</span>
-            {getBackLabel(prevPath)}
+            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
           </Link>
+
+          {match.tournaments?.name ? (
+            <div className="min-w-0 flex justify-center">
+              {match.tournament_id ? (
+                <Link
+                  href={`/tournament/${match.tournament_id}`}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant text-text-secondary hover:text-text-primary transition-colors max-w-full sm:max-w-md"
+                  title={match.tournaments.name}
+                >
+                  <span className="material-symbols-outlined text-[14px] text-text-muted shrink-0">emoji_events</span>
+                  <span className="text-xs font-medium truncate">
+                    {match.tournaments.name}
+                  </span>
+                </Link>
+              ) : (
+                <div
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant text-text-secondary max-w-full sm:max-w-md"
+                  title={match.tournaments.name}
+                >
+                  <span className="material-symbols-outlined text-[14px] text-text-muted shrink-0">emoji_events</span>
+                  <span className="text-xs font-medium truncate">
+                    {match.tournaments.name}
+                  </span>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div aria-hidden="true" />
+          )}
+
+          <div className="w-8 shrink-0" aria-hidden="true" />
         </div>
 
         {/* HERO / BIG MATCH CARD (Image 0) */}
         <div
           ref={heroRef}
-          className="relative bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant shadow-xl overflow-hidden mb-6"
+          className="relative bg-surface-container rounded-2xl p-4 sm:p-6 border border-outline-variant shadow-xl overflow-hidden mb-6"
         >
-          {/* Top Bar: Chips (Sport -> Author -> Status) & Options Menu */}
-          <div className="relative z-20 flex items-start justify-between gap-3 mb-6 sm:mb-8">
-            {/* Left Chips: Sport -> Author -> Status */}
-            <div className="flex flex-wrap items-center gap-2">
-              {/* 1. Sport Pill (icon-only on mobile) */}
-              <div
-                className="h-6 px-2 sm:px-2.5 rounded-md bg-surface-container-high border border-outline-variant inline-flex items-center gap-1.5"
-                title={getSportTranslation(match.sport_type || "Tennis", t)}
-              >
-                <SportIcon sport={match.sport_type} className="text-text-secondary text-[13px] leading-none" />
-                <span className="hidden sm:inline text-xs font-medium text-text-secondary leading-none">
-                  {getSportTranslation(match.sport_type || "Tennis", t)}
-                </span>
-              </div>
-
-              {/* 2. Author / Owner Pill */}
+          {/* Top Bar: Author Chip & Actions (Sport+Favorite, Options Menu) */}
+          <div className="relative z-20 flex items-center justify-between gap-3 mb-4 sm:mb-6">
+            {/* Left: Author / Owner Pill */}
+            <div className="flex flex-wrap items-center gap-2.5">
               {(match.organizer?.username || match.organizer?.email) && (
                 <Link
                   href={`/user/${encodeURIComponent(match.organizer.username || match.organizer.email.split("@")[0])}`}
-                  className="h-6 px-2.5 rounded-md bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-muted hover:text-text-primary transition-colors inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+                  className="h-7 px-2.5 rounded-md bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-muted hover:text-text-primary transition-colors inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer"
                   title={`@${match.organizer.username || match.organizer.email.split("@")[0]}`}
                 >
                   <span className="material-symbols-outlined text-[13px] leading-none text-text-muted">person</span>
@@ -629,9 +649,15 @@ export default function MatchDetailClient() {
               )}
             </div>
 
-            {/* Top-Right: Follow Button & 3-Dots Dropdown Menu */}
+            {/* Top-Right: Compound Sport + Favorite Button & 3-Dots Dropdown Menu */}
             <div className="flex items-center gap-2">
-              <FollowButton entityId={matchIdStr} entityType="match" variant="pill" />
+              <SportFavoriteButton
+                entityId={matchIdStr}
+                entityType="match"
+                sport={match.sport_type}
+                size="sm"
+              />
+
               <div className="relative shrink-0" ref={menuRef}>
                 <button
                   onClick={() => setIsMenuOpen((prev) => !prev)}
@@ -701,34 +727,6 @@ export default function MatchDetailClient() {
             </div>
             </div>
           </div>
-
-          {/* Tournament Pill (Centered) */}
-          {match.tournaments?.name && (
-            <div className="relative flex justify-center mb-8">
-              {match.tournament_id ? (
-                <Link
-                  href={`/tournament/${match.tournament_id}`}
-                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant text-text-secondary hover:text-text-primary transition-colors max-w-[85vw] sm:max-w-md group"
-                  title={match.tournaments.name}
-                >
-                  <span className="material-symbols-outlined text-[15px] text-text-muted shrink-0">emoji_events</span>
-                  <span className="text-xs font-medium truncate">
-                    {match.tournaments.name}
-                  </span>
-                </Link>
-              ) : (
-                <div
-                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-surface-container border border-outline-variant text-text-secondary max-w-[85vw] sm:max-w-md"
-                  title={match.tournaments.name}
-                >
-                  <span className="material-symbols-outlined text-[15px] text-text-muted shrink-0">emoji_events</span>
-                  <span className="text-xs font-medium truncate">
-                    {match.tournaments.name}
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
 
           <div className="relative flex flex-col items-center">
             <div className="w-full max-w-xl sm:max-w-2xl grid grid-cols-[1fr_auto_1fr] gap-2 sm:gap-6 md:gap-8 items-center mb-4">

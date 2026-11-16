@@ -59,7 +59,7 @@ describe("Tennis UI Interaction Tests — 2023 Wimbledon Final (Alcaraz vs Djoko
     render(<TennisScoreboard matchData={mockWimbledonFinalMatch} canEdit={true} />);
 
     // Toss banner must be displayed
-    expect(screen.getByText(/Select First Server \/ Selecionar Servidor/i)).toBeInTheDocument();
+    expect(screen.getByText(/Select First Server/i)).toBeInTheDocument();
 
     // Select Djokovic as first server
     const djokovicTossBtn = screen.getByRole("button", { name: /Novak Djokovic/i });
@@ -112,15 +112,15 @@ describe("Tennis UI Interaction Tests — 2023 Wimbledon Final (Alcaraz vs Djoko
     render(<TennisScoreboard matchData={matchInProgress} canEdit={true} />);
 
     // Get point buttons for both players
-    const addPointButtons = screen.getAllByRole("button", { name: /\+ Ponto/i });
+    const addPointButtons = screen.getAllByRole("button", { name: /^POINT$/i });
     const alcarazAddPoint = addPointButtons[0];
     const djokovicAddPoint = addPointButtons[1];
 
-    const aceButtons = screen.getAllByRole("button", { name: /Ás \(Ace\)/i });
+    const aceButtons = screen.getAllByRole("button", { name: /^Ace$/i });
     const alcarazAceBtn = aceButtons[0];
     const djokovicAceBtn = aceButtons[1];
 
-    const dfButtons = screen.getAllByRole("button", { name: /Falta Dupla/i });
+    const dfButtons = screen.getAllByRole("button", { name: /^Double Fault$/i });
     const djokovicDfBtn = dfButtons[1];
 
     // Rally 1: Alcaraz hits return winner -> 15-0 (Alcaraz leading)
@@ -161,12 +161,12 @@ describe("Tennis UI Interaction Tests — 2023 Wimbledon Final (Alcaraz vs Djoko
     await user.click(djokovicAddPoint); // 30-30
     await user.click(alcarazAddPoint);  // 40-30 Alcaraz (Break Point!)
 
-    // Check Break Point indicator banner (PONTO DE BREAK!)
-    expect(screen.getByText(/PONTO DE BREAK!/i)).toBeInTheDocument();
+    // Check Break Point indicator banner (BREAK POINT)
+    expect(screen.getByText(/BREAK POINT/i)).toBeInTheDocument();
 
     // Djokovic saves Break Point -> 40-40 (Deuce)
     await user.click(djokovicAddPoint);
-    expect(screen.getByText(/IGUALDADE \(40 - 40\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/DEUCE \(40 - 40\)/i)).toBeInTheDocument();
 
     // Djokovic gets Advantage (Ad-40) -> Big point displays AD
     await user.click(djokovicAddPoint);
@@ -174,15 +174,15 @@ describe("Tennis UI Interaction Tests — 2023 Wimbledon Final (Alcaraz vs Djoko
 
     // Alcaraz brings it back to Deuce
     await user.click(alcarazAddPoint);
-    expect(screen.getByText(/IGUALDADE \(40 - 40\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/DEUCE \(40 - 40\)/i)).toBeInTheDocument();
 
     // Alcaraz gets Advantage (40-Ad Break Point)
     await user.click(alcarazAddPoint);
-    expect(screen.getByText(/PONTO DE BREAK!/i)).toBeInTheDocument();
+    expect(screen.getByText(/BREAK POINT/i)).toBeInTheDocument();
     expect(screen.getAllByText("AD").length).toBeGreaterThan(0);
   });
 
-  it("allows referee to manually switch server using Alternar Servidor button", async () => {
+  it("allows referee to manually switch server using Toggle Server button", async () => {
     const user = userEvent.setup();
     const matchData = {
       ...mockWimbledonFinalMatch,
@@ -198,8 +198,8 @@ describe("Tennis UI Interaction Tests — 2023 Wimbledon Final (Alcaraz vs Djoko
 
     render(<TennisScoreboard matchData={matchData} canEdit={true} />);
 
-    // Click "Alternar Servidor"
-    const toggleServerBtn = screen.getByRole("button", { name: /Alternar Servidor/i });
+    // Click "Toggle Server"
+    const toggleServerBtn = screen.getByRole("button", { name: /Toggle Server/i });
     await user.click(toggleServerBtn);
 
     // Verify update call dispatched to matches table

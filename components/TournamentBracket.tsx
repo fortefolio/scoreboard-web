@@ -38,7 +38,7 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
                     {participant?.name ? formatTeamOrPlayerName(participant.name) : (sourceMatch ? `Winner of Match ${sourceMatch.global_match_order}` : "TBD")}
                   </span>
                   {match.status === 'ongoing' && match.scores?.serving_index === i && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-warning flex-shrink-0" title="Serving"></span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-text-secondary flex-shrink-0" title="Serving"></span>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -49,30 +49,30 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
                     return (
                       <span
                         key={sIdx}
-                        className={`text-xs font-mono tabular-nums leading-none min-w-[14px] text-right ${
+                        className={`text-xs font-digital tabular-nums leading-none min-w-[14px] text-right ${
                           pScore > oScore ? "font-semibold text-text-primary" : "text-text-muted"
                         }`}
                       >
                         {pScore}
                         {tbVal !== null && tbVal !== undefined && (
-                          <sup className="text-[9px] text-primary ml-0.5">{tbVal}</sup>
+                          <sup className="text-[9px] text-text-secondary ml-0.5">{tbVal}</sup>
                         )}
                       </span>
                     );
                   })}
                   <div className="flex items-center justify-end pl-1.5 border-l border-outline-variant min-w-[16px]">
-                    <span className="text-xs font-mono tabular-nums font-semibold text-text-primary leading-none">
+                    <span className="text-xs font-digital tabular-nums font-semibold text-text-primary leading-none">
                       {countSetsWon(extractSetsData(match.scores), i as 0 | 1)}
                     </span>
                   </div>
                   {match.status === 'ongoing' && match.scores && (
                     <>
                       {match.sport_type === 'Tennis' && match.scores.tennis && (
-                        <span className="text-xs font-mono tabular-nums font-medium text-text-secondary leading-none min-w-[12px] text-right">
+                        <span className="text-xs font-digital tabular-nums font-medium text-text-secondary leading-none min-w-[12px] text-right">
                           {match.scores.tennis.games?.[i] ?? 0}
                         </span>
                       )}
-                      <span className="text-xs font-digital font-semibold text-primary leading-none min-w-[16px] text-right">
+                      <span className="text-xs font-digital tabular-nums font-semibold text-text-primary leading-none min-w-[16px] text-right">
                         {(() => {
                           if (match.sport_type === 'Tennis' && match.scores.tennis) {
                             const p = match.scores.tennis.points?.[i] ?? 0;
@@ -105,7 +105,7 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
           </div>
           {match.status === 'ongoing' ? (
             <span className="inline-flex items-center gap-1 font-medium text-text-primary text-[11px]">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
               {t("status.live")}
             </span>
           ) : (
@@ -424,19 +424,18 @@ export default function TournamentBracket({
   };
 
   if (loading) return (
-    <div className="flex flex-col items-center py-20 opacity-50">
-       <div className="w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
-       <p className="mt-4 font-label text-[10px] uppercase tracking-widest">Synchronizing Bracket...</p>
+    <div className="flex flex-col items-center py-16">
+       <div className="w-7 h-7 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
+       <p className="mt-3 text-xs font-medium text-text-muted">Loading bracket...</p>
     </div>
   );
 
   if (enrichedMatches.length === 0) {
     return (
-      <div className="mt-12 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4">
-        <div className="text-center p-16 bg-surface-container-low rounded-[3rem] border border-outline-variant/10 relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-50"></div>
-          <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-6 opacity-20 block group-hover:scale-110 transition-transform duration-700">hourglass_empty</span>
-          <p className="text-on-surface-variant text-sm italic font-medium relative z-10">
+      <div className="mt-8 max-w-xl mx-auto">
+        <div className="text-center p-10 bg-surface-container rounded-2xl border border-outline-variant">
+          <span className="material-symbols-outlined text-3xl text-text-muted mb-3 block">hourglass_empty</span>
+          <p className="text-text-secondary text-sm font-medium">
             No matches generated for this tournament yet.
           </p>
         </div>
@@ -452,11 +451,11 @@ export default function TournamentBracket({
       style={{ WebkitOverflowScrolling: "touch" }}
     >
       {round1Complete && enrichedMatches.some(m => m.is_virtual) && (
-        <div className="max-w-xl mx-auto animate-in fade-in duration-300">
-          <div className="bg-surface-container border border-outline-variant p-5 rounded-xl flex items-center justify-between">
+        <div className="max-w-xl mx-auto">
+          <div className="bg-surface-container border border-outline-variant p-4 sm:p-5 rounded-xl flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-surface-container-high rounded-lg flex items-center justify-center text-primary border border-outline-variant">
-                 <span className="material-symbols-outlined text-xl">bolt</span>
+              <div className="w-9 h-9 bg-surface-container-high rounded-lg flex items-center justify-center text-text-secondary border border-outline-variant shrink-0">
+                 <span className="material-symbols-outlined text-lg">bolt</span>
               </div>
               <div className="text-left">
                 <h3 className="text-text-primary text-sm font-semibold">Initialize Knockout</h3>
@@ -466,7 +465,7 @@ export default function TournamentBracket({
             <button
               onClick={handleGenerateKnockout}
               disabled={isGeneratingKnockout}
-              className="bg-text-primary hover:bg-white text-surface-container-lowest px-4 py-2 rounded-lg font-medium text-xs transition-colors disabled:opacity-50 cursor-pointer"
+              className="bg-text-primary hover:bg-white text-surface-container-lowest px-4 py-2 rounded-lg font-medium text-xs transition-colors disabled:opacity-50 cursor-pointer shrink-0"
             >
               {isGeneratingKnockout ? "Initializing..." : "Generate Bracket"}
             </button>
@@ -475,13 +474,13 @@ export default function TournamentBracket({
       )}
 
       {isDoubleElimination ? (
-        <div className="space-y-16">
+        <div className="space-y-12">
           <section>
-            <div className="flex items-center gap-3 mb-8 border-b border-outline-variant pb-4">
-              <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary border border-outline-variant">
+            <div className="flex items-center gap-3 mb-6 border-b border-outline-variant pb-3">
+              <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-secondary border border-outline-variant">
                  <span className="material-symbols-outlined text-lg">military_tech</span>
               </div>
-              <h2 className="text-lg font-semibold tracking-tight text-text-primary">Winners Bracket</h2>
+              <h2 className="text-base sm:text-lg font-semibold tracking-tight text-text-primary">Winners Bracket</h2>
             </div>
             <BracketTree 
               matches={enrichedMatches.filter(m => m.bracket_type === 'winners' || m.bracket_type === 'main')} 
@@ -492,11 +491,11 @@ export default function TournamentBracket({
           </section>
 
           <section>
-            <div className="flex items-center gap-3 mb-8 border-b border-outline-variant pb-4">
+            <div className="flex items-center gap-3 mb-6 border-b border-outline-variant pb-3">
               <div className="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-text-muted border border-outline-variant">
                  <span className="material-symbols-outlined text-lg">history</span>
               </div>
-              <h2 className="text-lg font-semibold tracking-tight text-text-primary">Losers Bracket</h2>
+              <h2 className="text-base sm:text-lg font-semibold tracking-tight text-text-primary">Losers Bracket</h2>
             </div>
             <BracketTree 
               matches={enrichedMatches.filter(m => m.bracket_type === 'losers')} 
@@ -506,12 +505,12 @@ export default function TournamentBracket({
             />
           </section>
 
-          <section className="flex flex-col items-center bg-surface-container p-8 sm:p-12 rounded-2xl border border-outline-variant text-center">
-            <div className="text-center mb-6">
-              <span className="material-symbols-outlined text-3xl text-amber-400 mb-2 block">trophy</span>
-              <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-text-primary">Grand Final</h2>
+          <section className="flex flex-col items-center bg-surface-container p-5 sm:p-6 rounded-2xl border border-outline-variant text-center">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="material-symbols-outlined text-xl text-text-secondary">trophy</span>
+              <h2 className="text-base sm:text-lg font-semibold tracking-tight text-text-primary">Grand Final</h2>
             </div>
-            <div className="w-80 mx-auto">
+            <div className="w-full max-w-xs mx-auto">
               <MatchCard match={enrichedMatches.find(m => m.bracket_type === 'grand_final')} tournament={tournament} />
             </div>
           </section>

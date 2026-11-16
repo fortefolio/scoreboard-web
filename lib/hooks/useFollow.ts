@@ -6,6 +6,18 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export type EntityType = "match" | "tournament" | "team" | "player" | "competition";
 
+const FOLLOWS_CHANGED_EVENT = "scoreboard:follows-changed";
+
+function notifyFollowsChanged(detail: {
+  entityId: string;
+  entityType: "match" | "tournament";
+  following: boolean;
+}) {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent(FOLLOWS_CHANGED_EVENT, { detail }));
+  }
+}
+
 export function useFollow() {
   const { user, supabase: authSupabase } = useAuth();
   const supabase = authSupabase || getSupabaseBrowserClient();
@@ -60,6 +72,34 @@ export function useFollow() {
     fetchFollows();
   }, [fetchFollows]);
 
+  // Synchronize follow state across all useFollow instances on the page
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleSync = (event: Event) => {
+      const detail = (event as CustomEvent<{
+        entityId: string;
+        entityType: "match" | "tournament";
+        following: boolean;
+      }>).detail;
+      if (!detail) return;
+
+      const setter =
+        detail.entityType === "match" ? setFollowedMatchIds : setFollowedTournamentIds;
+      setter((prev) => {
+        const has = prev.has(detail.entityId);
+        if (detail.following === has) return prev;
+        const next = new Set(prev);
+        if (detail.following) next.add(detail.entityId);
+        else next.delete(detail.entityId);
+        return next;
+      });
+    };
+
+    window.addEventListener(FOLLOWS_CHANGED_EVENT, handleSync);
+    return () => window.removeEventListener(FOLLOWS_CHANGED_EVENT, handleSync);
+  }, []);
+
   const isFollowing = useCallback(
     (entityId: string, entityType: "match" | "tournament"): boolean => {
       if (entityType === "match") {
@@ -98,6 +138,7 @@ export function useFollow() {
           return next;
         });
       }
+      notifyFollowsChanged({ entityId, entityType, following: !currentlyFollowing });
 
       try {
         if (currentlyFollowing) {
@@ -140,6 +181,7 @@ export function useFollow() {
             return next;
           });
         }
+        notifyFollowsChanged({ entityId, entityType, following: currentlyFollowing });
         return currentlyFollowing;
       } finally {
         setUpdatingIds((prev) => {

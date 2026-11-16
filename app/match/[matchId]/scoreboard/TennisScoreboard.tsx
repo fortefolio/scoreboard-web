@@ -339,9 +339,9 @@ export default function TennisScoreboard({
             className="flex-1"
             title={translations.scoreboard.point}
           >
-            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]">add</span>
+            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]" aria-hidden="true">add</span>
             <span className="landscape-compact:hidden">{translations.scoreboard.point}</span>
-            <span className="hidden landscape-compact:inline">{locale === "pt" ? "Pt" : "Pt"}</span>
+            <span className="hidden landscape-compact:inline" aria-hidden="true">{locale === "pt" ? "Pt" : "Pt"}</span>
           </ScoreboardActionButton>
           <ScoreboardActionButton
             variant="secondary"
@@ -349,7 +349,7 @@ export default function TennisScoreboard({
             disabled={points[idx] <= 0}
             title={translations.scoreboard.undo}
           >
-            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]">undo</span>
+            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]" aria-hidden="true">undo</span>
             <span>{translations.scoreboard.undo}</span>
           </ScoreboardActionButton>
         </div>
@@ -362,7 +362,7 @@ export default function TennisScoreboard({
             className="flex-1 min-w-0"
             title={translations.scoreboard.tennis.ace}
           >
-            <span className="material-symbols-outlined text-[13px] landscape-compact:text-[12px] text-text-muted shrink-0">bolt</span>
+            <span className="material-symbols-outlined text-[13px] landscape-compact:text-[12px] text-text-muted shrink-0" aria-hidden="true">bolt</span>
             <span className="truncate">{locale === "pt" ? "Ás" : "Ace"}</span>
           </ScoreboardActionButton>
           <ScoreboardActionButton
@@ -372,9 +372,9 @@ export default function TennisScoreboard({
             className="flex-1 min-w-0"
             title={translations.scoreboard.tennis.doubleFault}
           >
-            <span className="material-symbols-outlined text-[13px] landscape-compact:text-[12px] text-text-muted shrink-0">close</span>
+            <span className="material-symbols-outlined text-[13px] landscape-compact:text-[12px] text-text-muted shrink-0" aria-hidden="true">close</span>
             <span className="truncate landscape-compact:hidden">{translations.scoreboard.tennis.doubleFault}</span>
-            <span className="hidden landscape-compact:inline">{locale === "pt" ? "FD" : "DF"}</span>
+            <span className="hidden landscape-compact:inline" aria-hidden="true">{locale === "pt" ? "FD" : "DF"}</span>
           </ScoreboardActionButton>
         </div>
       </div>

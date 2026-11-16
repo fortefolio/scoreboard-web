@@ -59,19 +59,19 @@ describe("Football UI Interaction Tests — Official Match (Sporting CP vs AC. V
   it("renders participants, 'Futebol Oficial' badge, digital scores and 25:00 timer", () => {
     render(<FootballScoreboard matchData={mockFootballMatch} canEdit={true} />);
 
-    expect(screen.getByText("Futebol Oficial")).toBeInTheDocument();
+    expect(screen.getAllByText("Football")[0]).toBeInTheDocument();
     expect(screen.getAllByText("Sporting CP")[0]).toBeInTheDocument();
     expect(screen.getAllByText("AC. Viseu")[0]).toBeInTheDocument();
-    expect(screen.getByText("Taça de Portugal 2026/27")).toBeInTheDocument();
+    expect(screen.getAllByText("Taça de Portugal 2026/27")[0]).toBeInTheDocument();
     expect(screen.getByText("25:00")).toBeInTheDocument();
     expect(screen.getAllByText("1ª Parte").length).toBeGreaterThan(0);
   });
 
-  it("registers a goal (+1 Golo) and handles VAR goal cancellation (-1 Corrigir)", async () => {
+  it("registers a goal (+1 GOAL) and handles VAR goal cancellation (-1)", async () => {
     const user = userEvent.setup();
     render(<FootballScoreboard matchData={mockFootballMatch} canEdit={true} />);
 
-    const goalBtns = screen.getAllByRole("button", { name: /\+1 Golo/i });
+    const goalBtns = screen.getAllByRole("button", { name: /\+1 GOAL/i });
     const sportingGoalBtn = goalBtns[0];
 
     // Sporting scores at 26th minute
@@ -95,8 +95,8 @@ describe("Football UI Interaction Tests — Official Match (Sporting CP vs AC. V
       })
     );
 
-    // VAR cancels goal (-1 Corrigir)
-    const undoBtns = screen.getAllByRole("button", { name: /-1 Corrigir/i });
+    // VAR cancels goal (-1)
+    const undoBtns = screen.getAllByRole("button", { name: /^-1$/i });
     const undoHomeBtn = undoBtns[0];
     await user.click(undoHomeBtn);
 
@@ -113,8 +113,8 @@ describe("Football UI Interaction Tests — Official Match (Sporting CP vs AC. V
     const user = userEvent.setup();
     render(<FootballScoreboard matchData={mockFootballMatch} canEdit={true} />);
 
-    const yellowBtns = screen.getAllByRole("button", { name: /Amarelo/i });
-    const redBtns = screen.getAllByRole("button", { name: /Vermelho/i });
+    const yellowBtns = screen.getAllByRole("button", { name: /^Yellow$/i });
+    const redBtns = screen.getAllByRole("button", { name: /^Red$/i });
 
     // AC Viseu yellow card
     await user.click(yellowBtns[1]);
@@ -161,8 +161,8 @@ describe("Football UI Interaction Tests — Official Match (Sporting CP vs AC. V
     const user = userEvent.setup();
     render(<FootballScoreboard matchData={mockFootballMatch} canEdit={true} />);
 
-    const cornerBtns = screen.getAllByRole("button", { name: /\+ Canto/i });
-    const foulBtns = screen.getAllByRole("button", { name: /\+ Falta/i });
+    const cornerBtns = screen.getAllByRole("button", { name: /\+Corner/i });
+    const foulBtns = screen.getAllByRole("button", { name: /\+Foul/i });
 
     // Corner for Sporting
     await user.click(cornerBtns[0]);
@@ -189,14 +189,14 @@ describe("Football UI Interaction Tests — Official Match (Sporting CP vs AC. V
     );
   });
 
-  it("adjusts stoppage time (+1m) and displays '+1 MIN COMPENSAÇÃO' in digital badge", async () => {
+  it("adjusts stoppage time (+1m) and displays 'ET: +1m' in digital badge", async () => {
     const user = userEvent.setup();
     render(<FootballScoreboard matchData={mockFootballMatch} canEdit={true} />);
 
     const stoppageBtn = screen.getByRole("button", { name: /\+1m/i });
     await user.click(stoppageBtn);
 
-    expect(screen.getByText(/\+1 MIN COMPENSAÇÃO/i)).toBeInTheDocument();
+    expect(screen.getByText(/ET: \+1m/i)).toBeInTheDocument();
   });
 
   it("changes match period to Intervalo (pausing clock) and then 2ª Parte (45:00)", async () => {

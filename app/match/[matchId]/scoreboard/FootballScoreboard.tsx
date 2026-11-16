@@ -316,9 +316,9 @@ export default function FootballScoreboard({
             className="flex-1"
             title={translations.scoreboard.football.plusGoal}
           >
-            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]">add</span>
+            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]" aria-hidden="true">add</span>
             <span className="landscape-compact:hidden">{translations.scoreboard.football.plusGoal}</span>
-            <span className="hidden landscape-compact:inline">{locale === "pt" ? "Golo" : "Goal"}</span>
+            <span className="hidden landscape-compact:inline" aria-hidden="true">{locale === "pt" ? "Golo" : "Goal"}</span>
           </ScoreboardActionButton>
           <ScoreboardActionButton
             variant="secondary"
@@ -326,7 +326,7 @@ export default function FootballScoreboard({
             disabled={teamGoals <= 0}
             title={translations.scoreboard.undo}
           >
-            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]">undo</span>
+            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]" aria-hidden="true">undo</span>
             <span>{translations.scoreboard.undo}</span>
           </ScoreboardActionButton>
         </div>
@@ -338,7 +338,7 @@ export default function FootballScoreboard({
             title={translations.scoreboard.football.yellowCard}
           >
             <span className="landscape-compact:hidden">{translations.scoreboard.football.yellowCard}</span>
-            <span className="hidden landscape-compact:inline">{locale === "pt" ? "Am" : "YC"}</span>
+            <span className="hidden landscape-compact:inline" aria-hidden="true">{locale === "pt" ? "Am" : "YC"}</span>
           </ScoreboardActionButton>
           <ScoreboardActionButton
             variant="danger"
@@ -346,7 +346,7 @@ export default function FootballScoreboard({
             title={translations.scoreboard.football.redCard}
           >
             <span className="landscape-compact:hidden">{translations.scoreboard.football.redCard}</span>
-            <span className="hidden landscape-compact:inline">{locale === "pt" ? "Vm" : "RC"}</span>
+            <span className="hidden landscape-compact:inline" aria-hidden="true">{locale === "pt" ? "Vm" : "RC"}</span>
           </ScoreboardActionButton>
           <ScoreboardActionButton
             variant="secondary"
@@ -354,7 +354,7 @@ export default function FootballScoreboard({
             title={translations.scoreboard.football.plusCorner}
           >
             <span className="landscape-compact:hidden">{translations.scoreboard.football.plusCorner}</span>
-            <span className="hidden landscape-compact:inline">+C</span>
+            <span className="hidden landscape-compact:inline" aria-hidden="true">+C</span>
           </ScoreboardActionButton>
           <ScoreboardActionButton
             variant="secondary"
@@ -362,7 +362,7 @@ export default function FootballScoreboard({
             title={translations.scoreboard.football.plusFoul}
           >
             <span className="landscape-compact:hidden">{translations.scoreboard.football.plusFoul}</span>
-            <span className="hidden landscape-compact:inline">+F</span>
+            <span className="hidden landscape-compact:inline" aria-hidden="true">+F</span>
           </ScoreboardActionButton>
         </div>
       </div>

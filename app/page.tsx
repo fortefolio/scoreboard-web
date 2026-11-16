@@ -34,7 +34,7 @@ export default function Home() {
 
 function HomeContent() {
   const { user, supabase } = useAuth();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const followHook = useFollow();
@@ -60,6 +60,7 @@ function HomeContent() {
 
   // Filters & Search State
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchFocused, setSearchFocused] = useState<boolean>(false);
   const [sportFilter, setSportFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateSort, setDateSort] = useState<"desc" | "asc">("desc");
@@ -98,12 +99,12 @@ function HomeContent() {
       const [matchesRes, tournamentsRes] = await Promise.all([
         supabase
           .from("matches")
-          .select("*, tournaments(name)")
+          .select("*, tournaments(name), organizer:users!organizer_id(username)")
           .order("created_at", { ascending: false })
           .limit(100),
         supabase
           .from("tournaments")
-          .select("*")
+          .select("*, organizer:users!organizer_id(username)")
           .order("created_at", { ascending: false })
           .limit(100),
       ]);
@@ -289,19 +290,22 @@ function HomeContent() {
           }
         }
 
-        // Text search (participants, tournament, court)
+        // Text search (participants, tournament, court, sport, organizer)
         if (query) {
+          const userQuery = query.startsWith("@") ? query.slice(1) : query;
           const p1 = (m.participants?.[0]?.name || "").toLowerCase();
           const p2 = (m.participants?.[1]?.name || "").toLowerCase();
           const tName = (m.tournaments?.name || "").toLowerCase();
           const court = (m.court || "").toLowerCase();
           const sport = (m.sport_type || "").toLowerCase();
+          const organizer = (m.organizer?.username || "").toLowerCase();
           if (
             !p1.includes(query) &&
             !p2.includes(query) &&
             !tName.includes(query) &&
             !court.includes(query) &&
-            !sport.includes(query)
+            !sport.includes(query) &&
+            !(userQuery && organizer.includes(userQuery))
           ) {
             return false;
           }
@@ -342,11 +346,17 @@ function HomeContent() {
           }
         }
 
-        // Text search
+        // Text search (name, sport, organizer)
         if (query) {
+          const userQuery = query.startsWith("@") ? query.slice(1) : query;
           const name = (t.name || "").toLowerCase();
           const sport = (t.sport_type || "").toLowerCase();
-          if (!name.includes(query) && !sport.includes(query)) {
+          const organizer = (t.organizer?.username || "").toLowerCase();
+          if (
+            !name.includes(query) &&
+            !sport.includes(query) &&
+            !(userQuery && organizer.includes(userQuery))
+          ) {
             return false;
           }
         }
@@ -368,6 +378,81 @@ function HomeContent() {
   const followedTournaments = useMemo(() => {
     return filteredTournaments.filter((t) => followHook.followedTournamentIds.has(t.id));
   }, [filteredTournaments, followHook.followedTournamentIds]);
+
+  // Matching Organizers for Search Popover
+  const matchingOrganizers = useMemo(() => {
+    const raw = searchQuery.trim().toLowerCase();
+    const q = raw.startsWith("@") ? raw.slice(1) : raw;
+    if (q.length < 2) return [];
+
+    const byUsername = new Map<
+      string,
+      { username: string; matches: number; tournaments: number }
+    >();
+
+    for (const m of matches) {
+      const uname = m.organizer?.username;
+      if (!uname || !uname.toLowerCase().includes(q)) continue;
+      const entry = byUsername.get(uname) || { username: uname, matches: 0, tournaments: 0 };
+      entry.matches += 1;
+      byUsername.set(uname, entry);
+    }
+
+    for (const tourn of tournaments) {
+      const uname = tourn.organizer?.username;
+      if (!uname || !uname.toLowerCase().includes(q)) continue;
+      const entry = byUsername.get(uname) || { username: uname, matches: 0, tournaments: 0 };
+      entry.tournaments += 1;
+      byUsername.set(uname, entry);
+    }
+
+    return Array.from(byUsername.values()).slice(0, 3);
+  }, [matches, tournaments, searchQuery]);
+
+  const matchingQuickTournaments = useMemo(() => {
+    if (activeTab === "tournaments") return [];
+    const q = searchQuery.trim().toLowerCase();
+    const userQ = q.startsWith("@") ? q.slice(1) : q;
+    if (userQ.length < 2) return [];
+
+    return tournaments
+      .filter((tItem) => {
+        const name = (tItem.name || "").toLowerCase();
+        const sport = (tItem.sport_type || "").toLowerCase();
+        const org = (tItem.organizer?.username || "").toLowerCase();
+        return name.includes(q) || sport.includes(q) || (userQ && org.includes(userQ));
+      })
+      .slice(0, 3);
+  }, [activeTab, tournaments, searchQuery]);
+
+  const matchingQuickMatches = useMemo(() => {
+    if (activeTab === "matches") return [];
+    const q = searchQuery.trim().toLowerCase();
+    const userQ = q.startsWith("@") ? q.slice(1) : q;
+    if (userQ.length < 2) return [];
+
+    return matches
+      .filter((m) => {
+        const p1 = (m.participants?.[0]?.name || "").toLowerCase();
+        const p2 = (m.participants?.[1]?.name || "").toLowerCase();
+        const tName = (m.tournaments?.name || "").toLowerCase();
+        const sport = (m.sport_type || "").toLowerCase();
+        const org = (m.organizer?.username || "").toLowerCase();
+        return (
+          p1.includes(q) ||
+          p2.includes(q) ||
+          tName.includes(q) ||
+          sport.includes(q) ||
+          (userQ && org.includes(userQ))
+        );
+      })
+      .slice(0, 3);
+  }, [activeTab, matches, searchQuery]);
+
+  const hasQuickJumpResults =
+    matchingOrganizers.length > 0 ||
+    matchingQuickTournaments.length > 0 ||
+    matchingQuickMatches.length > 0;
 
   // Pagination Calculations
   const isMatchesTab = activeTab === "matches";
@@ -479,21 +564,153 @@ function HomeContent() {
               </div>
             )}
 
-            {/* Search Box matching reference image */}
-            <div className="relative flex items-center w-full sm:w-56 md:w-64">
-              <span className="material-symbols-outlined absolute left-2.5 text-[16px] text-text-muted pointer-events-none">
+            {/* Search Box with Organizer quick-jump */}
+            <div className="relative flex items-center w-full sm:w-64 md:w-72">
+              <span className="material-symbols-outlined absolute left-3.5 text-[17px] text-text-muted pointer-events-none">
                 search
               </span>
               <input
                 type="text"
-                placeholder={t("common.searchPlaceholder")}
+                placeholder={
+                  locale === "pt"
+                    ? "Pesquisar jogos, torneios ou @utilizadores..."
+                    : "Search matches, tournaments, or @users..."
+                }
                 value={searchQuery}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="w-full bg-surface-container-high/60 text-text-primary text-xs font-medium pl-8 pr-2.5 py-1.5 rounded-lg border border-outline-variant outline-none focus:border-outline transition-colors placeholder:text-text-muted"
+                className="w-full bg-surface-container-lowest text-text-primary text-xs sm:text-[13px] font-medium pl-10 pr-10 py-2 rounded-lg border border-outline-variant outline-none focus:border-text-secondary transition-colors placeholder:text-text-muted"
               />
+              {searchQuery.length > 0 && (
+                <button
+                  type="button"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setSearchQuery("");
+                    setCurrentPage(1);
+                  }}
+                  aria-label={t("common.clearFilters")}
+                  className="absolute right-3.5 text-text-muted hover:text-text-primary transition-colors cursor-pointer flex items-center justify-center"
+                >
+                  <span
+                    className="material-symbols-outlined text-[18px]"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    cancel
+                  </span>
+                </button>
+              )}
+
+              {searchFocused && hasQuickJumpResults && (
+                <div className="absolute left-0 top-full mt-2 w-full sm:w-[340px] max-h-80 overflow-y-auto bg-surface-container-high border border-outline rounded-xl shadow-2xl shadow-black/70 ring-1 ring-white/10 z-40 py-1.5 divide-y divide-outline-variant">
+                  {matchingOrganizers.length > 0 && (
+                    <div className="py-1">
+                      <div className="px-3 py-1 text-[11px] font-semibold text-text-secondary">
+                        {locale === "pt" ? "Organizadores" : "Organizers"}
+                      </div>
+                      {matchingOrganizers.map((org) => (
+                        <Link
+                          key={org.username}
+                          href={`/user/${encodeURIComponent(org.username)}`}
+                          className="flex items-center justify-between gap-2.5 px-3 py-1.5 hover:bg-surface-container-high transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-6 h-6 rounded-md bg-surface-container-high border border-outline-variant flex items-center justify-center text-[10px] font-medium text-text-secondary shrink-0">
+                              {org.username.slice(0, 2).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-xs font-medium text-text-primary truncate">
+                                @{org.username}
+                              </div>
+                              <div className="text-[11px] text-text-muted truncate">
+                                {org.matches} {t("home.matchesCount").toLowerCase()} • {org.tournaments}{" "}
+                                {t("home.tournamentsCount").toLowerCase()}
+                              </div>
+                            </div>
+                          </div>
+                          <span className="material-symbols-outlined text-[15px] text-text-muted shrink-0">
+                            arrow_forward
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  {matchingQuickTournaments.length > 0 && (
+                    <div className="py-1">
+                      <div className="px-3 py-1 text-[11px] font-semibold text-text-secondary">
+                        {t("home.tournamentsTab")}
+                      </div>
+                      {matchingQuickTournaments.map((tourn) => (
+                        <Link
+                          key={tourn.id}
+                          href={`/tournament/${tourn.id}`}
+                          className="flex items-center justify-between gap-2.5 px-3 py-1.5 hover:bg-surface-container-high transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-6 h-6 rounded-md bg-surface-container-high border border-outline-variant flex items-center justify-center shrink-0">
+                              <SportIcon sport={tourn.sport_type} className="text-[13px] text-text-secondary" />
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-xs font-medium text-text-primary truncate">
+                                {tourn.name}
+                              </div>
+                              <div className="text-[11px] text-text-muted truncate">
+                                {getSportTranslation(tourn.sport_type, t)}
+                                {tourn.organizer?.username ? ` • @${tourn.organizer.username}` : ""}
+                              </div>
+                            </div>
+                          </div>
+                          <span className="material-symbols-outlined text-[15px] text-text-muted shrink-0">
+                            arrow_forward
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+
+                  {matchingQuickMatches.length > 0 && (
+                    <div className="py-1">
+                      <div className="px-3 py-1 text-[11px] font-semibold text-text-secondary">
+                        {t("home.matchesTab")}
+                      </div>
+                      {matchingQuickMatches.map((m) => {
+                        const team0 = formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD";
+                        const team1 = formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD";
+                        return (
+                          <Link
+                            key={m.id}
+                            href={`/match/${m.id}`}
+                            className="flex items-center justify-between gap-2.5 px-3 py-1.5 hover:bg-surface-container-high transition-colors"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-6 h-6 rounded-md bg-surface-container-high border border-outline-variant flex items-center justify-center shrink-0">
+                                <SportIcon sport={m.sport_type} className="text-[13px] text-text-secondary" />
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-xs font-medium text-text-primary truncate">
+                                  {team0} vs {team1}
+                                </div>
+                                <div className="text-[11px] text-text-muted truncate">
+                                  {m.tournaments?.name || getSportTranslation(m.sport_type, t)}
+                                  {m.organizer?.username ? ` • @${m.organizer.username}` : ""}
+                                </div>
+                              </div>
+                            </div>
+                            <span className="material-symbols-outlined text-[15px] text-text-muted shrink-0">
+                              arrow_forward
+                            </span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -658,7 +875,7 @@ function HomeContent() {
                 </div>
               ) : viewMode === "cards" ? (
                 /* Cards Grid View */
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {paginatedMatches.map((m) => (
                     <MatchCard key={m.id} match={m} />
                   ))}
@@ -709,85 +926,77 @@ function HomeContent() {
                 </div>
               ) : viewMode === "cards" ? (
                 /* Cards Grid View */
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {paginatedTournaments.map((tItem) => (
-                    <div
+                    <Link
                       key={tItem.id}
-                      className="bg-surface-container-low rounded-3xl p-6 border border-white/5 hover:border-primary/20 transition-all flex flex-col justify-between group shadow-lg"
+                      href={`/tournament/${tItem.id}`}
+                      className="w-full group block h-full"
                     >
-                      <div>
-                        <div className="flex items-center justify-between gap-2 mb-4">
-                          <div className="flex items-center gap-2">
-                            <SportIcon
-                              sport={tItem.sport_type}
-                              className="text-text-muted group-hover:text-text-primary text-[20px]"
-                            />
-                            <span className="text-[10px] font-label font-black uppercase tracking-wider text-on-surface-variant">
-                              {getSportTranslation(tItem.sport_type, t)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`px-2 py-0.5 rounded-md text-[11px] font-medium border ${
-                                tItem.status === "completed"
-                                  ? "bg-surface-container text-text-muted border-outline-variant"
-                                  : tItem.status === "ongoing"
-                                  ? "bg-surface-container text-text-primary border-outline-variant inline-flex items-center gap-1.5"
-                                  : "bg-surface-container text-text-secondary border-outline-variant"
-                              }`}
-                            >
-                              {tItem.status === "ongoing" && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                      <div className="bg-surface-container rounded-xl p-4 border border-outline-variant hover:border-outline hover:bg-surface-container-high/40 transition-colors flex flex-col justify-between h-full">
+                        <div>
+                          <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-outline-variant/60 min-w-0">
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <SportIcon
+                                sport={tItem.sport_type}
+                                className="text-text-muted group-hover:text-text-primary text-[15px] shrink-0 transition-colors"
+                              />
+                              <span className="text-xs font-medium text-text-secondary truncate">
+                                {getSportTranslation(tItem.sport_type, t)}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {tItem.status === "ongoing" ? (
+                                <span className="text-xs font-medium text-text-primary flex items-center gap-1.5 shrink-0">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                                  {t("status.live")}
+                                </span>
+                              ) : (
+                                <span className="text-xs font-medium text-text-muted shrink-0">
+                                  {tItem.status === "completed"
+                                    ? t("status.completed")
+                                    : t("status.scheduled")}
+                                </span>
                               )}
-                              {tItem.status === "completed"
-                                ? t("status.completed")
-                                : tItem.status === "ongoing"
-                                ? t("status.live")
-                                : t("status.scheduled")}
-                            </span>
-                            <FollowButton
-                              entityId={tItem.id}
-                              entityType="tournament"
-                              variant="icon"
-                              followHook={followHook}
-                            />
+                              <FollowButton
+                                entityId={tItem.id}
+                                entityType="tournament"
+                                variant="icon"
+                                followHook={followHook}
+                                className="text-text-muted hover:text-text-primary"
+                              />
+                            </div>
                           </div>
+
+                          <h3 className="text-sm font-semibold text-text-primary mb-1.5 leading-snug">
+                            {tItem.name}
+                          </h3>
+
+                          <p className="text-xs text-text-muted mb-4">
+                            {tItem.settings?.stage_1?.type === "groups"
+                              ? t("tournament.groupStage")
+                              : tItem.settings?.stage_1?.type === "double_elimination"
+                              ? t("tournament.doubleElimination")
+                              : t("tournament.singleElimination")}
+                          </p>
                         </div>
 
-                        <h3 className="font-headline font-black text-lg text-on-surface mb-2 group-hover:text-primary transition-colors">
-                          {tItem.name}
-                        </h3>
-
-                        <p className="text-xs text-on-surface-variant/70 font-label uppercase tracking-wider mb-4">
-                          {tItem.settings?.stage_1?.type === "groups"
-                            ? t("tournament.groupStage")
-                            : tItem.settings?.stage_1?.type === "double_elimination"
-                            ? t("tournament.doubleElimination")
-                            : t("tournament.singleElimination")}
-                        </p>
-                      </div>
-
-                      <div className="pt-4 border-t border-white/5 flex items-center justify-between">
-                        <span className="font-mono text-xs text-on-surface-variant/60">
-                          {tItem.start_date
-                            ? new Date(tItem.start_date).toLocaleDateString(undefined, {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              })
-                            : t("home.tbdDate")}
-                        </span>
-                        <Link
-                          href={`/tournament/${tItem.id}`}
-                          className="inline-flex items-center gap-1 text-xs font-bold text-primary group-hover:translate-x-1 transition-transform"
-                        >
-                          {t("home.viewTournament")}
-                          <span className="material-symbols-outlined text-[16px]">
+                        <div className="pt-3 border-t border-outline-variant/60 flex items-center justify-between">
+                          <span className="font-mono tabular-nums text-xs text-text-muted">
+                            {tItem.start_date
+                              ? new Date(tItem.start_date).toLocaleDateString(undefined, {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : t("home.tbdDate")}
+                          </span>
+                          <span className="material-symbols-outlined text-[16px] text-text-muted group-hover:text-text-primary transition-colors">
                             arrow_forward
                           </span>
-                        </Link>
+                        </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (
@@ -869,7 +1078,7 @@ function HomeContent() {
                       </div>
 
                       {viewMode === "cards" ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                           {followedMatches.map((m) => (
                             <MatchCard key={m.id} match={m} />
                           ))}
@@ -904,61 +1113,61 @@ function HomeContent() {
                       </div>
 
                       {viewMode === "cards" ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {followedTournaments.map((tItem) => (
-                            <div
+                            <Link
                               key={tItem.id}
-                              className="bg-surface-container rounded-xl p-5 border border-outline-variant hover:border-outline-focus transition-colors flex flex-col justify-between group"
+                              href={`/tournament/${tItem.id}`}
+                              className="w-full group block h-full"
                             >
-                              <div>
-                                <div className="flex items-center justify-between gap-2 mb-3">
-                                  <div className="flex items-center gap-1.5">
-                                    <SportIcon
-                                      sport={tItem.sport_type}
-                                      className="text-text-muted text-[16px]"
+                              <div className="bg-surface-container rounded-xl p-4 border border-outline-variant hover:border-outline hover:bg-surface-container-high/40 transition-colors flex flex-col justify-between h-full">
+                                <div>
+                                  <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-outline-variant/60 min-w-0">
+                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                      <SportIcon
+                                        sport={tItem.sport_type}
+                                        className="text-text-muted group-hover:text-text-primary text-[15px] shrink-0 transition-colors"
+                                      />
+                                      <span className="text-xs font-medium text-text-secondary truncate">
+                                        {getSportTranslation(tItem.sport_type, t)}
+                                      </span>
+                                    </div>
+                                    <FollowButton
+                                      entityId={tItem.id}
+                                      entityType="tournament"
+                                      variant="icon"
+                                      followHook={followHook}
+                                      className="text-text-muted hover:text-text-primary"
                                     />
-                                    <span className="text-xs font-medium text-text-secondary">
-                                      {getSportTranslation(tItem.sport_type, t)}
-                                    </span>
                                   </div>
-                                  <FollowButton
-                                    entityId={tItem.id}
-                                    entityType="tournament"
-                                    variant="icon"
-                                    followHook={followHook}
-                                  />
+
+                                  <h3 className="text-sm font-semibold text-text-primary mb-1.5 leading-snug">
+                                    {tItem.name}
+                                  </h3>
+
+                                  <p className="text-xs text-text-muted mb-4">
+                                    {tItem.settings?.stage_1?.type === "groups"
+                                      ? t("tournament.groupStage")
+                                      : t("tournament.singleElimination")}
+                                  </p>
                                 </div>
 
-                                <h3 className="font-semibold text-base text-text-primary mb-1.5 group-hover:text-primary transition-colors">
-                                  {tItem.name}
-                                </h3>
-
-                                <p className="text-xs text-text-muted mb-4">
-                                  {tItem.settings?.stage_1?.type === "groups"
-                                    ? t("tournament.groupStage")
-                                    : t("tournament.singleElimination")}
-                                </p>
+                                <div className="pt-3 border-t border-outline-variant/60 flex items-center justify-between">
+                                  <span className="font-mono tabular-nums text-xs text-text-muted">
+                                    {tItem.start_date
+                                      ? new Date(tItem.start_date).toLocaleDateString(undefined, {
+                                          day: "numeric",
+                                          month: "short",
+                                          year: "numeric",
+                                        })
+                                      : t("home.tbdDate")}
+                                  </span>
+                                  <span className="material-symbols-outlined text-[16px] text-text-muted group-hover:text-text-primary transition-colors">
+                                    arrow_forward
+                                  </span>
+                                </div>
                               </div>
-
-                              <div className="pt-3 border-t border-outline-variant flex items-center justify-between">
-                                <span className="font-mono text-xs text-text-muted">
-                                  {tItem.start_date
-                                    ? new Date(tItem.start_date).toLocaleDateString(undefined, {
-                                        day: "numeric",
-                                        month: "short",
-                                        year: "numeric",
-                                      })
-                                    : t("home.tbdDate")}
-                                </span>
-                                <Link
-                                  href={`/tournament/${tItem.id}`}
-                                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                                >
-                                  {t("home.viewTournament")}
-                                  <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-                                </Link>
-                              </div>
-                            </div>
+                            </Link>
                           ))}
                         </div>
                       ) : (
@@ -989,22 +1198,23 @@ function HomeContent() {
 
       {/* Authentication Modal (Preserved for full compatibility with tests & auth flow) */}
       {authModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-surface-container border border-outline-variant rounded-2xl p-6 sm:p-7 max-w-md w-full relative shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75">
+          <div className="bg-surface-container border border-outline-variant rounded-xl p-6 max-w-md w-full relative">
             <button
               onClick={closeAuthModal}
+              aria-label="Close"
               className="absolute top-5 right-5 text-text-muted hover:text-text-primary transition-colors cursor-pointer p-1 rounded-lg hover:bg-surface-container-high"
             >
               <span className="material-symbols-outlined text-lg leading-none">close</span>
             </button>
 
-            <div className="text-center mb-6">
-              <h2 className="font-sans text-xl sm:text-2xl font-semibold tracking-tight text-text-primary">
+            <div className="text-left mb-5 pr-8">
+              <h2 className="font-sans text-lg font-semibold tracking-tight text-text-primary">
                 {authModal === "signup"
                   ? t("auth.createAccount")
                   : authModal === "forgot"
                   ? t("auth.forgotPasswordTitle")
-                  : t("auth.welcomeBack")}
+                  : t("auth.signInBtn")}
               </h2>
               <p className="text-xs text-text-muted mt-1 leading-relaxed">
                 {authModal === "signup"
@@ -1039,10 +1249,10 @@ function HomeContent() {
               </div>
             ) : (
               <>
-                <form onSubmit={handleAuthSubmit} className="space-y-3.5">
+                <form onSubmit={handleAuthSubmit} className="space-y-4">
                   {authModal === "signup" && (
                     <div>
-                      <label className="block text-[11px] font-medium text-text-muted mb-1.5">
+                      <label className="block text-xs font-medium text-text-secondary mb-1.5">
                         {t("auth.username")}
                       </label>
                       <input
@@ -1050,13 +1260,13 @@ function HomeContent() {
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder={t("auth.usernamePlaceholder")}
-                        className="w-full bg-surface-container-high text-text-primary px-3.5 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-primary transition-colors text-xs font-medium placeholder:text-text-muted/40"
+                        className="w-full bg-surface-container-high text-text-primary px-3.5 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-outline-focus transition-colors text-xs font-medium placeholder:text-text-muted/50"
                       />
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-[11px] font-medium text-text-muted mb-1.5">
+                    <label className="block text-xs font-medium text-text-secondary mb-1.5">
                       {t("auth.email")}
                     </label>
                     <input
@@ -1065,14 +1275,14 @@ function HomeContent() {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={t("auth.emailPlaceholder")}
                       required
-                      className="w-full bg-surface-container-high text-text-primary px-3.5 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-primary transition-colors text-xs font-medium placeholder:text-text-muted/40"
+                      className="w-full bg-surface-container-high text-text-primary px-3.5 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-outline-focus transition-colors text-xs font-medium placeholder:text-text-muted/50"
                     />
                   </div>
 
                   {authModal !== "forgot" && (
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <label className="block text-[11px] font-medium text-text-muted">
+                        <label className="block text-xs font-medium text-text-secondary">
                           {t("auth.password")}
                         </label>
                         {authModal === "login" && (
@@ -1082,7 +1292,7 @@ function HomeContent() {
                               setAuthModal("forgot");
                               setForgotEmailSent(false);
                             }}
-                            className="text-[11px] text-primary hover:underline cursor-pointer font-medium"
+                            className="text-xs text-text-muted hover:text-text-primary hover:underline underline-offset-2 cursor-pointer font-medium transition-colors"
                           >
                             {t("auth.forgotPassword")}
                           </button>
@@ -1094,10 +1304,10 @@ function HomeContent() {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder={t("auth.passwordPlaceholder")}
                         required
-                        className="w-full bg-surface-container-high text-text-primary px-3.5 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-primary transition-colors text-xs font-medium placeholder:text-text-muted/40"
+                        className="w-full bg-surface-container-high text-text-primary px-3.5 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-outline-focus transition-colors text-xs font-medium placeholder:text-text-muted/50"
                       />
                       {authModal === "signup" && (
-                        <p className="text-[11px] text-text-muted mt-1 leading-snug">
+                        <p className="text-[11px] text-text-muted mt-1.5 leading-snug">
                           {t("auth.passwordRequirements")}
                         </p>
                       )}
@@ -1106,7 +1316,7 @@ function HomeContent() {
 
                   {authModal === "signup" && (
                     <div>
-                      <label className="block text-[11px] font-medium text-text-muted mb-1.5">
+                      <label className="block text-xs font-medium text-text-secondary mb-1.5">
                         {t("auth.confirmPassword")}
                       </label>
                       <input
@@ -1114,7 +1324,7 @@ function HomeContent() {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder={t("auth.confirmPasswordPlaceholder")}
-                        className="w-full bg-surface-container-high text-text-primary px-3.5 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-primary transition-colors text-xs font-medium placeholder:text-text-muted/40"
+                        className="w-full bg-surface-container-high text-text-primary px-3.5 py-2.5 rounded-lg border border-outline-variant outline-none focus:border-outline-focus transition-colors text-xs font-medium placeholder:text-text-muted/50"
                       />
                     </div>
                   )}
@@ -1134,12 +1344,12 @@ function HomeContent() {
                   </button>
                 </form>
 
-                <div className="mt-5 text-center">
+                <div className="mt-5 pt-4 border-t border-outline-variant/60 text-center">
                   {authModal === "forgot" ? (
                     <button
                       type="button"
                       onClick={() => setAuthModal("login")}
-                      className="text-xs text-primary font-medium hover:underline cursor-pointer"
+                      className="text-xs text-text-primary font-medium hover:underline underline-offset-2 cursor-pointer"
                     >
                       {t("auth.backToSignIn")}
                     </button>
@@ -1154,7 +1364,7 @@ function HomeContent() {
                           params.set("auth", "login");
                           router.replace(window.location.pathname + "?" + params.toString());
                         }}
-                        className="text-primary font-medium hover:underline cursor-pointer"
+                        className="text-text-primary font-medium hover:underline underline-offset-2 cursor-pointer"
                       >
                         {t("auth.signInBtn")}
                       </button>
@@ -1170,7 +1380,7 @@ function HomeContent() {
                           params.set("auth", "signup");
                           router.replace(window.location.pathname + "?" + params.toString());
                         }}
-                        className="text-primary font-medium hover:underline cursor-pointer"
+                        className="text-text-primary font-medium hover:underline underline-offset-2 cursor-pointer"
                       >
                         {t("auth.signUpBtn")}
                       </button>

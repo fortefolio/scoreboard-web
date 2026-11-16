@@ -64,9 +64,9 @@ describe("Basketball UI Interaction Tests — FIBA Liga Betclic (SL Benfica vs F
 
     expect(screen.getAllByText("SL Benfica")[0]).toBeInTheDocument();
     expect(screen.getAllByText("FC Porto")[0]).toBeInTheDocument();
-    expect(screen.getByText("Liga Betclic Basquetebol")).toBeInTheDocument();
+    expect(screen.getAllByText("Liga Betclic Basquetebol")[0]).toBeInTheDocument();
     expect(screen.getByText("10:00")).toBeInTheDocument();
-    expect(screen.getAllByText("24s").length).toBeGreaterThan(0);
+    expect(screen.getByTitle("Reset 24s")).toBeInTheDocument();
     expect(screen.getAllByText("Q1").length).toBeGreaterThan(0);
   });
 
@@ -125,7 +125,7 @@ describe("Basketball UI Interaction Tests — FIBA Liga Betclic (SL Benfica vs F
     const user = userEvent.setup();
     render(<BasketballScoreboard matchData={mockFibaBasketballMatch} canEdit={true} />);
 
-    const foulBtns = screen.getAllByRole("button", { name: /\+ Falta/i });
+    const foulBtns = screen.getAllByRole("button", { name: /\+ Foul/i });
     const benficaFoulBtn = foulBtns[0];
 
     // Click 4 fouls for Benfica
@@ -134,22 +134,22 @@ describe("Basketball UI Interaction Tests — FIBA Liga Betclic (SL Benfica vs F
     await user.click(benficaFoulBtn);
     await user.click(benficaFoulBtn);
 
-    expect(screen.queryByText(/\(BÓNUS\)/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/\(BONUS\)/i)).not.toBeInTheDocument();
 
     // 5th foul triggers bonus
     await user.click(benficaFoulBtn);
-    expect(screen.getByText(/\(BÓNUS\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/\(BONUS\)/i)).toBeInTheDocument();
   });
 
-  it("decrements team timeouts and pauses clock when Desconto button is pressed", async () => {
+  it("decrements team timeouts and pauses clock when Timeout button is pressed", async () => {
     const user = userEvent.setup();
     render(<BasketballScoreboard matchData={mockFibaBasketballMatch} canEdit={true} />);
 
-    const timeoutBtns = screen.getAllByRole("button", { name: /Desconto/i });
+    const timeoutBtns = screen.getAllByRole("button", { name: /^Timeout$/i });
     const portoTimeoutBtn = timeoutBtns[1];
 
     // Both teams have 5 timeouts initially
-    expect(screen.getAllByText(/Descontos:/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/TO:/i).length).toBeGreaterThan(0);
 
     // Click timeout for Porto
     await user.click(portoTimeoutBtn);

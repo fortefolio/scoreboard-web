@@ -381,7 +381,7 @@ export default function BasketballScoreboard({
             onClick={() => handleScore(side, -1)}
             title={translations.scoreboard.undo}
           >
-            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]">undo</span>
+            <span className="material-symbols-outlined text-[14px] landscape-compact:text-[13px]" aria-hidden="true">undo</span>
             <span>{translations.scoreboard.undo}</span>
           </ScoreboardActionButton>
         </div>
@@ -394,7 +394,7 @@ export default function BasketballScoreboard({
             title={translations.scoreboard.basketball.plusFoul}
           >
             <span className="landscape-compact:hidden">{translations.scoreboard.basketball.plusFoul}</span>
-            <span className="hidden landscape-compact:inline">+F</span>
+            <span className="hidden landscape-compact:inline" aria-hidden="true">+F</span>
           </ScoreboardActionButton>
           <ScoreboardActionButton
             variant="secondary"
@@ -404,7 +404,7 @@ export default function BasketballScoreboard({
             title={translations.scoreboard.timeout}
           >
             <span className="landscape-compact:hidden">{translations.scoreboard.timeout}</span>
-            <span className="hidden landscape-compact:inline">{locale === "pt" ? "Desc" : "TO"}</span>
+            <span className="hidden landscape-compact:inline" aria-hidden="true">{locale === "pt" ? "Desc" : "TO"}</span>
           </ScoreboardActionButton>
         </div>
       </div>

@@ -23,8 +23,16 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Digital7Mono';
+  src: url('/fonts/digital-7-mono.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
-  --font-digital: "Digital7", monospace;
+  --font-digital: "Digital7Mono", monospace;
   
   /* Unslop Ink Neutral Ramp for Precision Sports Telemetry */
   --color-background: #0b0d14;
@@ -106,12 +114,16 @@
 :root {
   --background: #0b0d14;
   --foreground: #eef0f5;
-  --font-digital: "Digital7", monospace;
+  --font-digital: "Digital7Mono", monospace;
   --border-hairline: rgba(238, 240, 245, 0.08);
 }
 
 @utility font-digital {
   font-family: var(--font-digital) !important;
+}
+
+@utility font-digital-logo {
+  font-family: "Digital7", monospace !important;
 }
 
 

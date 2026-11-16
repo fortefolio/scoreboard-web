@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:affected": "node scripts/test-affected.mjs",
     "test:report": "vitest run --reporter=html --outputFile=test-results/html/index.html",
     "test:report:preview": "npx vite preview --outDir test-results/html",
     "test:ui": "vitest --ui",

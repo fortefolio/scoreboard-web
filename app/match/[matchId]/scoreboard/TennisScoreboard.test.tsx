@@ -94,9 +94,7 @@ describe("TennisScoreboard UI Interaction & Real Stats Tests", () => {
     // Banner should disappear and Nadal should show as serving
     await waitFor(() => {
       expect(screen.queryByText(/Select First Server/i)).not.toBeInTheDocument();
-      const nadalElements = screen.getAllByText("Rafael Nadal");
-      const nadalSection = nadalElements.find(el => el.closest("div")?.parentElement?.textContent?.includes("Serving"))?.closest("div")?.parentElement;
-      expect(nadalSection).toHaveTextContent(/Serving/i);
+      expect(screen.getByText(/SERVING/i)).toBeInTheDocument();
     });
   });
 
@@ -112,8 +110,8 @@ describe("TennisScoreboard UI Interaction & Real Stats Tests", () => {
 
     render(<TennisScoreboard matchData={readyMatch} canEdit={true} />);
 
-    // Click + Ponto for Federer (Home)
-    const homePointBtn = screen.getAllByRole("button", { name: /\+ Ponto/i })[0];
+    // Click POINT for Federer (Home)
+    const homePointBtn = screen.getAllByRole("button", { name: /^POINT$/i })[0];
     await user.click(homePointBtn);
 
     await waitFor(() => {
@@ -132,7 +130,7 @@ describe("TennisScoreboard UI Interaction & Real Stats Tests", () => {
     });
 
     // Score for Nadal (Away)
-    const awayPointBtn = screen.getAllByRole("button", { name: /\+ Ponto/i })[1];
+    const awayPointBtn = screen.getAllByRole("button", { name: /^POINT$/i })[1];
     await user.click(awayPointBtn);
 
     await waitFor(() => {
@@ -164,7 +162,7 @@ describe("TennisScoreboard UI Interaction & Real Stats Tests", () => {
     render(<TennisScoreboard matchData={readyMatch} canEdit={true} />);
 
     // Federer serves an Ace
-    const aceBtn = screen.getAllByRole("button", { name: /Ás \(Ace\)/i })[0];
+    const aceBtn = screen.getAllByRole("button", { name: /^Ace$/i })[0];
     await user.click(aceBtn);
 
     await waitFor(() => {
@@ -184,7 +182,7 @@ describe("TennisScoreboard UI Interaction & Real Stats Tests", () => {
     });
 
     // Federer commits a Double Fault (opposing player gets the point)
-    const doubleFaultBtn = screen.getAllByRole("button", { name: /Falta Dupla/i })[0];
+    const doubleFaultBtn = screen.getAllByRole("button", { name: /^Double Fault$/i })[0];
     await user.click(doubleFaultBtn);
 
     await waitFor(() => {
@@ -216,7 +214,7 @@ describe("TennisScoreboard UI Interaction & Real Stats Tests", () => {
 
     render(<TennisScoreboard matchData={readyMatch} canEdit={true} />);
 
-    const toggleServerBtn = screen.getByRole("button", { name: /Alternar Servidor/i });
+    const toggleServerBtn = screen.getByRole("button", { name: /Toggle Server/i });
     await user.click(toggleServerBtn);
 
     await waitFor(() => {

@@ -11,7 +11,8 @@ import GroupMatchesView from "@/components/GroupMatchesView";
 import TournamentBracket from "@/components/TournamentBracket";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import NotificationBell from "@/components/NotificationBell";
-import { FollowButton } from "@/components/FollowButton";
+import { SportFavoriteButton } from "@/components/FollowButton";
+import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import SelectField from "@/components/SelectField";
 import { buildCsvTemplate, buildParticipantsCsv, parseTeamCsv } from "@/lib/csvTeams";
@@ -718,28 +719,52 @@ function TournamentContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-on-background font-sans selection:bg-text-primary selection:text-surface-container-lowest">
-      <main className="pt-8 pb-20 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto relative">
-        <header className="mb-8 text-center animate-in fade-in duration-300">
-          <p className="text-text-muted font-medium text-xs uppercase tracking-wider mb-2">
-            {getSportTranslation(tournament?.sport_type, t)} {t("tournament.officialTournament")}
-          </p>
-          <h1 className="font-sans text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-text-primary leading-tight mb-3">
-            {tournament?.name || "Tournament"}
-          </h1>
-          <div className="flex items-center justify-center gap-2.5">
-             <span className="px-2.5 py-0.5 rounded-md text-[11px] font-medium border border-outline-variant bg-surface-container text-text-secondary inline-flex items-center gap-1.5 capitalize">
-                {tournament?.status === 'ongoing' && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+    <div className="min-h-screen bg-transparent text-on-background font-sans selection:bg-text-primary selection:text-surface-container-lowest relative">
+      <MatchAtmosphereBackground sportType={tournament?.sport_type} mode="spectator" />
+      <main className="pt-3 sm:pt-6 pb-20 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto relative z-10">
+        <div className="mb-3 sm:mb-4">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            aria-label="Back"
+            title="Back"
+            className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant text-text-secondary hover:text-text-primary inline-flex items-center justify-center transition-colors cursor-pointer"
+          >
+            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+          </button>
+        </div>
+
+        <header className="bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant shadow-sm mb-4 sm:mb-6">
+          <div className="flex items-center justify-between gap-3 mb-2.5 sm:mb-3">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="h-7 px-2.5 rounded-md text-xs font-medium border border-outline-variant bg-surface-container-high text-text-secondary inline-flex items-center gap-1.5 capitalize">
+                {tournament?.status === "ongoing" && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                 )}
                 {tournament?.status}
-             </span>
-             <FollowButton entityId={tournamentId} entityType="tournament" variant="icon" className="w-7 h-7" />
+              </span>
+              {tournament?.sport_type && (
+                <span className="h-7 px-2.5 rounded-md text-xs font-medium border border-outline-variant bg-surface-container-high text-text-muted inline-flex items-center">
+                  {getSportTranslation(tournament.sport_type, t)}
+                </span>
+              )}
+            </div>
+
+            <SportFavoriteButton
+              entityId={tournamentId}
+              entityType="tournament"
+              sport={tournament?.sport_type}
+              size="sm"
+            />
           </div>
+
+          <h1 className="font-sans text-xl sm:text-3xl font-semibold tracking-tight text-text-primary leading-tight">
+            {tournament?.name || "Tournament"}
+          </h1>
         </header>
 
         {/* Precision Telemetry Segmented Tab Bar */}
-        <div className="flex justify-center mb-8 overflow-x-auto no-scrollbar max-w-full pb-2">
+        <div className="flex justify-center mb-5 sm:mb-6 overflow-x-auto no-scrollbar max-w-full pb-1">
           <div className="bg-surface-container-low p-1 rounded-xl border border-outline-variant flex gap-1 shrink-0">
             <button 
               onClick={() => handleTabChange('teams')}

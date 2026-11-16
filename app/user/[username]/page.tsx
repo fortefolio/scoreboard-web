@@ -5,12 +5,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import MatchCard from "@/components/MatchCard";
+import MatchListItem from "@/components/MatchListItem";
 import SportIcon from "@/components/SportIcon";
 import Pagination from "@/components/Pagination";
 import DataTable from "@/components/DataTable";
+import SelectField from "@/components/SelectField";
 import { getMatchColumns, getTournamentColumns } from "@/components/entityTableColumns";
-import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
-import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 const MATCHES_PER_PAGE = 12;
@@ -37,7 +37,7 @@ function UserProfileContent({
   const rawParam = decodeURIComponent(resolvedParams.username || "");
   const router = useRouter();
   const { supabase } = useAuth();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const [targetUser, setTargetUser] = useState<any>(null);
   const [tournaments, setTournaments] = useState<any[]>([]);
@@ -50,6 +50,7 @@ function UserProfileContent({
   const [viewMode, setViewMode] = useState<"cards" | "list">("list");
 
   // Filter & Sort State
+  const [searchQuery, setSearchQuery] = useState<string>("");
   const [sportFilter, setSportFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateSort, setDateSort] = useState<"desc" | "asc">("desc");
@@ -135,6 +136,7 @@ function UserProfileContent({
   };
 
   const clearFilters = () => {
+    setSearchQuery("");
     setSportFilter("all");
     setStatusFilter("all");
     setDateSort("desc");
@@ -143,6 +145,7 @@ function UserProfileContent({
 
   // Filter & Sort Matches
   const filteredMatches = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
     return matches
       .filter((m) => {
         // Sport filter
@@ -165,6 +168,17 @@ function UserProfileContent({
           }
         }
 
+        // Search filter
+        if (query) {
+          const p1 = (m.participants?.[0]?.name || "").toLowerCase();
+          const p2 = (m.participants?.[1]?.name || "").toLowerCase();
+          const tName = (m.tournaments?.name || "").toLowerCase();
+          const sport = (m.sport_type || "").toLowerCase();
+          if (!p1.includes(query) && !p2.includes(query) && !tName.includes(query) && !sport.includes(query)) {
+            return false;
+          }
+        }
+
         return true;
       })
       .sort((a, b) => {
@@ -172,26 +186,35 @@ function UserProfileContent({
         const dateB = new Date(b.scheduled_at || b.created_at).getTime();
         return dateSort === "desc" ? dateB - dateA : dateA - dateB;
       });
-  }, [matches, sportFilter, statusFilter, dateSort]);
+  }, [matches, sportFilter, statusFilter, searchQuery, dateSort]);
 
   // Filter & Sort Tournaments
   const filteredTournaments = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
     return tournaments
-      .filter((t) => {
+      .filter((tItem) => {
         if (sportFilter !== "all") {
           if (sportFilter === "Beach Volleyball") {
-            if (t.sport_type !== "Beach Volleyball" && t.sport_type !== "beach_volleyball") {
+            if (tItem.sport_type !== "Beach Volleyball" && tItem.sport_type !== "beach_volleyball") {
               return false;
             }
-          } else if (t.sport_type !== sportFilter) {
+          } else if (tItem.sport_type !== sportFilter) {
             return false;
           }
         }
 
         if (statusFilter !== "all") {
           if (statusFilter === "scheduled") {
-            if (t.status !== "scheduled" && t.status !== "pending") return false;
-          } else if (t.status !== statusFilter) {
+            if (tItem.status !== "scheduled" && tItem.status !== "pending") return false;
+          } else if (tItem.status !== statusFilter) {
+            return false;
+          }
+        }
+
+        if (query) {
+          const name = (tItem.name || "").toLowerCase();
+          const sport = (tItem.sport_type || "").toLowerCase();
+          if (!name.includes(query) && !sport.includes(query)) {
             return false;
           }
         }
@@ -203,7 +226,7 @@ function UserProfileContent({
         const dateB = new Date(b.start_date || b.created_at).getTime();
         return dateSort === "desc" ? dateB - dateA : dateA - dateB;
       });
-  }, [tournaments, sportFilter, statusFilter, dateSort]);
+  }, [tournaments, sportFilter, statusFilter, searchQuery, dateSort]);
 
   // Pagination Calculations
   const isMatchesTab = activeTab === "matches";
@@ -222,238 +245,244 @@ function UserProfileContent({
     return filteredTournaments.slice(start, start + TOURNAMENTS_PER_PAGE);
   }, [filteredTournaments, safePage]);
 
-  const initials = useMemo(() => {
-    const name = targetUser?.username || targetUser?.email || "?";
-    return name.slice(0, 2).toUpperCase();
-  }, [targetUser]);
-
   const displayName = targetUser?.username || (targetUser?.email ? targetUser.email.split("@")[0] : rawParam);
 
   return (
-    <div className="w-full min-h-screen bg-background text-on-surface py-8 px-4 sm:px-8 max-w-7xl mx-auto">
+    <div className="w-full min-h-screen bg-background text-text-primary py-3 sm:py-6 px-4 sm:px-8 max-w-7xl mx-auto">
       {/* Top back navigation */}
       <button
+        type="button"
         onClick={() => router.back()}
-        className="inline-flex items-center gap-2 text-xs font-label font-bold uppercase tracking-[0.2em] text-on-surface-variant/70 hover:text-primary transition-colors mb-8 group cursor-pointer"
+        aria-label={locale === "pt" ? "Voltar" : "Back"}
+        title={locale === "pt" ? "Voltar" : "Back"}
+        className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant text-text-secondary hover:text-text-primary inline-flex items-center justify-center transition-colors mb-3 sm:mb-5 cursor-pointer"
       >
-        <span className="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">
-          arrow_back
-        </span>
-        Voltar
+        <span className="material-symbols-outlined text-[20px]">arrow_back</span>
       </button>
 
       {loading ? (
-        <div className="py-24 text-center">
-          <div className="inline-block w-8 h-8 border-4 border-text-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-on-surface-variant font-label uppercase tracking-widest text-xs">
-            A carregar perfil de @{rawParam}...
+        <div className="py-20 text-center">
+          <div className="inline-block w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-3 text-text-muted text-xs">
+            {locale === "pt" ? `A carregar perfil de @${rawParam}...` : `Loading @${rawParam}...`}
           </p>
         </div>
       ) : notFound ? (
-        <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5 max-w-xl mx-auto">
-          <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4 text-on-surface-variant/60">
-            <span className="material-symbols-outlined text-3xl">person_off</span>
+        <div className="bg-surface-container rounded-xl p-12 text-center border border-outline-variant max-w-xl mx-auto">
+          <div className="w-12 h-12 rounded-xl bg-surface-container-high border border-outline-variant flex items-center justify-center mx-auto mb-4 text-text-muted">
+            <span className="material-symbols-outlined text-2xl">person_off</span>
           </div>
-          <h2 className="font-headline font-black text-2xl mb-2 text-on-surface">
-            Utilizador não encontrado
+          <h2 className="font-semibold text-lg mb-1.5 text-text-primary">
+            {locale === "pt" ? "Utilizador não encontrado" : "User not found"}
           </h2>
-          <p className="text-on-surface-variant text-sm mb-6">
-            Não foi possível encontrar nenhum utilizador correspondente a{" "}
-            <span className="font-mono text-primary font-bold">@{rawParam}</span>.
+          <p className="text-text-muted text-xs mb-5">
+            {locale === "pt" ? "Não foi possível encontrar nenhum utilizador para " : "Could not find a user matching "}
+            <span className="font-mono text-text-primary font-medium">@{rawParam}</span>.
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 bg-primary-container text-on-primary-container px-6 py-3 rounded-full font-label text-xs font-black uppercase tracking-wider hover:brightness-110 transition-all"
+            className="inline-flex items-center gap-2 bg-text-primary hover:bg-white text-surface-container-lowest px-4 py-2 rounded-lg text-xs font-medium transition-colors"
           >
-            Ir para a Página Inicial
+            {locale === "pt" ? "Ir para a Página Inicial" : "Back to Home"}
           </Link>
         </div>
       ) : (
         <>
-          {/* User Profile Banner */}
-          <div className="bg-surface-container-low rounded-[2.5rem] p-6 sm:p-10 border border-white/5 relative overflow-hidden mb-8 shadow-2xl">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 blur-3xl pointer-events-none rounded-full" />
-
-            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-              <div className="flex items-center gap-5">
-                {/* Avatar */}
-                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-primary/30 to-surface-container-high border-2 border-primary/40 flex items-center justify-center shadow-xl shadow-primary/10 shrink-0">
-                  <span className="font-headline font-black text-2xl sm:text-3xl text-on-surface">
-                    {initials}
-                  </span>
+          {/* User Profile Card */}
+          <div className="bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant shadow-sm mb-4 sm:mb-5">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div
+                  className="h-7 px-2.5 rounded-md bg-surface-container-high border border-outline-variant text-text-primary inline-flex items-center gap-1.5 text-xs font-medium"
+                  title={`@${displayName}`}
+                >
+                  <span className="material-symbols-outlined text-[13px] leading-none text-text-muted">person</span>
+                  <span className="leading-none">@{displayName}</span>
                 </div>
-
-                {/* Name & Badges */}
-                <div>
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h1 className="font-headline font-black text-2xl sm:text-4xl text-on-surface tracking-tight">
-                      @{displayName}
-                    </h1>
-                    <span className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-label text-[10px] font-black uppercase tracking-widest">
-                      {targetUser.subscription_tier === "pro" ? "Pro Organizer" : "Organizador"}
-                    </span>
-                  </div>
-                  {targetUser.created_at && (
-                    <p className="text-on-surface-variant/60 font-label text-[11px] mt-1.5 flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-[14px]">calendar_today</span>
-                      Membro desde {new Date(targetUser.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}
-                    </p>
-                  )}
-                </div>
+                <span className="h-7 px-2.5 rounded-md bg-surface-container-high border border-outline-variant text-text-secondary text-[11px] font-medium inline-flex items-center">
+                  {targetUser.subscription_tier === "pro"
+                    ? "Pro"
+                    : locale === "pt"
+                    ? "Organizador"
+                    : "Organizer"}
+                </span>
               </div>
 
-              {/* Counters */}
-              <div className="flex items-center gap-4 sm:gap-6 bg-surface-container/60 backdrop-blur-md px-6 py-4 rounded-2xl border border-white/5 shrink-0 self-start sm:self-auto">
-                <div className="text-center">
-                  <div className="font-mono text-2xl font-black text-secondary">
-                    {tournaments.length}
-                  </div>
-                  <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                    {t("home.tournamentsCount")}
-                  </div>
-                </div>
-                <div className="w-px h-8 bg-white/10" />
-                <div className="text-center">
-                  <div className="font-mono text-2xl font-black text-primary">
-                    {matches.length}
-                  </div>
-                  <div className="font-label text-[9px] font-bold uppercase tracking-wider text-on-surface-variant/70">
-                    {t("home.matchesCount")}
-                  </div>
-                </div>
-              </div>
+              {targetUser.created_at && (
+                <p className="text-text-muted text-xs flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                  {locale === "pt" ? "Membro desde" : "Member since"}{" "}
+                  {new Date(targetUser.created_at).toLocaleDateString(undefined, { month: "short", year: "numeric" })}
+                </p>
+              )}
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex items-center gap-2 mb-6 border-b border-white/5 pb-4">
+          <div className="inline-flex items-center gap-1 bg-surface-container-high/50 p-1 rounded-xl border border-outline-variant mb-3.5 sm:mb-4">
             <button
+              type="button"
               onClick={() => handleTabChange("matches")}
-              className={`px-5 py-2.5 rounded-full font-label text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
                 activeTab === "matches"
-                  ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
-                  : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
+                  ? "bg-surface-container-highest text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-primary"
               }`}
             >
-              <span className="material-symbols-outlined text-[16px]">sports</span>
               {t("home.matchesTab")} ({matches.length})
             </button>
             <button
+              type="button"
               onClick={() => handleTabChange("tournaments")}
-              className={`px-5 py-2.5 rounded-full font-label text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
                 activeTab === "tournaments"
-                  ? "bg-primary-container text-on-primary-container shadow-lg shadow-primary/20"
-                  : "bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container"
+                  ? "bg-surface-container-highest text-text-primary shadow-sm"
+                  : "text-text-muted hover:text-text-primary"
               }`}
             >
-              <span className="material-symbols-outlined text-[16px]">emoji_events</span>
               {t("home.tournamentsTab")} ({tournaments.length})
             </button>
           </div>
 
-          {/* Filter, Sort & View Controls Bar */}
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-8 bg-surface-container-low p-4 rounded-2xl border border-white/5 shadow-lg">
-            {/* Filters */}
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-              {/* Sport Filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
-                  {t("common.sport")}:
-                </span>
-                <select
-                  value={sportFilter}
-                  onChange={(e) => {
-                    setSportFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
-                >
-                  <option value="all">{t("sports.all")}</option>
-                  <option value="Basketball">{t("sports.basketball")}</option>
-                  <option value="Volleyball">{t("sports.volleyball")}</option>
-                  <option value="Beach Volleyball">{t("sports.beachVolleyball")}</option>
-                  <option value="Football">{t("sports.football")}</option>
-                  <option value="Tennis">{t("sports.tennis")}</option>
-                  <option value="Padel">{t("sports.padel")}</option>
-                </select>
-              </div>
-
-              {/* Status Filter */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
-                  {t("common.status")}:
-                </span>
-                <select
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
-                >
-                  <option value="all">{t("status.all")}</option>
-                  <option value="scheduled">{t("status.scheduled")}</option>
-                  <option value="ongoing">{t("status.ongoing")}</option>
-                  <option value="completed">{t("status.completed")}</option>
-                </select>
-              </div>
-
-              {/* Date Sort */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-label font-bold uppercase tracking-wider text-on-surface-variant/60">
-                  {t("common.date")}:
-                </span>
-                <select
-                  value={dateSort}
-                  onChange={(e) => {
-                    setDateSort(e.target.value as "desc" | "asc");
-                    setCurrentPage(1);
-                  }}
-                  className="bg-surface-container text-on-surface text-xs font-bold px-3 py-1.5 rounded-xl border border-white/10 outline-none focus:border-primary transition-colors cursor-pointer"
-                >
-                  <option value="desc">{t("common.recentFirst")}</option>
-                  <option value="asc">{t("common.oldestFirst")}</option>
-                </select>
-              </div>
-
-              {/* Clear filters button if active */}
-              {(sportFilter !== "all" || statusFilter !== "all" || dateSort !== "desc") && (
+          {/* Precision Controls Toolbar (Search, Filters, Sort & View Toggle) */}
+          <div className="relative z-20 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mb-6 bg-surface-container/70 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-outline-variant shadow-sm">
+            {/* Search Box */}
+            <div className="relative flex items-center w-full sm:w-64 md:w-72 shrink-0">
+              <span className="material-symbols-outlined absolute left-3.5 text-[17px] text-text-muted pointer-events-none">
+                search
+              </span>
+              <input
+                type="text"
+                placeholder={
+                  locale === "pt"
+                    ? "Pesquisar jogos ou torneios..."
+                    : "Search matches or tournaments..."
+                }
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full bg-surface-container-lowest text-text-primary text-xs sm:text-[13px] font-medium pl-10 pr-10 py-2 rounded-lg border border-outline-variant outline-none focus:border-text-secondary transition-colors placeholder:text-text-muted"
+              />
+              {searchQuery.length > 0 && (
                 <button
                   type="button"
-                  onClick={clearFilters}
-                  className="text-[10px] font-label font-bold uppercase tracking-wider text-primary hover:underline cursor-pointer"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setCurrentPage(1);
+                  }}
+                  aria-label={t("common.clearFilters")}
+                  className="absolute right-3.5 text-text-muted hover:text-text-primary transition-colors cursor-pointer flex items-center justify-center"
                 >
-                  {t("common.clearFilters")}
+                  <span
+                    className="material-symbols-outlined text-[18px]"
+                    style={{ fontVariationSettings: "'FILL' 1" }}
+                  >
+                    cancel
+                  </span>
                 </button>
               )}
             </div>
 
-            {/* View Mode Toggle (List vs Cards) for Tournaments & Matches */}
-            <div className="flex items-center gap-1 bg-surface-container p-1 rounded-xl border border-white/10 self-start lg:self-auto shrink-0">
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                title={t("common.viewList")}
-                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
-                  viewMode === "list"
-                    ? "bg-surface-container-highest text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-primary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">view_list</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("cards")}
-                title={t("common.viewCards")}
-                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
-                  viewMode === "cards"
-                    ? "bg-surface-container-highest text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-primary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">grid_view</span>
-              </button>
+            {/* Dropdowns on left, View Toggle on right */}
+            <div className="flex items-center justify-between sm:flex-1 gap-3">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 min-w-0">
+                <div className="hidden sm:block h-6 w-px bg-outline-variant/60 shrink-0" />
+
+                <SelectField
+                  variant="inline"
+                  label={t("common.sport")}
+                  value={sportFilter}
+                  onChange={(val) => {
+                    setSportFilter(val);
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { value: "all", label: t("sports.all") },
+                    { value: "Basketball", label: t("sports.basketball") },
+                    { value: "Volleyball", label: t("sports.volleyball") },
+                    { value: "Beach Volleyball", label: t("sports.beachVolleyball") },
+                    { value: "Football", label: t("sports.football") },
+                    { value: "Tennis", label: t("sports.tennis") },
+                    { value: "Padel", label: t("sports.padel") },
+                  ]}
+                />
+
+                <div className="hidden sm:block h-6 w-px bg-outline-variant/60 shrink-0" />
+
+                <SelectField
+                  variant="inline"
+                  label={t("common.status")}
+                  value={statusFilter}
+                  onChange={(val) => {
+                    setStatusFilter(val);
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { value: "all", label: t("status.all") },
+                    { value: "scheduled", label: t("status.scheduled") },
+                    { value: "ongoing", label: t("status.ongoing") },
+                    { value: "completed", label: t("status.completed") },
+                  ]}
+                />
+
+                <div className="hidden sm:block h-6 w-px bg-outline-variant/60 shrink-0" />
+
+                <SelectField
+                  variant="inline"
+                  label={t("common.date")}
+                  value={dateSort}
+                  onChange={(val) => {
+                    setDateSort(val as "desc" | "asc");
+                    setCurrentPage(1);
+                  }}
+                  options={[
+                    { value: "desc", label: t("common.recentFirst") },
+                    { value: "asc", label: t("common.oldestFirst") },
+                  ]}
+                />
+
+                {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "" || dateSort !== "desc") && (
+                  <button
+                    type="button"
+                    onClick={clearFilters}
+                    title={t("common.clearFilters")}
+                    className="text-xs font-medium text-text-muted hover:text-text-primary transition-colors cursor-pointer flex items-center gap-1 shrink-0"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">close</span>
+                    <span className="hidden md:inline">{t("common.clearFilters")}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* View Mode Toggle (List vs Cards) */}
+              <div className="flex items-center gap-0.5 bg-surface-container-high/50 p-1 rounded-xl border border-outline-variant shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("list")}
+                  title={t("common.viewList")}
+                  className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
+                    viewMode === "list"
+                      ? "bg-surface-container-highest text-text-primary shadow-sm"
+                      : "text-text-muted hover:text-text-primary"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">format_list_bulleted</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("cards")}
+                  title={t("common.viewCards")}
+                  className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
+                    viewMode === "cards"
+                      ? "bg-surface-container-highest text-text-primary shadow-sm"
+                      : "text-text-muted hover:text-text-primary"
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[18px]">grid_view</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -461,86 +490,97 @@ function UserProfileContent({
           {activeTab === "tournaments" && (
             <div>
               {filteredTournaments.length === 0 ? (
-                <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5">
-                  <span className="material-symbols-outlined text-4xl text-on-surface-variant/40 mb-3">
+                <div className="bg-surface-container rounded-xl p-12 text-center border border-dashed border-outline-variant">
+                  <span className="material-symbols-outlined text-3xl text-text-muted opacity-50 mb-3">
                     emoji_events
                   </span>
-                  <h3 className="font-headline font-bold text-base text-on-surface mb-1">
-                    Nenhum torneio encontrado
+                  <h3 className="font-semibold text-sm text-text-primary mb-1">
+                    {locale === "pt" ? "Nenhum torneio encontrado" : "No tournaments found"}
                   </h3>
-                  <p className="text-on-surface-variant/60 text-xs mb-4">
-                    Não existem torneios correspondentes aos filtros selecionados.
+                  <p className="text-text-muted text-xs mb-4">
+                    {locale === "pt"
+                      ? "Não existem torneios correspondentes aos filtros selecionados."
+                      : "No tournaments match the selected filters."}
                   </p>
                   {(sportFilter !== "all" || statusFilter !== "all") && (
                     <button
+                      type="button"
                       onClick={clearFilters}
-                      className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-xs font-bold text-primary transition-all"
+                      className="px-3.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-xs font-medium text-text-primary border border-outline-variant transition-colors cursor-pointer"
                     >
-                      Limpar Filtros
+                      {t("common.clearFilters")}
                     </button>
                   )}
                 </div>
               ) : viewMode === "cards" ? (
-                /* Tournaments Cards Grid */
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {paginatedTournaments.map((tourn) => (
-                    <div
+                    <Link
                       key={tourn.id}
-                      className="bg-surface-container-low p-6 rounded-3xl border border-white/5 hover:border-primary/40 transition-all duration-300 group shadow-xl flex flex-col justify-between"
+                      href={`/tournament/${tourn.id}`}
+                      className="w-full group block h-full"
                     >
-                      <div>
-                        <div className="flex justify-between items-start gap-3 mb-4">
-                          <div className="flex items-center gap-2">
-                            <SportIcon sport={tourn.sport_type} className="text-text-muted group-hover:text-text-primary text-[16px]" />
-                            <span className="text-secondary font-label text-[10px] font-black uppercase tracking-[0.2em]">
-                              {getSportTranslation(tourn.sport_type, t)}
-                            </span>
+                      <div className="bg-surface-container rounded-xl p-4 border border-outline-variant hover:border-outline hover:bg-surface-container-high/40 transition-colors flex flex-col justify-between h-full">
+                        <div>
+                          <div className="flex items-center justify-between gap-2 pb-3 mb-3 border-b border-outline-variant/60 min-w-0">
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <SportIcon
+                                sport={tourn.sport_type}
+                                className="text-text-muted group-hover:text-text-primary text-[15px] shrink-0 transition-colors"
+                              />
+                              <span className="text-xs font-medium text-text-secondary truncate">
+                                {getSportTranslation(tourn.sport_type, t)}
+                              </span>
+                            </div>
+                            {tourn.status === "ongoing" ? (
+                              <span className="text-xs font-medium text-text-primary flex items-center gap-1.5 shrink-0">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                                {t("status.live")}
+                              </span>
+                            ) : (
+                              <span className="text-xs font-medium text-text-muted shrink-0">
+                                {tourn.status === "completed"
+                                  ? t("status.completed")
+                                  : t("status.scheduled")}
+                              </span>
+                            )}
                           </div>
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest ${
-                              tourn.status === "completed"
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                : tourn.status === "ongoing"
-                                ? "bg-primary/10 text-primary border border-primary/20"
-                                : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                            }`}
-                          >
-                            {tourn.status === "completed"
-                              ? t("status.completed")
-                              : tourn.status === "ongoing"
-                              ? t("status.live")
-                              : t("status.scheduled")}
-                          </span>
+
+                          <h3 className="text-sm font-semibold text-text-primary mb-1.5 leading-snug">
+                            {tourn.name}
+                          </h3>
+
+                          <p className="text-xs text-text-muted mb-4">
+                            {tourn.settings?.stage_1?.type === "groups"
+                              ? t("tournament.groupStage")
+                              : tourn.settings?.stage_1?.type === "double_elimination"
+                              ? t("tournament.doubleElimination")
+                              : t("tournament.singleElimination")}
+                          </p>
                         </div>
 
-                        <h3 className="font-headline font-bold text-xl text-on-surface group-hover:text-primary transition-colors leading-tight mb-2">
-                          {tourn.name}
-                        </h3>
-
-                        {tourn.start_date && (
-                          <p className="text-on-surface-variant/60 font-label text-[10px] uppercase tracking-wider mb-4">
-                            Início: {new Date(tourn.start_date).toLocaleDateString()}
-                          </p>
-                        )}
+                        <div className="pt-3 border-t border-outline-variant/60 flex items-center justify-between">
+                          <span className="font-mono tabular-nums text-xs text-text-muted">
+                            {tourn.start_date
+                              ? new Date(tourn.start_date).toLocaleDateString(undefined, {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })
+                              : t("home.tbdDate")}
+                          </span>
+                          <span className="material-symbols-outlined text-[16px] text-text-muted group-hover:text-text-primary transition-colors">
+                            arrow_forward
+                          </span>
+                        </div>
                       </div>
-
-                      <div className="mt-6 pt-4 border-t border-white/5">
-                        <Link
-                          href={`/tournament/${tourn.id}`}
-                          className="w-full inline-flex items-center justify-center gap-2 bg-primary-container text-on-primary-container py-3 rounded-full font-label text-xs font-black uppercase tracking-wider hover:brightness-110 transition-all shadow-md shadow-primary/20"
-                        >
-                          Ver Torneio
-                          <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
-                        </Link>
-                      </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (
-                /* Tournaments List Table View */
                 <DataTable
                   data={paginatedTournaments}
-                  columns={getTournamentColumns(t)}
+                  columns={getTournamentColumns(t, [], { showOrganizer: false })}
                   getRowKey={(tItem) => tItem.id}
                   onRowClick={(tItem) => router.push(`/tournament/${tItem.id}`)}
                   hideOnMobile={false}
@@ -553,41 +593,48 @@ function UserProfileContent({
           {activeTab === "matches" && (
             <div>
               {filteredMatches.length === 0 ? (
-                <div className="bg-surface-container-low rounded-3xl p-12 text-center border border-white/5">
-                  <span className="material-symbols-outlined text-4xl text-on-surface-variant/40 mb-3">
+                <div className="bg-surface-container rounded-xl p-12 text-center border border-dashed border-outline-variant">
+                  <span className="material-symbols-outlined text-3xl text-text-muted opacity-50 mb-3">
                     sports
                   </span>
-                  <h3 className="font-headline font-bold text-base text-on-surface mb-1">
-                    Nenhum jogo encontrado
+                  <h3 className="font-semibold text-sm text-text-primary mb-1">
+                    {locale === "pt" ? "Nenhum jogo encontrado" : "No matches found"}
                   </h3>
-                  <p className="text-on-surface-variant/60 text-xs mb-4">
-                    Não existem jogos correspondentes aos filtros selecionados.
+                  <p className="text-text-muted text-xs mb-4">
+                    {locale === "pt"
+                      ? "Não existem jogos correspondentes aos filtros selecionados."
+                      : "No matches match the selected filters."}
                   </p>
                   {(sportFilter !== "all" || statusFilter !== "all") && (
                     <button
+                      type="button"
                       onClick={clearFilters}
-                      className="px-4 py-2 rounded-full bg-white/5 hover:bg-white/10 text-xs font-bold text-primary transition-all"
+                      className="px-3.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-xs font-medium text-text-primary border border-outline-variant transition-colors cursor-pointer"
                     >
-                      Limpar Filtros
+                      {t("common.clearFilters")}
                     </button>
                   )}
                 </div>
               ) : viewMode === "cards" ? (
-                /* Cards Grid View */
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {paginatedMatches.map((m) => (
                     <MatchCard key={m.id} match={m} />
                   ))}
                 </div>
               ) : (
-                /* List / Table View */
-                <DataTable
-                  data={paginatedMatches}
-                  columns={getMatchColumns(t)}
-                  getRowKey={(m) => m.id}
-                  onRowClick={(m) => router.push(`/match/${m.id}`)}
-                  hideOnMobile={false}
-                />
+                <>
+                  <div className="md:hidden space-y-2.5">
+                    {paginatedMatches.map((m) => (
+                      <MatchListItem key={m.id} match={m} />
+                    ))}
+                  </div>
+                  <DataTable
+                    data={paginatedMatches}
+                    columns={getMatchColumns(t, [], { showOrganizer: false })}
+                    getRowKey={(m) => m.id}
+                    onRowClick={(m) => router.push(`/match/${m.id}`)}
+                  />
+                </>
               )}
             </div>
           )}

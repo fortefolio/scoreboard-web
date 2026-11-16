@@ -9,6 +9,7 @@ import MatchCard from "@/components/MatchCard";
 import MatchListItem from "@/components/MatchListItem";
 import DataTable from "@/components/DataTable";
 import { getMatchColumns } from "@/components/entityTableColumns";
+import { MyWorkspaceTabs } from "@/components/MyWorkspaceTabs";
 import SportIcon from "@/components/SportIcon";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
@@ -168,7 +169,7 @@ function MyMatchesContent() {
 
   if (loading && !user) {
     return (
-      <div className="min-h-screen bg-background text-on-background p-8 pt-24 max-w-7xl mx-auto flex items-center justify-center">
+      <div className="min-h-screen bg-background text-on-background p-8 max-w-7xl mx-auto flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin mb-3"></div>
           <p className="text-xs text-text-muted">Initializing account...</p>
@@ -184,25 +185,28 @@ function MyMatchesContent() {
       {/* ATMOSPHERE BACKGROUND */}
       <MatchAtmosphereBackground sportType="random" mode="spectator" />
 
-      <div className="relative z-10 p-4 sm:p-8 pt-20 sm:pt-24 max-w-7xl mx-auto">
+      <div className="relative z-10 p-4 sm:p-8 max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
           <div>
             <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary">
-              My Matches
+              {t("nav.myMatches")}
             </h1>
             <p className="text-xs sm:text-sm text-text-muted mt-1">
               Matches assigned to you for scoring or participation.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-            <button 
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <button
+              type="button"
               onClick={() => setShowModal(true)}
-              className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
+              aria-label={t("common.newMatch")}
+              title={t("common.newMatch")}
+              className="h-8 w-8 sm:h-auto sm:w-auto sm:px-3.5 sm:py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
             >
               <span className="material-symbols-outlined text-[16px]">add</span>
-              {t("common.newMatch")}
+              <span className="hidden sm:inline">{t("common.newMatch")}</span>
             </button>
 
             {/* View Mode Toggle: List on left, Grid on right */}
@@ -234,6 +238,8 @@ function MyMatchesContent() {
             </div>
           </div>
         </div>
+
+        <MyWorkspaceTabs active="matches" />
 
       {loading ? (
         <div className="py-20 text-center">

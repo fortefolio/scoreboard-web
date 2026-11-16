@@ -56,17 +56,17 @@ describe("FootballScoreboard UI Interaction & Real Stats Tests", () => {
 
     expect(screen.getAllByText("Sporting CP")[0]).toBeInTheDocument();
     expect(screen.getAllByText("AC. Viseu")[0]).toBeInTheDocument();
-    expect(screen.getByText("Futebol Oficial")).toBeInTheDocument();
-    expect(screen.getByText("Taça de Portugal")).toBeInTheDocument();
+    expect(screen.getAllByText("Football")[0]).toBeInTheDocument();
+    expect(screen.getAllByText("Taça de Portugal")[0]).toBeInTheDocument();
     expect(screen.getByText("00:00")).toBeInTheDocument();
   });
 
-  it("handles goals (+1 Golo) and score corrections (-1) with event dispatch", async () => {
+  it("handles goals (+1 GOAL) and score corrections (-1) with event dispatch", async () => {
     const user = userEvent.setup();
     render(<FootballScoreboard matchData={mockFootballMatch} canEdit={true} />);
 
-    // Click +1 Golo for Sporting CP (Home)
-    const homeGoalBtn = screen.getAllByRole("button", { name: /\+1 Golo/i })[0];
+    // Click +1 GOAL for Sporting CP (Home)
+    const homeGoalBtn = screen.getAllByRole("button", { name: /\+1 GOAL/i })[0];
     await user.click(homeGoalBtn);
 
     await waitFor(() => {
@@ -85,7 +85,7 @@ describe("FootballScoreboard UI Interaction & Real Stats Tests", () => {
     });
 
     // Score a goal for AC Viseu (Away)
-    const awayGoalBtn = screen.getAllByRole("button", { name: /\+1 Golo/i })[1];
+    const awayGoalBtn = screen.getAllByRole("button", { name: /\+1 GOAL/i })[1];
     await user.click(awayGoalBtn);
 
     await waitFor(() => {
@@ -104,7 +104,7 @@ describe("FootballScoreboard UI Interaction & Real Stats Tests", () => {
     });
 
     // Click -1 Correction for Home
-    const homeUndoBtn = screen.getAllByRole("button", { name: /-1 Corrigir/i })[0];
+    const homeUndoBtn = screen.getAllByRole("button", { name: /^-1$/i })[0];
     await user.click(homeUndoBtn);
 
     await waitFor(() => {
@@ -117,7 +117,7 @@ describe("FootballScoreboard UI Interaction & Real Stats Tests", () => {
     render(<FootballScoreboard matchData={mockFootballMatch} canEdit={true} />);
 
     // Add Yellow Card to Sporting CP
-    const homeYellowBtn = screen.getAllByRole("button", { name: /^Amarelo$/i })[0];
+    const homeYellowBtn = screen.getAllByRole("button", { name: /^Yellow$/i })[0];
     await user.click(homeYellowBtn);
 
     await waitFor(() => {
@@ -133,7 +133,7 @@ describe("FootballScoreboard UI Interaction & Real Stats Tests", () => {
     });
 
     // Add Red Card to AC Viseu
-    const awayRedBtn = screen.getAllByRole("button", { name: /^Vermelho$/i })[1];
+    const awayRedBtn = screen.getAllByRole("button", { name: /^Red$/i })[1];
     await user.click(awayRedBtn);
 
     await waitFor(() => {
@@ -149,12 +149,12 @@ describe("FootballScoreboard UI Interaction & Real Stats Tests", () => {
     });
   });
 
-  it("registers set piece and foul statistics (+ Canto and + Falta)", async () => {
+  it("registers set piece and foul statistics (+Corner and +Foul)", async () => {
     const user = userEvent.setup();
     render(<FootballScoreboard matchData={mockFootballMatch} canEdit={true} />);
 
     // Add Corner to Sporting CP
-    const homeCornerBtn = screen.getAllByRole("button", { name: /\+ Canto/i })[0];
+    const homeCornerBtn = screen.getAllByRole("button", { name: /\+Corner/i })[0];
     await user.click(homeCornerBtn);
 
     await waitFor(() => {
@@ -170,7 +170,7 @@ describe("FootballScoreboard UI Interaction & Real Stats Tests", () => {
     });
 
     // Add Foul to AC Viseu
-    const awayFoulBtn = screen.getAllByRole("button", { name: /\+ Falta/i })[1];
+    const awayFoulBtn = screen.getAllByRole("button", { name: /\+Foul/i })[1];
     await user.click(awayFoulBtn);
 
     await waitFor(() => {

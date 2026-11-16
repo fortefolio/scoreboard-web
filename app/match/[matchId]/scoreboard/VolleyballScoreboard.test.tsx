@@ -50,8 +50,8 @@ describe("VolleyballScoreboard UI Interaction & Real Stats Tests", () => {
 
     expect(screen.getAllByText("Ana Patrícia / Duda (BRA)")[0]).toBeInTheDocument();
     expect(screen.getAllByText("Nuss / Kloth (USA)")[0]).toBeInTheDocument();
-    expect(screen.getByText("Voleibol de Praia")).toBeInTheDocument();
-    expect(screen.getByText("FIVB Beach Pro Tour Finals")).toBeInTheDocument();
+    expect(screen.getAllByText("Beach Volleyball")[0]).toBeInTheDocument();
+    expect(screen.getAllByText("FIVB Beach Pro Tour Finals")[0]).toBeInTheDocument();
     expect(screen.getByText(/Selecionar Servidor Inicial/i)).toBeInTheDocument();
   });
 
@@ -91,8 +91,8 @@ describe("VolleyballScoreboard UI Interaction & Real Stats Tests", () => {
 
     render(<VolleyballScoreboard matchData={readyMatch} canEdit={true} />);
 
-    // Click +1 Ponto for Home
-    const homePointBtn = screen.getAllByRole("button", { name: /\+1 Ponto/i })[0];
+    // Click POINT for Home
+    const homePointBtn = screen.getAllByRole("button", { name: /^POINT$/i })[0];
     await user.click(homePointBtn);
 
     await waitFor(() => {
@@ -111,7 +111,7 @@ describe("VolleyballScoreboard UI Interaction & Real Stats Tests", () => {
     });
 
     // Score for Away
-    const awayPointBtn = screen.getAllByRole("button", { name: /\+1 Ponto/i })[1];
+    const awayPointBtn = screen.getAllByRole("button", { name: /^POINT$/i })[1];
     await user.click(awayPointBtn);
 
     await waitFor(() => {
@@ -129,8 +129,8 @@ describe("VolleyballScoreboard UI Interaction & Real Stats Tests", () => {
       );
     });
 
-    // Undo / Corrigir for Home
-    const homeUndoBtn = screen.getAllByRole("button", { name: /-1 Corrigir/i })[0];
+    // Undo / -1 for Home
+    const homeUndoBtn = screen.getAllByRole("button", { name: /^-1$/i })[0];
     await user.click(homeUndoBtn);
 
     await waitFor(() => {
@@ -138,7 +138,7 @@ describe("VolleyballScoreboard UI Interaction & Real Stats Tests", () => {
     });
   });
 
-  it("handles team timeouts (Desconto) and server marking", async () => {
+  it("handles team timeouts (Timeout) and server marking", async () => {
     const user = userEvent.setup();
     const readyMatch = {
       ...mockVolleyballMatch,
@@ -151,7 +151,7 @@ describe("VolleyballScoreboard UI Interaction & Real Stats Tests", () => {
     render(<VolleyballScoreboard matchData={readyMatch} canEdit={true} />);
 
     // Request Timeout for Home
-    const timeoutBtn = screen.getAllByRole("button", { name: /Desconto/i })[0];
+    const timeoutBtn = screen.getAllByRole("button", { name: /^Timeout$/i })[0];
     await user.click(timeoutBtn);
 
     await waitFor(() => {
@@ -159,12 +159,12 @@ describe("VolleyballScoreboard UI Interaction & Real Stats Tests", () => {
     });
 
     // Mark server for Away
-    const markServerBtn = screen.getAllByRole("button", { name: /Marcar Serviço/i })[1];
+    const markServerBtn = screen.getAllByRole("button", { name: /^Toggle Serve$/i })[1];
     await user.click(markServerBtn);
 
     await waitFor(() => {
       // Away serving indicator should appear
-      expect(screen.getAllByText(/A Servir/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/SERVING/i)[0]).toBeInTheDocument();
     });
   });
 });

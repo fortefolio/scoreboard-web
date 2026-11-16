@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import SportIcon from "@/components/SportIcon";
 import { DataTableColumn, EntityStatusCell } from "@/components/DataTable";
 import { getSportTranslation } from "@/lib/i18n";
@@ -54,13 +55,34 @@ function formatTournamentDate(dateValue?: string | null): string {
   });
 }
 
+function renderOrganizerCell(item: any) {
+  const username = item.organizer?.username;
+  if (!username) {
+    return <span className="text-xs text-text-muted">-</span>;
+  }
+  return (
+    <Link
+      href={`/user/${encodeURIComponent(username)}`}
+      onClick={(e) => e.stopPropagation()}
+      className="text-xs font-medium text-text-secondary hover:text-text-primary hover:underline truncate block"
+      title={`@${username}`}
+    >
+      @{username}
+    </Link>
+  );
+}
+
 /**
  * Builds the shared column definitions for Match DataTables.
  */
 export function getMatchColumns(
   t: (key: string, params?: Record<string, any>) => string,
-  extraColumns: DataTableColumn<any>[] = []
+  extraColumns: DataTableColumn<any>[] = [],
+  options: { showOrganizer?: boolean } = {}
 ): DataTableColumn<any>[] {
+  const { showOrganizer = true } = options;
+  const organizerHeader = t("common.sport") === "Desporto" ? "Organizador" : "Organizer";
+
   return [
     {
       key: "teams",
@@ -122,12 +144,24 @@ export function getMatchColumns(
       render: (m) => {
         const { score0, score1 } = formatMatchScore(m);
         return (
-          <span className="font-mono tabular-nums text-sm font-semibold text-text-primary tracking-tight">
-            {score0} - {score1}
-          </span>
+          <div className="inline-flex flex-col items-center justify-center gap-1 leading-tight font-digital tabular-nums text-base font-semibold text-text-primary">
+            <span>{score0}</span>
+            <span>{score1}</span>
+          </div>
         );
       },
     },
+    ...(showOrganizer
+      ? [
+          {
+            key: "organizer",
+            header: organizerHeader,
+            headerClassName: "hidden lg:table-cell w-36",
+            cellClassName: "hidden lg:table-cell w-36",
+            render: (m: any) => renderOrganizerCell(m),
+          } satisfies DataTableColumn<any>,
+        ]
+      : []),
     {
       key: "status",
       header: t("common.status"),
@@ -153,8 +187,12 @@ export function getMatchColumns(
  */
 export function getTournamentColumns(
   t: (key: string, params?: Record<string, any>) => string,
-  extraColumns: DataTableColumn<any>[] = []
+  extraColumns: DataTableColumn<any>[] = [],
+  options: { showOrganizer?: boolean } = {}
 ): DataTableColumn<any>[] {
+  const { showOrganizer = true } = options;
+  const organizerHeader = t("common.sport") === "Desporto" ? "Organizador" : "Organizer";
+
   return [
     {
       key: "event",
@@ -205,6 +243,17 @@ export function getTournamentColumns(
           ? t("tournament.doubleElimination")
           : t("tournament.singleElimination"),
     },
+    ...(showOrganizer
+      ? [
+          {
+            key: "organizer",
+            header: organizerHeader,
+            headerClassName: "hidden lg:table-cell w-36",
+            cellClassName: "hidden lg:table-cell w-36",
+            render: (tItem: any) => renderOrganizerCell(tItem),
+          } satisfies DataTableColumn<any>,
+        ]
+      : []),
     {
       key: "status",
       header: t("common.status"),

@@ -30,11 +30,11 @@ export default function Pagination({
 
   return (
     <div
-      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-white/5 pt-6 mt-8 ${className}`}
+      className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-outline-variant pt-5 mt-6 ${className}`}
       aria-label="Pagination"
     >
       {showSummary && (
-        <span className="text-xs font-label text-on-surface-variant/60 font-bold uppercase tracking-wider self-center sm:self-auto">
+        <span className="text-xs text-text-muted font-medium self-center sm:self-auto">
           {t("common.pageOf", { current: safePage, total: totalPages })}
         </span>
       )}

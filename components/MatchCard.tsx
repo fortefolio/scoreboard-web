@@ -84,8 +84,12 @@ export default function MatchCard({ match }: { match: any }) {
   };
 
   const isPointsBased = match.sport_type === 'Football' || match.sport_type === 'Basketball';
+  const isScheduled = match.status === 'scheduled' && !isMatchFinished;
 
   const getMainScore = (idx: number) => {
+    if (isScheduled) {
+      return "–";
+    }
     if (isPointsBased) {
       return match.scores?.current?.[idx === 0 ? 'home' : 'away'] ?? 0;
     }
@@ -93,13 +97,13 @@ export default function MatchCard({ match }: { match: any }) {
   };
 
   return (
-    <Link href={`/match/${match.id}`} className="w-full sm:max-w-[288px] group shrink-0">
-      <div className="bg-surface-container p-4 rounded-xl border border-outline-variant hover:border-outline hover:bg-surface-container-high/40 transition-colors relative flex flex-col h-full">
-        {/* Header: Sport & Status */}
-        <div className="flex justify-between items-center gap-2 mb-4 relative z-10 min-w-0">
+    <Link href={`/match/${match.id}`} className="w-full group block h-full">
+      <div className="bg-surface-container p-4 rounded-xl border border-outline-variant hover:border-outline hover:bg-surface-container-high/40 transition-colors relative flex flex-col justify-between h-full">
+        {/* Header: Tournament / Sport & Status */}
+        <div className="flex justify-between items-center gap-2 pb-3 mb-3 border-b border-outline-variant/60 min-w-0">
           <div className="flex items-center gap-2 min-w-0 flex-1">
-            <SportIcon sport={match.sport_type} className="text-text-muted group-hover:text-text-primary text-[15px] shrink-0" />
-            <span 
+            <SportIcon sport={match.sport_type} className="text-text-muted group-hover:text-text-primary text-[15px] shrink-0 transition-colors" />
+            <span
               className="text-xs font-medium text-text-secondary truncate block"
               title={match.tournaments?.name || getSportTranslation(match.sport_type, t)}
             >
@@ -110,7 +114,7 @@ export default function MatchCard({ match }: { match: any }) {
           <div className="flex items-center gap-2 shrink-0">
             {isOngoingDisplay ? (
               <span className="text-xs font-medium text-text-primary flex items-center gap-1.5 shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                 {match.sport_type === 'Basketball'
                   ? (match.scores?.basketball?.period || t("status.live"))
                   : match.sport_type !== 'Football'
@@ -118,7 +122,7 @@ export default function MatchCard({ match }: { match: any }) {
                   : t("status.live")}
               </span>
             ) : (
-              <span className="text-xs text-text-muted shrink-0">
+              <span className="text-xs font-medium text-text-muted shrink-0">
                 {match.status === 'completed' || isMatchFinished
                   ? t("status.final")
                   : match.status === 'scheduled'
@@ -126,34 +130,43 @@ export default function MatchCard({ match }: { match: any }) {
                   : match.status}
               </span>
             )}
-            <FollowButton entityId={match.id} entityType="match" variant="icon" className="w-7 h-7 text-text-muted hover:text-text-primary" />
+            <FollowButton entityId={match.id} entityType="match" variant="icon" className="text-text-muted hover:text-text-primary" />
           </div>
         </div>
 
         {/* Participants */}
-        <div className="space-y-3 flex-1 relative z-10">
-          {[0, 1].map((i) => (
-            <div key={i} className="flex items-center justify-between gap-3">
-              {/* Left: Avatar + Team Name + Set Scores underneath */}
-              <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                {/* Avatar with clean service dot indicator */}
-                <div className="relative w-7 h-7 shrink-0 rounded-md bg-surface-container-high flex items-center justify-center border border-outline-variant">
-                  <span className="font-sans font-medium text-[11px] text-text-secondary">
-                    {getInitials(match.participants?.[i]?.name)}
-                  </span>
-                  {isOngoingDisplay && !isPointsBased && match.scores?.serving_index === i && (
-                    <span 
-                      title="Serving"
-                      className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-warning border border-surface-container"
-                    />
-                  )}
-                </div>
+        <div className="space-y-2.5 flex-1 flex flex-col justify-center">
+          {[0, 1].map((i) => {
+            const participantName = formatTeamOrPlayerName(match.participants?.[i]?.name);
+            const isServing = isOngoingDisplay && !isPointsBased && match.scores?.serving_index === i;
 
-                {/* Name + Sets underneath */}
-                <div className="flex flex-col min-w-0 flex-1 justify-center">
-                  <span className="text-sm font-medium text-text-primary truncate">
-                    {formatTeamOrPlayerName(match.participants?.[i]?.name) || "TBD"}
-                  </span>
+            return (
+              <div key={i} className="flex items-center justify-between gap-3 min-h-[32px]">
+                {/* Left: Avatar + Team Name + Set Scores underneath */}
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className="w-7 h-7 shrink-0 rounded-md bg-surface-container-high flex items-center justify-center border border-outline-variant">
+                    <span className="font-sans font-medium text-[11px] text-text-secondary">
+                      {getInitials(match.participants?.[i]?.name)}
+                    </span>
+                  </div>
+
+                  {/* Name + Sets underneath */}
+                  <div className="flex flex-col min-w-0 flex-1 justify-center">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span
+                        className={`text-sm font-medium truncate ${
+                          participantName ? "text-text-primary" : "text-text-muted"
+                        }`}
+                      >
+                        {participantName || "TBD"}
+                      </span>
+                      {isServing && (
+                        <span
+                          title={t("scoreboard.serving")}
+                          className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0"
+                        />
+                      )}
+                    </div>
 
                   {/* Set / Quarter scores under the team name */}
                   {match.sport_type === 'Basketball' ? (
@@ -207,7 +220,7 @@ export default function MatchCard({ match }: { match: any }) {
 
                       {/* Live current set points / tennis games & points when ongoing */}
                       {isOngoingDisplay && (
-                        <span className="font-medium text-primary flex items-center gap-1">
+                        <span className="font-medium text-text-secondary flex items-center gap-1">
                           {setScores.length > 0 && (
                             <span className="text-text-muted/60">/</span>
                           )}
@@ -221,14 +234,19 @@ export default function MatchCard({ match }: { match: any }) {
                 </div>
               </div>
 
-              {/* Right: Main Match Score (Goals for Football, Sets Won for Volleyball/Tennis) */}
-              <div className="flex items-center shrink-0">
-                <span className="text-lg font-mono tabular-nums font-semibold w-6 text-right text-text-primary">
+              {/* Right: Main Match Score (Goals for Football/Basketball, Sets Won for Volleyball/Tennis) */}
+              <div className="flex items-center justify-center w-8 shrink-0">
+                <span
+                  className={`text-lg font-digital tabular-nums font-semibold text-center ${
+                    isScheduled ? "text-text-muted font-normal" : "text-text-primary"
+                  }`}
+                >
                   {getMainScore(i)}
                 </span>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </Link>

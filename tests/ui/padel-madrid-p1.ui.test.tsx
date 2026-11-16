@@ -58,17 +58,17 @@ describe("Padel UI Interaction Tests — Madrid Premier Padel P1 (Coello/Tapia v
   it("renders Padel specific UI with 'Padel Oficial' badge and participants", () => {
     render(<TennisScoreboard matchData={mockMadridP1Match} canEdit={true} />);
 
-    expect(screen.getByText("Padel Oficial")).toBeInTheDocument();
+    expect(screen.getAllByText("Padel")[0]).toBeInTheDocument();
     expect(screen.getAllByText("A. Coello / A. Tapia")[0]).toBeInTheDocument();
     expect(screen.getAllByText("A. Galán / F. Chingotto")[0]).toBeInTheDocument();
-    expect(screen.getByText("Comunidad de Madrid Premier Padel P1")).toBeInTheDocument();
+    expect(screen.getAllByText("Comunidad de Madrid Premier Padel P1")[0]).toBeInTheDocument();
   });
 
-  it("triggers and displays 'PONTO DE OURO (SUDDEN DEATH)' at 40-40", async () => {
+  it("triggers and displays 'GOLDEN POINT' at 40-40", async () => {
     const user = userEvent.setup();
     render(<TennisScoreboard matchData={mockMadridP1Match} canEdit={true} />);
 
-    const addPointButtons = screen.getAllByRole("button", { name: /\+ Ponto/i });
+    const addPointButtons = screen.getAllByRole("button", { name: /^POINT$/i });
     const coelloAddPoint = addPointButtons[0];
     const galanAddPoint = addPointButtons[1];
 
@@ -85,8 +85,8 @@ describe("Padel UI Interaction Tests — Madrid Premier Padel P1 (Coello/Tapia v
     // Rally 6: 40 - 40 -> Golden Point!
     await user.click(galanAddPoint);
 
-    // Verify Ponto de Ouro alert banner in Padel
-    expect(screen.getByText(/PONTO DE OURO \(SUDDEN DEATH\)/i)).toBeInTheDocument();
+    // Verify Golden Point alert banner in Padel
+    expect(screen.getByText(/GOLDEN POINT/i)).toBeInTheDocument();
 
     // Verify both have 40 on digital scores
     const digitalScores = screen.getAllByText("40");
@@ -120,7 +120,7 @@ describe("Padel UI Interaction Tests — Madrid Premier Padel P1 (Coello/Tapia v
 
     render(<TennisScoreboard matchData={matchWithPoints} canEdit={true} />);
 
-    const undoButtons = screen.getAllByTitle("Corrigir / Subtrair Ponto");
+    const undoButtons = screen.getAllByRole("button", { name: /^-1$/i });
     const undoHomeBtn = undoButtons[0];
 
     // Click undo for Coello/Tapia (30 -> 15)
@@ -144,7 +144,7 @@ describe("Padel UI Interaction Tests — Madrid Premier Padel P1 (Coello/Tapia v
 
     render(<TennisScoreboard matchData={mockMadridP1Match} canEdit={true} />);
 
-    const finalizeBtn = screen.getByRole("button", { name: /Terminar Jogo/i });
+    const finalizeBtn = screen.getAllByRole("button", { name: /End Match/i })[0];
     await user.click(finalizeBtn);
 
     expect(window.confirm).toHaveBeenCalledWith(

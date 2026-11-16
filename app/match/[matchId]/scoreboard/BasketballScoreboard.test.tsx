@@ -56,9 +56,9 @@ describe("BasketballScoreboard Component Tests", () => {
 
     expect(screen.getAllByText("Boston Celtics")[0]).toBeInTheDocument();
     expect(screen.getAllByText("Miami Heat")[0]).toBeInTheDocument();
-    expect(screen.getByText("NBA Playoffs")).toBeInTheDocument();
+    expect(screen.getAllByText("NBA Playoffs")[0]).toBeInTheDocument();
     expect(screen.getByText("10:00")).toBeInTheDocument(); // Default FIBA clock
-    expect(screen.getAllByText("24s")[0]).toBeInTheDocument(); // Shot clock
+    expect(screen.getByTitle("Reset 24s")).toBeInTheDocument(); // Shot clock
   });
 
   it("increments points with +1, +2, +3 buttons and sends point_scored event to Supabase", async () => {
@@ -122,14 +122,14 @@ describe("BasketballScoreboard Component Tests", () => {
     const user = userEvent.setup();
     render(<BasketballScoreboard matchData={mockBasketballMatch} canEdit={true} />);
 
-    const addFoulButtons = screen.getAllByRole("button", { name: /\+ Falta/i });
+    const addFoulButtons = screen.getAllByRole("button", { name: /\+ Foul/i });
     await user.click(addFoulButtons[0]); // Home foul
 
     await waitFor(() => {
       expect(updateMock).toHaveBeenCalled();
     });
 
-    const timeoutButtons = screen.getAllByRole("button", { name: /Desconto/i });
+    const timeoutButtons = screen.getAllByRole("button", { name: /^Timeout$/i });
     await user.click(timeoutButtons[0]); // Home timeout
 
     await waitFor(() => {

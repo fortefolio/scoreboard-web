@@ -83,11 +83,11 @@ describe("Volleyball UI Interaction Tests — FPV Liga UNA Seguros (Clube Kairó
 
     render(<VolleyballScoreboard matchData={matchWithServer} canEdit={true} />);
 
-    const pointButtons = screen.getAllByRole("button", { name: /\+1 Ponto/i });
+    const pointButtons = screen.getAllByRole("button", { name: /^POINT$/i });
     const kairosAddPoint = pointButtons[0];
     const vianaAddPoint = pointButtons[1];
 
-    // Rally 1: Kairós scores (+1 Ponto) -> 1 - 0
+    // Rally 1: Kairós scores (POINT) -> 1 - 0
     await user.click(kairosAddPoint);
     expect(insertMock).toHaveBeenCalledWith(
       "match_events",
@@ -98,7 +98,7 @@ describe("Volleyball UI Interaction Tests — FPV Liga UNA Seguros (Clube Kairó
       ])
     );
 
-    // Rally 2: VC Viana scores sideout (+1 Ponto) -> 1 - 1
+    // Rally 2: VC Viana scores sideout (POINT) -> 1 - 1
     await user.click(vianaAddPoint);
     expect(insertMock).toHaveBeenCalledWith(
       "match_events",
@@ -110,12 +110,12 @@ describe("Volleyball UI Interaction Tests — FPV Liga UNA Seguros (Clube Kairó
     );
 
     // Rotate server to VC Viana (side-out)
-    const rotateBtns = screen.getAllByRole("button", { name: /Marcar Serviço/i });
+    const rotateBtns = screen.getAllByRole("button", { name: /^Toggle Serve$/i });
     await user.click(rotateBtns[1]);
-    expect(screen.getByText("A Servir")).toBeInTheDocument();
+    expect(screen.getByText(/SERVING/i)).toBeInTheDocument();
 
-    // Correction: referee corrects call with -1 Corrigir
-    const undoButtons = screen.getAllByRole("button", { name: /-1 Corrigir/i });
+    // Correction: referee corrects call with -1
+    const undoButtons = screen.getAllByRole("button", { name: /^-1$/i });
     await user.click(undoButtons[1]);
     expect(updateMock).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -126,7 +126,7 @@ describe("Volleyball UI Interaction Tests — FPV Liga UNA Seguros (Clube Kairó
     );
   });
 
-  it("decrements team timeouts when Desconto button is clicked", async () => {
+  it("decrements team timeouts when Timeout button is clicked", async () => {
     const user = userEvent.setup();
     const matchWithServer = {
       ...mockVolleyball136Match,
@@ -138,13 +138,13 @@ describe("Volleyball UI Interaction Tests — FPV Liga UNA Seguros (Clube Kairó
 
     render(<VolleyballScoreboard matchData={matchWithServer} canEdit={true} />);
 
-    // Timeouts: 2/2 initially
-    expect(screen.getAllByText("Descontos:").length).toBeGreaterThan(0);
+    // Timeouts: TO: 2/2 initially
+    expect(screen.getAllByText(/TO:/i).length).toBeGreaterThan(0);
 
-    const timeoutBtns = screen.getAllByRole("button", { name: /Desconto/i });
+    const timeoutBtns = screen.getAllByRole("button", { name: /^Timeout$/i });
     const kairosTimeout = timeoutBtns[0];
 
-    // Click Desconto for Kairós
+    // Click Timeout for Kairós
     await user.click(kairosTimeout);
 
     expect(updateMock).toHaveBeenCalledWith(
@@ -180,7 +180,7 @@ describe("Volleyball UI Interaction Tests — FPV Liga UNA Seguros (Clube Kairó
     render(<VolleyballScoreboard matchData={matchIn5thSet} canEdit={true} />);
 
     // In 5th set, target is 15 points
-    expect(screen.getByText("Set Decisivo (Negra)")).toBeInTheDocument();
+    expect(screen.getByText(/SET 5 \(DECIDER\)/i)).toBeInTheDocument();
     expect(screen.getByText("15")).toBeInTheDocument();
   });
 });

@@ -87,16 +87,19 @@ describe("TopNavBar — authenticated", () => {
     supabaseMock.auth.signOut.mockClear();
   });
 
-  it("renders the avatar initial when no avatar_url is set", () => {
+  it("renders the hamburger menu button instead of an avatar", () => {
     renderNav(userWithEmail);
-    expect(screen.getByText("A")).toBeInTheDocument();
+    const menuBtn = screen.getByRole("button", { name: /user menu/i });
+    expect(menuBtn).toHaveTextContent("menu");
+    expect(menuBtn).toHaveAttribute("aria-expanded", "false");
     expect(screen.queryByRole("img", { name: /avatar/i })).not.toBeInTheDocument();
   });
 
-  it("renders an <img> when user_metadata.avatar_url is set", () => {
+  it("renders the hamburger menu button even when user_metadata.avatar_url is set", () => {
     renderNav(userWithAvatar);
-    const img = screen.getByRole("img", { name: /avatar/i });
-    expect(img).toHaveAttribute("src", "https://example.com/avatar.png");
+    const menuBtn = screen.getByRole("button", { name: /user menu/i });
+    expect(menuBtn).toHaveTextContent("menu");
+    expect(screen.queryByRole("img", { name: /avatar/i })).not.toBeInTheDocument();
   });
 
   it("renders NotificationBell and the navigation tabs", () => {
