@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -8,8 +8,10 @@ import { useAuth } from "@/components/AuthProvider";
 import MatchCard from "@/components/MatchCard";
 import MatchListItem from "@/components/MatchListItem";
 import DataTable from "@/components/DataTable";
+import Pagination from "@/components/Pagination";
 import { getMatchColumns } from "@/components/entityTableColumns";
 import { MyWorkspaceTabs } from "@/components/MyWorkspaceTabs";
+import { WorkspaceControlsBar, filterAndSortMatches } from "@/components/WorkspaceControlsBar";
 import SportIcon from "@/components/SportIcon";
 import ConfirmationModal from "@/components/ConfirmationModal";
 import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
@@ -27,6 +29,38 @@ function MyMatchesContent() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "cards">("list");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sportFilter, setSportFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateSort, setDateSort] = useState<"desc" | "asc">("desc");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  const filteredMatches = useMemo(
+    () =>
+      filterAndSortMatches(matches, {
+        sportFilter,
+        statusFilter,
+        searchQuery,
+        dateSort,
+      }),
+    [matches, sportFilter, statusFilter, searchQuery, dateSort]
+  );
+
+  const MATCHES_PER_PAGE = 12;
+  const totalPages = Math.max(1, Math.ceil(filteredMatches.length / MATCHES_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedMatches = useMemo(() => {
+    const start = (safePage - 1) * MATCHES_PER_PAGE;
+    return filteredMatches.slice(start, start + MATCHES_PER_PAGE);
+  }, [filteredMatches, safePage]);
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSportFilter("all");
+    setStatusFilter("all");
+    setDateSort("desc");
+    setCurrentPage(1);
+  };
 
   const [showModal, setShowModal] = useState(false);
   const [team1, setTeam1] = useState("");
@@ -49,8 +83,7 @@ function MyMatchesContent() {
     const { data } = await supabase
       .from("matches")
       .select("*, tournaments(name)")
-      .or(`umpire_id.eq.${userId},organizer_id.eq.${userId}`)
-      .is("tournament_id", null)
+      .eq("organizer_id", userId)
       .order("created_at", { ascending: false });
 
     if (data) setMatches(data);
@@ -183,70 +216,51 @@ function MyMatchesContent() {
   return (
     <div className="relative min-h-screen bg-transparent text-on-background">
       {/* ATMOSPHERE BACKGROUND */}
-      <MatchAtmosphereBackground sportType="random" mode="spectator" />
+      <MatchAtmosphereBackground
+        sportType={sportFilter !== "all" ? sportFilter : "random"}
+        mode="spectator"
+      />
 
-      <div className="relative z-10 p-4 sm:p-8 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary">
-              {t("nav.myMatches")}
-            </h1>
-            <p className="text-xs sm:text-sm text-text-muted mt-1">
-              Matches assigned to you for scoring or participation.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <button
-              type="button"
-              onClick={() => setShowModal(true)}
-              aria-label={t("common.newMatch")}
-              title={t("common.newMatch")}
-              className="h-8 w-8 sm:h-auto sm:w-auto sm:px-3.5 sm:py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[16px]">add</span>
-              <span className="hidden sm:inline">{t("common.newMatch")}</span>
-            </button>
-
-            {/* View Mode Toggle: List on left, Grid on right */}
-            <div className="flex items-center gap-0.5 bg-surface-container-high/50 p-1 rounded-xl border border-outline-variant shrink-0">
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                title={t("common.viewList")}
-                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
-                  viewMode === "list"
-                    ? "bg-surface-container-highest text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-primary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">format_list_bulleted</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("cards")}
-                title={t("common.viewCards")}
-                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
-                  viewMode === "cards"
-                    ? "bg-surface-container-highest text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-primary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">grid_view</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
+      <div className="relative z-10 px-4 py-3 sm:p-6 max-w-7xl mx-auto">
         <MyWorkspaceTabs active="matches" />
+
+        <WorkspaceControlsBar
+          searchQuery={searchQuery}
+          onSearchChange={(val) => {
+            setSearchQuery(val);
+            setCurrentPage(1);
+          }}
+          searchPlaceholder="Search matches or tournaments..."
+          sportFilter={sportFilter}
+          onSportChange={(val) => {
+            setSportFilter(val);
+            setCurrentPage(1);
+          }}
+          statusFilter={statusFilter}
+          onStatusChange={(val) => {
+            setStatusFilter(val);
+            setCurrentPage(1);
+          }}
+          dateSort={dateSort}
+          onDateSortChange={(val) => {
+            setDateSort(val);
+            setCurrentPage(1);
+          }}
+          onClearFilters={clearFilters}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          newAction={{
+            label: t("common.newMatch"),
+            onClick: () => setShowModal(true),
+          }}
+        />
 
       {loading ? (
         <div className="py-20 text-center">
           <div className="inline-block w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-3 text-text-muted text-xs">Loading matches...</p>
         </div>
-      ) : matches.length === 0 ? (
+      ) : filteredMatches.length === 0 ? (
         <div className="border border-dashed border-outline-variant rounded-2xl p-16 flex flex-col items-center justify-center text-center bg-surface-container">
           <span className="material-symbols-outlined text-4xl mb-3 text-text-muted opacity-40">sports_tennis</span>
           <p className="font-semibold text-sm text-text-primary mb-1">No matches found</p>
@@ -258,56 +272,69 @@ function MyMatchesContent() {
             Create Match
           </button>
         </div>
-      ) : viewMode === "cards" ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {matches.map((match) => (
-            <div key={match.id} className="relative group/card flex justify-center">
-              <MatchCard match={match} />
-            </div>
-          ))}
-        </div>
       ) : (
         <>
-          {/* Mobile List View */}
-          <div className="md:hidden divide-y divide-outline-variant rounded-xl border border-outline-variant bg-surface-container overflow-hidden">
-            {matches.map((match) => (
-              <MatchListItem key={match.id} match={match} />
-            ))}
-          </div>
+          {viewMode === "cards" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {paginatedMatches.map((match) => (
+                <div key={match.id} className="relative group/card flex justify-center">
+                  <MatchCard match={match} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              {/* Mobile List View */}
+              <div className="md:hidden divide-y divide-outline-variant rounded-xl border border-outline-variant bg-surface-container overflow-hidden">
+                {paginatedMatches.map((match) => (
+                  <MatchListItem key={match.id} match={match} />
+                ))}
+              </div>
 
-          {/* Desktop Data Table View */}
-          <DataTable
-            data={matches}
-            columns={getMatchColumns(t, [
-              {
-                key: "action",
-                header: t("common.action"),
-                align: "center",
-                headerClassName: "w-24",
-                cellClassName: "w-24",
-                stopRowClick: true,
-                render: (m) => (
-                  <div className="flex items-center justify-center gap-1">
-                    <button
-                      onClick={() => router.push(`/match/${m.id}/scoreboard`)}
-                      className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors cursor-pointer"
-                      title="Score Match"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">scoreboard</span>
-                    </button>
-                    <button
-                      onClick={() => setMatchToDelete(m)}
-                      className="p-1.5 rounded-lg text-text-muted hover:text-error hover:bg-error/10 transition-colors cursor-pointer"
-                      title="Delete Match"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">delete</span>
-                    </button>
-                  </div>
-                ),
-              },
-            ])}
-            getRowKey={(m) => m.id}
-            onRowClick={(m) => router.push(`/match/${m.id}`)}
+              {/* Desktop Data Table View */}
+              <DataTable
+                data={paginatedMatches}
+                columns={getMatchColumns(t, [
+                  {
+                    key: "action",
+                    header: t("common.action"),
+                    align: "center",
+                    headerClassName: "w-24",
+                    cellClassName: "w-24",
+                    stopRowClick: true,
+                    render: (m) => (
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          onClick={() => router.push(`/match/${m.id}/scoreboard`)}
+                          className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors cursor-pointer"
+                          title="Score Match"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">scoreboard</span>
+                        </button>
+                        <button
+                          onClick={() => setMatchToDelete(m)}
+                          className="p-1.5 rounded-lg text-text-muted hover:text-error hover:bg-error/10 transition-colors cursor-pointer"
+                          title="Delete Match"
+                        >
+                          <span className="material-symbols-outlined text-[16px]">delete</span>
+                        </button>
+                      </div>
+                    ),
+                  },
+                ], { showOrganizer: false })}
+                getRowKey={(m) => m.id}
+                onRowClick={(m) => router.push(`/match/${m.id}`)}
+              />
+            </>
+          )}
+
+          <Pagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
           />
         </>
       )}

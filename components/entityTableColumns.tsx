@@ -2,9 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import SportIcon from "@/components/SportIcon";
+import { SportFavoriteButton } from "@/components/FollowButton";
 import { DataTableColumn, EntityStatusCell } from "@/components/DataTable";
-import { getSportTranslation } from "@/lib/i18n";
 import { extractSetsData, countSetsWon } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 
@@ -93,12 +92,20 @@ export function getMatchColumns(
         const team0 = formatTeamOrPlayerName(m.participants?.[0]?.name) || "TBD";
         const team1 = formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD";
         return (
-          <div className="space-y-1">
-            <div className="font-medium text-xs sm:text-sm text-text-primary truncate" title={team0}>
-              {team0}
-            </div>
-            <div className="font-medium text-xs sm:text-sm text-text-primary truncate" title={team1}>
-              {team1}
+          <div className="flex items-center gap-3 min-w-0">
+            <SportFavoriteButton
+              entityId={m.id}
+              entityType="match"
+              sport={m.sport_type}
+              size="sm"
+            />
+            <div className="space-y-1 min-w-0">
+              <div className="font-medium text-xs sm:text-sm text-text-primary truncate" title={team0}>
+                {team0}
+              </div>
+              <div className="font-medium text-xs sm:text-sm text-text-primary truncate" title={team1}>
+                {team1}
+              </div>
             </div>
           </div>
         );
@@ -117,23 +124,6 @@ export function getMatchColumns(
           </div>
         );
       },
-    },
-    {
-      key: "sport",
-      header: t("common.sport"),
-      headerClassName: "w-40",
-      cellClassName: "w-40",
-      render: (m) => (
-        <div className="flex items-center gap-2 min-w-0">
-          <SportIcon
-            sport={m.sport_type}
-            className="text-text-muted group-hover:text-text-primary text-[16px] shrink-0"
-          />
-          <span className="text-xs font-medium text-text-secondary truncate">
-            {getSportTranslation(m.sport_type, t)}
-          </span>
-        </div>
-      ),
     },
     {
       key: "score",
@@ -200,10 +190,12 @@ export function getTournamentColumns(
       headerClassName: "px-3 md:px-6",
       cellClassName: "px-3 md:px-6",
       render: (tItem) => (
-        <div className="flex items-center gap-2 min-w-0">
-          <SportIcon
+        <div className="flex items-center gap-2.5 md:gap-3 min-w-0">
+          <SportFavoriteButton
+            entityId={tItem.id}
+            entityType="tournament"
             sport={tItem.sport_type}
-            className="md:hidden text-text-muted group-hover:text-text-primary text-[15px] shrink-0"
+            size="sm"
           />
           <div
             className="font-medium text-xs sm:text-sm text-text-primary leading-snug truncate"
@@ -211,23 +203,6 @@ export function getTournamentColumns(
           >
             {tItem.name}
           </div>
-        </div>
-      ),
-    },
-    {
-      key: "sport",
-      header: t("common.sport"),
-      headerClassName: "hidden md:table-cell w-40",
-      cellClassName: "hidden md:table-cell w-40",
-      render: (tItem) => (
-        <div className="flex items-center gap-2 min-w-0">
-          <SportIcon
-            sport={tItem.sport_type}
-            className="text-text-muted group-hover:text-text-primary text-[16px] shrink-0"
-          />
-          <span className="text-xs font-medium text-text-secondary truncate">
-            {getSportTranslation(tItem.sport_type, t)}
-          </span>
         </div>
       ),
     },

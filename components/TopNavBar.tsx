@@ -10,7 +10,7 @@ import LanguageSelector from "./LanguageSelector";
 
 export default function TopNavBar() {
   const { user, supabase, signOut } = useAuth();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const [subscriptionTier, setSubscriptionTier] = useState<string>("free");
@@ -190,15 +190,8 @@ export default function TopNavBar() {
                       onClick={() => { setIsMenuOpen(false); router.push('/my-matches'); }}
                       className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-container-high rounded-lg transition-colors cursor-pointer mt-0.5"
                     >
-                      <span className="material-symbols-outlined text-base">sports_tennis</span>
-                      {t("nav.myMatches")}
-                    </button>
-                    <button
-                      onClick={() => { setIsMenuOpen(false); router.push('/my-tournaments'); }}
-                      className="w-full flex items-center gap-2.5 px-2.5 py-2 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-container-high rounded-lg transition-colors cursor-pointer mt-0.5"
-                    >
-                      <span className="material-symbols-outlined text-base">emoji_events</span>
-                      {t("nav.myTournaments")}
+                      <span className="material-symbols-outlined text-base">dashboard</span>
+                      {locale === "pt" ? "Os Meus Eventos" : "My Events"}
                     </button>
                     <button
                       onClick={handleSignOut}

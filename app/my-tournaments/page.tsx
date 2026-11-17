@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -9,8 +9,10 @@ import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
 import SportIcon from "@/components/SportIcon";
 import DataTable from "@/components/DataTable";
+import Pagination from "@/components/Pagination";
 import { getTournamentColumns } from "@/components/entityTableColumns";
 import { MyWorkspaceTabs } from "@/components/MyWorkspaceTabs";
+import { WorkspaceControlsBar, filterAndSortTournaments } from "@/components/WorkspaceControlsBar";
 import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
 
 export default function MyTournamentsPage() {
@@ -30,6 +32,38 @@ function MyTournamentsContent() {
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<"list" | "cards">("list");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sportFilter, setSportFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateSort, setDateSort] = useState<"desc" | "asc">("desc");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  const filteredTournaments = useMemo(
+    () =>
+      filterAndSortTournaments(tournaments, {
+        sportFilter,
+        statusFilter,
+        searchQuery,
+        dateSort,
+      }),
+    [tournaments, sportFilter, statusFilter, searchQuery, dateSort]
+  );
+
+  const TOURNAMENTS_PER_PAGE = 9;
+  const totalPages = Math.max(1, Math.ceil(filteredTournaments.length / TOURNAMENTS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedTournaments = useMemo(() => {
+    const start = (safePage - 1) * TOURNAMENTS_PER_PAGE;
+    return filteredTournaments.slice(start, start + TOURNAMENTS_PER_PAGE);
+  }, [filteredTournaments, safePage]);
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setSportFilter("all");
+    setStatusFilter("all");
+    setDateSort("desc");
+    setCurrentPage(1);
+  };
 
   const [showModal, setShowModal] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -195,69 +229,53 @@ function MyTournamentsContent() {
   return (
     <div className="relative min-h-screen bg-transparent text-on-background">
       {/* ATMOSPHERE BACKGROUND */}
-      <MatchAtmosphereBackground sportType="random" mode="spectator" />
+      <MatchAtmosphereBackground
+        sportType={sportFilter !== "all" ? sportFilter : "random"}
+        mode="spectator"
+      />
 
-      <div className="relative z-10 p-4 sm:p-8 max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary">
-              {tr("nav.myTournaments")}
-            </h1>
-            <p className="text-xs sm:text-sm text-text-muted mt-1">
-              Manage your active events and create new competitions.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-            <button 
-              onClick={handleOpenCreate}
-              aria-label={tr("common.newTournament")}
-              title={tr("common.newTournament")}
-              className="h-8 w-8 sm:h-auto sm:w-auto sm:px-3.5 sm:py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[16px]">add</span>
-              <span className="hidden sm:inline">{tr("common.newTournament")}</span>
-            </button>
-
-            {/* View Mode Toggle matching reference image */}
-            <div className="flex items-center gap-0.5 bg-surface-container-high/50 p-1 rounded-xl border border-outline-variant shrink-0">
-              <button
-                type="button"
-                onClick={() => setViewMode("cards")}
-                title={tr("common.viewCards")}
-                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
-                  viewMode === "cards"
-                    ? "bg-surface-container-highest text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-primary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">grid_view</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                title={tr("common.viewList")}
-                className={`p-1.5 rounded-lg transition-colors flex items-center cursor-pointer ${
-                  viewMode === "list"
-                    ? "bg-surface-container-highest text-text-primary shadow-sm"
-                    : "text-text-muted hover:text-text-primary"
-                }`}
-              >
-                <span className="material-symbols-outlined text-[18px]">format_list_bulleted</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
+      <div className="relative z-10 px-4 py-3 sm:p-6 max-w-7xl mx-auto">
         <MyWorkspaceTabs active="tournaments" />
+
+        <WorkspaceControlsBar
+          searchQuery={searchQuery}
+          onSearchChange={(val) => {
+            setSearchQuery(val);
+            setCurrentPage(1);
+          }}
+          searchPlaceholder={
+            isPt ? "Pesquisar torneios..." : "Search tournaments..."
+          }
+          sportFilter={sportFilter}
+          onSportChange={(val) => {
+            setSportFilter(val);
+            setCurrentPage(1);
+          }}
+          statusFilter={statusFilter}
+          onStatusChange={(val) => {
+            setStatusFilter(val);
+            setCurrentPage(1);
+          }}
+          dateSort={dateSort}
+          onDateSortChange={(val) => {
+            setDateSort(val);
+            setCurrentPage(1);
+          }}
+          onClearFilters={clearFilters}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          newAction={{
+            label: tr("common.newTournament"),
+            onClick: handleOpenCreate,
+          }}
+        />
 
       {loading ? (
         <div className="py-20 text-center">
           <div className="inline-block w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-3 text-text-muted text-xs">Loading tournaments...</p>
         </div>
-      ) : tournaments.length === 0 ? (
+      ) : filteredTournaments.length === 0 ? (
         <div 
           onClick={handleOpenCreate}
           className="border border-dashed border-outline-variant rounded-2xl p-16 flex flex-col items-center justify-center text-center bg-surface-container hover:border-outline-focus transition-colors cursor-pointer"
@@ -269,76 +287,89 @@ function MyTournamentsContent() {
             Create Tournament
           </span>
         </div>
-      ) : viewMode === "cards" ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tournaments.map((t) => (
-            <div 
-              key={t.id} 
-              className="bg-surface-container p-6 rounded-xl border border-outline-variant hover:border-outline-focus transition-colors flex flex-col justify-between group"
-            >
-              <div>
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-2">
-                    <SportIcon sport={t.sport_type} className="text-text-muted text-[16px]" />
-                    <span className="text-xs font-medium text-text-muted">{getSportTranslation(t.sport_type, tr)}</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-md text-[11px] font-medium border ${
-                    t.status === 'completed'
-                      ? 'bg-surface-container-high text-text-muted border-outline-variant'
-                      : t.status === 'ongoing'
-                      ? 'bg-surface-container-high text-text-primary border-outline-variant inline-flex items-center gap-1.5'
-                      : 'bg-surface-container-high text-text-secondary border-outline-variant'
-                  }`}>
-                    {t.status === 'ongoing' && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                    )}
-                    {t.status === 'completed' ? tr("status.completed") : t.status === 'ongoing' ? tr("status.live") : tr("status.scheduled")}
-                  </span>
-                </div>
-
-                <h3 className="text-base font-semibold text-text-primary group-hover:text-primary transition-colors leading-snug mb-2">
-                  {t.name}
-                </h3>
-
-                <p className="text-xs text-text-muted">
-                  {t.settings?.stage_1?.type === "groups"
-                    ? tr("tournament.groupStage")
-                    : t.settings?.stage_1?.type === "double_elimination"
-                    ? tr("tournament.doubleElimination")
-                    : tr("tournament.singleElimination")} • {t.settings?.max_teams || 16} teams
-                </p>
-              </div>
-              
-              <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
-                <span className="font-mono text-xs text-text-muted">
-                  {t.start_date
-                    ? new Date(t.start_date).toLocaleDateString(undefined, {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })
-                    : tr("home.tbdDate")}
-                </span>
-                <Link 
-                  href={`/tournament/${t.id}`}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                >
-                  View Dashboard
-                  <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
       ) : (
-        /* Desktop & Mobile Data Table */
-        <DataTable
-          data={tournaments}
-          columns={getTournamentColumns(tr)}
-          getRowKey={(tItem) => tItem.id}
-          onRowClick={(tItem) => router.push(`/tournament/${tItem.id}`)}
-          hideOnMobile={false}
-        />
+        <>
+          {viewMode === "cards" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {paginatedTournaments.map((t) => (
+                <div 
+                  key={t.id} 
+                  className="bg-surface-container p-6 rounded-xl border border-outline-variant hover:border-outline-focus transition-colors flex flex-col justify-between group"
+                >
+                  <div>
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex items-center gap-2">
+                        <SportIcon sport={t.sport_type} className="text-text-muted text-[16px]" />
+                        <span className="text-xs font-medium text-text-muted">{getSportTranslation(t.sport_type, tr)}</span>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-md text-[11px] font-medium border ${
+                        t.status === 'completed'
+                          ? 'bg-surface-container-high text-text-muted border-outline-variant'
+                          : t.status === 'ongoing'
+                          ? 'bg-surface-container-high text-text-primary border-outline-variant inline-flex items-center gap-1.5'
+                          : 'bg-surface-container-high text-text-secondary border-outline-variant'
+                      }`}>
+                        {t.status === 'ongoing' && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                        )}
+                        {t.status === 'completed' ? tr("status.completed") : t.status === 'ongoing' ? tr("status.live") : tr("status.scheduled")}
+                      </span>
+                    </div>
+
+                    <h3 className="text-base font-semibold text-text-primary group-hover:text-primary transition-colors leading-snug mb-2">
+                      {t.name}
+                    </h3>
+
+                    <p className="text-xs text-text-muted">
+                      {t.settings?.stage_1?.type === "groups"
+                        ? tr("tournament.groupStage")
+                        : t.settings?.stage_1?.type === "double_elimination"
+                        ? tr("tournament.doubleElimination")
+                        : tr("tournament.singleElimination")} • {t.settings?.max_teams || 16} teams
+                    </p>
+                  </div>
+                  
+                  <div className="mt-6 pt-4 border-t border-outline-variant flex items-center justify-between">
+                    <span className="font-mono text-xs text-text-muted">
+                      {t.start_date
+                        ? new Date(t.start_date).toLocaleDateString(undefined, {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : tr("home.tbdDate")}
+                    </span>
+                    <Link 
+                      href={`/tournament/${t.id}`}
+                      className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                    >
+                      View Dashboard
+                      <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* Desktop & Mobile Data Table */
+            <DataTable
+              data={paginatedTournaments}
+              columns={getTournamentColumns(tr, [], { showOrganizer: false })}
+              getRowKey={(tItem) => tItem.id}
+              onRowClick={(tItem) => router.push(`/tournament/${tItem.id}`)}
+              hideOnMobile={false}
+            />
+          )}
+
+          <Pagination
+            currentPage={safePage}
+            totalPages={totalPages}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }}
+          />
+        </>
       )}
 
       {/* UPGRADE / PAYWALL MODAL */}

@@ -128,7 +128,7 @@ describe("TopNavBar — authenticated", () => {
     expect(screen.getByText("alice@example.com")).toBeInTheDocument();
   });
 
-  it("navigates and closes the menu when clicking Settings / My Matches / My Tournaments", async () => {
+  it("navigates and closes the menu when clicking Settings / My Events", async () => {
     const user = userEvent.setup();
     renderNav(userWithEmail);
     const trigger = screen.getByRole("button", { name: /user menu/i });
@@ -139,12 +139,8 @@ describe("TopNavBar — authenticated", () => {
     expect(screen.queryByText(/signed in as/i)).not.toBeInTheDocument();
 
     await user.click(trigger);
-    await user.click(screen.getByRole("button", { name: /my matches/i }));
+    await user.click(screen.getByRole("button", { name: /my events/i }));
     expect(routerPush).toHaveBeenCalledWith("/my-matches");
-
-    await user.click(trigger);
-    await user.click(screen.getByRole("button", { name: /my tournaments/i }));
-    expect(routerPush).toHaveBeenCalledWith("/my-tournaments");
   });
 
   it("Sign Out delegates to supabase.auth.signOut and closes the menu", async () => {

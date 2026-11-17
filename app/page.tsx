@@ -510,19 +510,8 @@ function HomeContent() {
       />
 
       <div className="relative z-10 w-full py-4 sm:py-6 px-3 sm:px-8 max-w-7xl mx-auto">
-        {/* Horizontal Sport Filter Bar (mirrors scoreboard-mobile) */}
-        <div className="mb-3 sm:mb-4">
-          <SportFilterBar
-            selectedSport={sportFilter}
-            onSelectSport={(sport) => {
-              setSportFilter(sport);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
-
         {/* Precision Controls Toolbar */}
-        <div className="relative z-20 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8 bg-surface-container/70 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-outline-variant shadow-sm">
+        <div className="relative z-20 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4 bg-surface-container/70 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-outline-variant shadow-sm">
           {/* Top (mobile) / Left (desktop): Following Filter + Search */}
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 shrink-0">
             {/* Favorites/Following Type Segmented Control */}
@@ -838,6 +827,17 @@ function HomeContent() {
             </div>
           </div>
           </div>
+        </div>
+
+        {/* Horizontal Sport Filter Bar (mirrors scoreboard-mobile) */}
+        <div className="mb-5 sm:mb-6">
+          <SportFilterBar
+            selectedSport={sportFilter}
+            onSelectSport={(sport) => {
+              setSportFilter(sport);
+              setCurrentPage(1);
+            }}
+          />
         </div>
 
       {/* Loading Indicator */}
