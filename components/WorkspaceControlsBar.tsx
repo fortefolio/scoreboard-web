@@ -55,7 +55,7 @@ export function WorkspaceControlsBar({
       <div className="relative z-20 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4 bg-surface-container/70 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-outline-variant shadow-sm">
         {/* Top (mobile) / Left (desktop): Search */}
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 shrink-0">
-          <div className="relative flex items-center w-full sm:w-64 md:w-72">
+          <div className="relative flex items-center w-full sm:w-64 md:w-80 lg:w-96">
             <span className="material-symbols-outlined absolute left-3.5 text-[17px] text-text-muted pointer-events-none">
               search
             </span>

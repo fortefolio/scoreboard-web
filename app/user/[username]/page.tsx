@@ -347,7 +347,7 @@ function UserProfileContent({
           {/* Precision Controls Toolbar (Search, Filters, Sort & View Toggle) */}
           <div className="relative z-20 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mb-6 bg-surface-container/70 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-outline-variant shadow-sm">
             {/* Search Box */}
-            <div className="relative flex items-center w-full sm:w-64 md:w-72 shrink-0">
+            <div className="relative flex items-center w-full sm:w-64 md:w-80 lg:w-96 shrink-0">
               <span className="material-symbols-outlined absolute left-3.5 text-[17px] text-text-muted pointer-events-none">
                 search
               </span>

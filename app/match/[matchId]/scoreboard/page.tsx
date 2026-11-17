@@ -123,7 +123,9 @@ function ScoreboardContent() {
   if (!match || !rules) return <div className="p-10 text-white bg-gray-950 min-h-screen text-center">Loading...</div>;
 
   return (
-    <div className="flex-1 min-h-0 bg-transparent text-on-background p-4 md:p-6 compact:p-2 flex flex-col items-center relative overflow-hidden">
+    <div
+      className="fixed inset-0 z-40 h-dvh bg-background text-on-background p-4 md:p-6 compact:p-2 flex flex-col items-center overflow-hidden"
+    >
       <MatchAtmosphereBackground
         sportType={match.sport_type}
         mode={canEdit ? "umpire" : "spectator"}

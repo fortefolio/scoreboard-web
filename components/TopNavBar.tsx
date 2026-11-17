@@ -84,7 +84,7 @@ export default function TopNavBar() {
   const isTournamentsActive = activeTab === "tournaments";
   const isFollowingActive = activeTab === "following";
 
-  if (pathname?.includes("/overlay")) {
+  if (pathname?.includes("/overlay") || pathname?.includes("/scoreboard")) {
     return null;
   }
 

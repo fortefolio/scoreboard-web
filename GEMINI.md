@@ -41,3 +41,35 @@ This project uses `@supabase/ssr`. Do not regress to the patterns below.
 - **NEVER modify, update, weaken, or delete existing tests** during new feature development or bug fixes unless the user explicitly asks to update tests.
 - Always run affected tests (`npm run test:affected`) after changes.
 - **If existing tests fail after new developments or bug fixes, STOP and report the failing tests and root cause back to the user** instead of editing the test files to make them pass.
+
+---
+
+## Pages, Views & Components Inventory (UI Audit Checklist)
+
+Keep this list updated whenever routes or shared UI components are added or removed so full-app UI/UX passes cover every screen.
+
+### App Router Pages (`app/`)
+- `app/page.tsx` — Home feed (`Matches`, `Tournaments`, `Following`/`Favorites`), Search + Quick-Jump popover, `SportFilterBar`, Auth modal (`?auth=login|signup|forgot`)
+- `app/match/[matchId]/page.tsx` → `app/match/[matchId]/MatchDetailClient.tsx` — Match Overview (hero card, set/game breakdown, Progress / Rules / Official tabs, Share / Stream Overlay / Delete)
+- `app/match/[matchId]/scoreboard/page.tsx` — Live Scoreboard console (`TennisScoreboard.tsx`, `VolleyballScoreboard.tsx`, `FootballScoreboard.tsx`, `BasketballScoreboard.tsx`)
+- `app/match/[matchId]/overlay/page.tsx` → `app/match/[matchId]/overlay/MatchOverlayClient.tsx` — Transparent broadcast overlay (OBS/vMix)
+- `app/tournament/[id]/page.tsx` — Tournament Overview & Organizer Hub (`Teams`, `Standings`, `Group Matches`, `Bracket`, `Settings`)
+- `app/tournament/[id]/signup/page.tsx` — Public tournament team registration
+- `app/tournament/[id]/teams/page.tsx` — Public tournament roster
+- `app/my-matches/page.tsx` — My Events: Matches organized by current user
+- `app/my-tournaments/page.tsx` — My Events: Tournaments organized by current user
+- `app/umpire-matches/page.tsx` — My Events: Matches user was invited to umpire
+- `app/user/[username]/page.tsx` — Public organizer profile (matches & tournaments)
+- `app/notifications/page.tsx` — Full notifications feed & umpire invitation actions
+- `app/settings/page.tsx` — Account settings (`Profile`, `Preferences`, `Security`, `Danger Zone`)
+- `app/terms/page.tsx` — Terms & Conditions / GDPR
+- `app/auth/confirm/page.tsx` — Auth OTP confirmation & mobile deep-link handoff
+- `app/auth/reset-password/page.tsx` — Password recovery
+
+### Shared UI Components (`components/`)
+- **Shell & Navigation:** `TopNavBar.tsx`, `BottomTabBar.tsx`, `Footer.tsx`, `LanguageSelector.tsx`, `NotificationBell.tsx`, `AuthProvider.tsx`, `MyWorkspaceTabs.tsx`
+- **Landing:** `components/landing/GuestLandingHero.tsx`, `components/landing/TechnicalCapabilitiesSection.tsx`
+- **Controls, Lists & Tables:** `WorkspaceControlsBar.tsx`, `SportFilterBar.tsx`, `DataTable.tsx`, `entityTableColumns.tsx`, `MatchCard.tsx`, `MatchListItem.tsx`, `Pagination.tsx`, `SelectField.tsx`
+- **Match & Scoreboard:** `FollowButton.tsx` (`FollowButton` & `SportFavoriteButton`), `SportIcon.tsx`, `OfflineSyncBadge.tsx`, `components/match/MatchAtmosphereBackground.tsx`, `components/match/StreamOverlayModal.tsx`, `components/scoreboard/ScoreboardLayout.tsx`
+- **Tournament:** `TournamentBracket.tsx`, `GroupMatchesView.tsx`, `GroupStandingsView.tsx`
+- **Modals:** `ConfirmationModal.tsx`, `RuleModal.tsx`, `components/subscription/UpgradeModal.tsx`

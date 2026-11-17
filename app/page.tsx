@@ -20,9 +20,12 @@ import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackgro
 import { useFollow } from "@/lib/hooks/useFollow";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import { validatePassword } from "@/lib/auth/passwordValidation";
+import { GuestLandingHero } from "@/components/landing/GuestLandingHero";
+import { TechnicalCapabilitiesSection } from "@/components/landing/TechnicalCapabilitiesSection";
 
 const MATCHES_PER_PAGE = 12;
 const TOURNAMENTS_PER_PAGE = 9;
+const GUEST_PREVIEW_LIMIT = 6;
 
 export default function Home() {
   return (
@@ -492,14 +495,16 @@ function HomeContent() {
   }, [totalMatchesCount, totalTournamentsCount, totalFollowedCount]);
 
   const paginatedMatches = useMemo(() => {
+    if (!user) return filteredMatches.slice(0, GUEST_PREVIEW_LIMIT);
     const start = (safePage - 1) * MATCHES_PER_PAGE;
     return filteredMatches.slice(start, start + MATCHES_PER_PAGE);
-  }, [filteredMatches, safePage]);
+  }, [user, filteredMatches, safePage]);
 
   const paginatedTournaments = useMemo(() => {
+    if (!user) return filteredTournaments.slice(0, GUEST_PREVIEW_LIMIT);
     const start = (safePage - 1) * TOURNAMENTS_PER_PAGE;
     return filteredTournaments.slice(start, start + TOURNAMENTS_PER_PAGE);
-  }, [filteredTournaments, safePage]);
+  }, [user, filteredTournaments, safePage]);
 
   return (
     <div className="relative min-h-screen bg-transparent text-on-surface">
@@ -510,8 +515,20 @@ function HomeContent() {
       />
 
       <div className="relative z-10 w-full py-4 sm:py-6 px-3 sm:px-8 max-w-7xl mx-auto">
+        {!user && activeTab === "matches" && (
+          <GuestLandingHero
+            onGetStarted={() => setAuthModal("signup")}
+            onExploreLive={() => {
+              document.getElementById("live-feed")?.scrollIntoView({ behavior: "smooth" });
+            }}
+          />
+        )}
+
         {/* Precision Controls Toolbar */}
-        <div className="relative z-20 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4 bg-surface-container/70 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-outline-variant shadow-sm">
+        <div
+          id="live-feed"
+          className="relative z-20 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4 bg-surface-container/70 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-outline-variant shadow-sm"
+        >
           {/* Top (mobile) / Left (desktop): Following Filter + Search */}
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 shrink-0">
             {/* Favorites/Following Type Segmented Control */}
@@ -554,7 +571,7 @@ function HomeContent() {
             )}
 
             {/* Search Box with Organizer quick-jump */}
-            <div className="relative flex items-center w-full sm:w-64 md:w-72">
+            <div className="relative flex items-center w-full sm:w-64 md:w-80 lg:w-96">
               <span className="material-symbols-outlined absolute left-3.5 text-[17px] text-text-muted pointer-events-none">
                 search
               </span>
@@ -595,7 +612,7 @@ function HomeContent() {
               )}
 
               {searchFocused && hasQuickJumpResults && (
-                <div className="absolute left-0 top-full mt-2 w-full sm:w-[340px] max-h-80 overflow-y-auto bg-surface-container-high border border-outline rounded-xl shadow-2xl shadow-black/70 ring-1 ring-white/10 z-40 py-1.5 divide-y divide-outline-variant">
+                <div className="absolute left-0 top-full mt-2 w-full sm:w-[340px] lg:w-96 max-h-80 overflow-y-auto bg-surface-container-high border border-outline rounded-xl shadow-2xl shadow-black/70 ring-1 ring-white/10 z-40 py-1.5 divide-y divide-outline-variant">
                   {matchingOrganizers.length > 0 && (
                     <div className="py-1">
                       <div className="px-3 py-1 text-[11px] font-semibold text-text-secondary">
@@ -854,24 +871,49 @@ function HomeContent() {
           {activeTab === "matches" && (
             <div className="w-full">
               {filteredMatches.length === 0 ? (
-                <div className="bg-surface-container rounded-xl p-12 text-center border border-outline-variant">
-                  <span className="material-symbols-outlined text-3xl text-text-muted mb-2 block">
-                    sports
-                  </span>
-                  <h3 className="font-sans font-medium text-sm text-text-primary mb-1">
+                <div className="bg-surface-container rounded-2xl p-10 sm:p-12 text-center border border-outline-variant">
+                  <div className="w-11 h-11 rounded-xl bg-surface-container-high border border-outline-variant flex items-center justify-center mx-auto mb-3 text-text-secondary">
+                    <span className="material-symbols-outlined text-2xl">emoji_events</span>
+                  </div>
+                  <h3 className="font-sans font-semibold text-base text-text-primary mb-1.5">
                     {t("home.noMatchesFound")}
                   </h3>
-                  <p className="text-text-muted text-xs mb-4">
+                  <p className="text-text-muted text-xs max-w-md mx-auto mb-5 leading-relaxed">
                     {t("home.noMatchesFilterDesc")}
                   </p>
-                  {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "") && (
+                  <div className="flex flex-wrap items-center justify-center gap-2">
                     <button
-                      onClick={clearFilters}
-                      className="px-3.5 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-xs font-medium text-primary transition-colors border border-outline-variant"
+                      type="button"
+                      onClick={() => {
+                        if (!user) {
+                          setAuthModal("login");
+                        } else {
+                          router.push("/my-matches?create=true");
+                        }
+                      }}
+                      className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                     >
-                      {t("common.clearFilters")}
+                      <span className="material-symbols-outlined text-[15px]">add</span>
+                      {t("common.newMatch")}
                     </button>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => handleTabChange("tournaments")}
+                      className="px-3.5 py-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-text-primary text-xs font-medium border border-outline-variant inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <span className="material-symbols-outlined text-[15px] text-text-muted">emoji_events</span>
+                      {t("home.tournamentsTab")}
+                    </button>
+                    {(sportFilter !== "all" || statusFilter !== "all" || searchQuery !== "") && (
+                      <button
+                        type="button"
+                        onClick={clearFilters}
+                        className="px-3.5 py-2 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-xs font-medium text-text-secondary hover:text-text-primary transition-colors border border-outline-variant cursor-pointer"
+                      >
+                        {t("common.clearFilters")}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ) : viewMode === "cards" ? (
                 /* Cards Grid View */
@@ -1188,13 +1230,17 @@ function HomeContent() {
           )}
 
           {/* Pagination Controls */}
-          <Pagination
-            currentPage={safePage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
+          {user && (
+            <Pagination
+              currentPage={safePage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          )}
         </>
       )}
+
+      {!user && <TechnicalCapabilitiesSection />}
 
       {/* Authentication Modal (Preserved for full compatibility with tests & auth flow) */}
       {authModal && (
