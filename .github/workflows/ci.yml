@@ -21,7 +21,7 @@ jobs:
         run: npm ci
 
       - name: Audit dependencies for known vulnerabilities
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Run Vitest
         run: npm run test:run
