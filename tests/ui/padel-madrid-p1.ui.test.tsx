@@ -140,20 +140,25 @@ describe("Padel UI Interaction Tests — Madrid Premier Padel P1 (Coello/Tapia v
 
   it("terminates match when clicking Terminar Jogo button with confirmation", async () => {
     const user = userEvent.setup();
-    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const confirmMock = vi.fn(() => true);
+    vi.stubGlobal("confirm", confirmMock);
 
-    render(<TennisScoreboard matchData={mockMadridP1Match} canEdit={true} />);
+    try {
+      render(<TennisScoreboard matchData={mockMadridP1Match} canEdit={true} />);
 
-    const finalizeBtn = screen.getAllByRole("button", { name: /End Match/i })[0];
-    await user.click(finalizeBtn);
+      const finalizeBtn = screen.getAllByRole("button", { name: /End Match/i })[0];
+      await user.click(finalizeBtn);
 
-    expect(window.confirm).toHaveBeenCalledWith(
-      expect.stringContaining("Tens a certeza que queres terminar este jogo de Padel?")
-    );
-    expect(updateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "completed",
-      })
-    );
+      expect(confirmMock).toHaveBeenCalledWith(
+        expect.stringContaining("Tens a certeza que queres terminar este jogo de Padel?")
+      );
+      expect(updateMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: "completed",
+        })
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

@@ -42,6 +42,10 @@ This project uses `@supabase/ssr`. Do not regress to the patterns below.
 - Always run affected tests (`npm run test:affected`) after changes.
 - **If existing tests fail after new developments or bug fixes, STOP and report the failing tests and root cause back to the user** instead of editing the test files to make them pass.
 
+## Zero-Downtime & Breaking Changes (Expand-and-Contract)
+- Never deploy Web changes that assume destructive backend changes (`DROP`/`RENAME` column, mutated RPC/Realtime shapes) before old Mobile clients are migrated.
+- Coordinate breaking API/schema changes via Expand-and-Contract: deploy additive backend support first, ship Web (optionally behind a feature flag) + Mobile (`EAS Update` or store release), and only contract legacy backend fields after old mobile versions are retired (see `../scoreboard-backend/docs/04-zero-downtime-deployments.md`).
+
 ---
 
 ## Pages, Views & Components Inventory (UI Audit Checklist)

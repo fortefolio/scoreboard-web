@@ -1,11 +1,20 @@
 import React from "react";
-import { describe, it, expect } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { describe, it, expect, beforeEach } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import TermsPage from "./page";
 
 describe("TermsPage Component", () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
   it("renders terms & conditions page with key legal sections", () => {
-    render(<TermsPage />);
+    render(
+      <LanguageProvider>
+        <TermsPage />
+      </LanguageProvider>
+    );
 
     expect(screen.getByText(/Terms & Conditions of Service/i)).toBeInTheDocument();
     expect(screen.getByText(/Introduction & Acceptance of Terms/i)).toBeInTheDocument();
@@ -14,19 +23,17 @@ describe("TermsPage Component", () => {
     expect(screen.getByText("support@scoreboard.app")).toBeInTheDocument();
   });
 
-  it("switches language between English and Portuguese", () => {
-    render(<TermsPage />);
+  it("renders Portuguese translations when locale is pt", () => {
+    localStorage.setItem("scoreboard_locale", "pt");
 
-    const ptButton = screen.getByRole("button", { name: "PT" });
-    fireEvent.click(ptButton);
+    render(
+      <LanguageProvider>
+        <TermsPage />
+      </LanguageProvider>
+    );
 
     expect(screen.getByText(/Termos & Condições de Utilização/i)).toBeInTheDocument();
     expect(screen.getByText(/Introdução e Aceitação/i)).toBeInTheDocument();
     expect(screen.getByText(/Subscrições, Faturação e Vouchers de Clube/i)).toBeInTheDocument();
-
-    const enButton = screen.getByRole("button", { name: "EN" });
-    fireEvent.click(enButton);
-
-    expect(screen.getByText(/Terms & Conditions of Service/i)).toBeInTheDocument();
   });
 });
