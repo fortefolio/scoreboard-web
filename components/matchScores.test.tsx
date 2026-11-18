@@ -79,4 +79,23 @@ describe("Match score font-digital and vertical layout regressions", () => {
     expect(score1).toHaveClass("font-digital");
     expect(score0.closest("div")).not.toBe(score1.closest("div"));
   });
+
+  it("omits the favorite button in MatchListItem and getMatchColumns when showFavorite is false", () => {
+    const { rerender } = render(
+      <LanguageProvider>
+        <MatchListItem match={sampleFootballMatch} showFavorite={false} />
+      </LanguageProvider>
+    );
+    expect(screen.queryByRole("button", { name: /follow/i })).not.toBeInTheDocument();
+
+    const cols = getMatchColumns((k) => k, [], { showFavorite: false });
+    const teamsCol = cols.find((c) => c.key === "teams");
+    expect(teamsCol).toBeDefined();
+    rerender(
+      <LanguageProvider>
+        <>{teamsCol!.render(sampleFootballMatch)}</>
+      </LanguageProvider>
+    );
+    expect(screen.queryByRole("button", { name: /follow/i })).not.toBeInTheDocument();
+  });
 });

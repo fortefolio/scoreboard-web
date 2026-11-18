@@ -7,7 +7,13 @@ import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import { FollowButton, SportFavoriteButton } from "@/components/FollowButton";
 
-export default function MatchListItem({ match }: { match: any }) {
+export default function MatchListItem({
+  match,
+  showFavorite = true,
+}: {
+  match: any;
+  showFavorite?: boolean;
+}) {
   const { t } = useTranslation();
 
   const rawSetData = extractSetsData(match.scores);
@@ -50,23 +56,29 @@ export default function MatchListItem({ match }: { match: any }) {
 
   return (
     <div className="w-full bg-surface-container rounded-xl border border-outline-variant p-3 flex items-center justify-between gap-2.5 hover:bg-surface-container-high/40 transition-colors">
-      <SportFavoriteButton
-        entityId={match.id}
-        entityType="match"
-        sport={match.sport_type}
-        size="md"
-      />
+      {showFavorite ? (
+        <SportFavoriteButton
+          entityId={match.id}
+          entityType="match"
+          sport={match.sport_type}
+          size="md"
+        />
+      ) : (
+        <div className="w-10 h-10 rounded-xl bg-surface-container-high border border-outline-variant flex items-center justify-center shrink-0">
+          <SportIcon sport={match.sport_type} className="text-[22px] text-text-secondary" />
+        </div>
+      )}
 
       <Link href={`/match/${match.id}`} className="flex items-center gap-2.5 min-w-0 flex-1">
-        {/* Teams Column */}
-        <div className="flex flex-col gap-1 min-w-0 flex-1">
-          <div className="min-w-0">
-            <span className="text-xs sm:text-sm font-medium text-text-primary truncate block">
+        {/* Teams Column (40px total height to align 1:1 with the sport icon box) */}
+        <div className="flex flex-col justify-center gap-1 min-w-0 flex-1">
+          <div className="h-[18px] flex items-center min-w-0">
+            <span className="text-xs sm:text-sm font-medium text-text-primary truncate leading-none block">
               {name0}
             </span>
           </div>
-          <div className="min-w-0">
-            <span className="text-xs sm:text-sm font-medium text-text-primary truncate block">
+          <div className="h-[18px] flex items-center min-w-0">
+            <span className="text-xs sm:text-sm font-medium text-text-primary truncate leading-none block">
               {name1}
             </span>
           </div>

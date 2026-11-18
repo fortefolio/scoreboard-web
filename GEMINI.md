@@ -69,7 +69,7 @@ Keep this list updated whenever routes or shared UI components are added or remo
 ### Shared UI Components (`components/`)
 - **Shell & Navigation:** `TopNavBar.tsx`, `BottomTabBar.tsx`, `Footer.tsx`, `LanguageSelector.tsx`, `NotificationBell.tsx`, `AuthProvider.tsx`, `MyWorkspaceTabs.tsx`
 - **Landing:** `components/landing/GuestLandingHero.tsx`, `components/landing/TechnicalCapabilitiesSection.tsx`
-- **Controls, Lists & Tables:** `WorkspaceControlsBar.tsx`, `SportFilterBar.tsx`, `DataTable.tsx`, `entityTableColumns.tsx`, `MatchCard.tsx`, `MatchListItem.tsx`, `Pagination.tsx`, `SelectField.tsx`
+- **Controls, Lists & Tables:** `WorkspaceControlsBar.tsx`, `SportFilterBar.tsx`, `GroupedMatchList.tsx`, `DataTable.tsx`, `entityTableColumns.tsx`, `MatchCard.tsx`, `MatchListItem.tsx`, `Pagination.tsx`, `SelectField.tsx`
 - **Match & Scoreboard:** `FollowButton.tsx` (`FollowButton` & `SportFavoriteButton`), `SportIcon.tsx`, `OfflineSyncBadge.tsx`, `components/match/MatchAtmosphereBackground.tsx`, `components/match/StreamOverlayModal.tsx`, `components/scoreboard/ScoreboardLayout.tsx`
 - **Tournament:** `TournamentBracket.tsx`, `GroupMatchesView.tsx`, `GroupStandingsView.tsx`
 - **Modals:** `ConfirmationModal.tsx`, `RuleModal.tsx`, `components/subscription/UpgradeModal.tsx`

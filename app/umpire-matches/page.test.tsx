@@ -69,6 +69,7 @@ describe("UmpireMatchesPage", () => {
     mockMatchesData = [
       {
         id: "m-99",
+        tournament_id: "t-1",
         sport_type: "Volleyball",
         status: "scheduled",
         scheduled_at: "2026-11-20T12:00:00Z",

@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import SportIcon from "@/components/SportIcon";
 import { SportFavoriteButton } from "@/components/FollowButton";
 import { DataTableColumn, EntityStatusCell } from "@/components/DataTable";
 import { extractSetsData, countSetsWon } from "@/lib/scoring/sets";
@@ -77,9 +78,9 @@ function renderOrganizerCell(item: any) {
 export function getMatchColumns(
   t: (key: string, params?: Record<string, any>) => string,
   extraColumns: DataTableColumn<any>[] = [],
-  options: { showOrganizer?: boolean } = {}
+  options: { showOrganizer?: boolean; showFavorite?: boolean } = {}
 ): DataTableColumn<any>[] {
-  const { showOrganizer = true } = options;
+  const { showOrganizer = true, showFavorite = true } = options;
   const organizerHeader = t("common.sport") === "Desporto" ? "Organizador" : "Organizer";
 
   return [
@@ -93,12 +94,18 @@ export function getMatchColumns(
         const team1 = formatTeamOrPlayerName(m.participants?.[1]?.name) || "TBD";
         return (
           <div className="flex items-center gap-3 min-w-0">
-            <SportFavoriteButton
-              entityId={m.id}
-              entityType="match"
-              sport={m.sport_type}
-              size="sm"
-            />
+            {showFavorite ? (
+              <SportFavoriteButton
+                entityId={m.id}
+                entityType="match"
+                sport={m.sport_type}
+                size="sm"
+              />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center shrink-0">
+                <SportIcon sport={m.sport_type} className="text-[18px] text-text-secondary" />
+              </div>
+            )}
             <div className="space-y-1 min-w-0">
               <div className="font-medium text-xs sm:text-sm text-text-primary truncate" title={team0}>
                 {team0}

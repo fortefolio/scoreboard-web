@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import MatchCard from "@/components/MatchCard";
 import MatchListItem from "@/components/MatchListItem";
+import GroupedMatchList from "@/components/GroupedMatchList";
 import DataTable from "@/components/DataTable";
 import Pagination from "@/components/Pagination";
 import { getMatchColumns } from "@/components/entityTableColumns";
@@ -187,42 +188,30 @@ function UmpireMatchesContent() {
                 ))}
               </div>
             ) : (
-              <>
-                {/* Mobile List View */}
-                <div className="md:hidden divide-y divide-outline-variant rounded-xl border border-outline-variant bg-surface-container overflow-hidden">
-                  {paginatedMatches.map((match) => (
-                    <MatchListItem key={match.id} match={match} />
-                  ))}
-                </div>
-
-                {/* Desktop Data Table View */}
-                <DataTable
-                  data={paginatedMatches}
-                  columns={getMatchColumns(t, [
-                    {
-                      key: "action",
-                      header: t("common.action"),
-                      align: "center",
-                      headerClassName: "w-20",
-                      cellClassName: "w-20",
-                      stopRowClick: true,
-                      render: (m) => (
-                        <div className="flex items-center justify-center">
-                          <button
-                            onClick={() => router.push(`/match/${m.id}/scoreboard`)}
-                            className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors cursor-pointer"
-                            title={isPt ? "Pontuar Jogo" : "Score Match"}
-                          >
-                            <span className="material-symbols-outlined text-[16px]">scoreboard</span>
-                          </button>
-                        </div>
-                      ),
-                    },
-                  ])}
-                  getRowKey={(m) => m.id}
-                  onRowClick={(m) => router.push(`/match/${m.id}`)}
-                />
-              </>
+              <GroupedMatchList
+                matches={paginatedMatches}
+                extraColumns={[
+                  {
+                    key: "action",
+                    header: t("common.action"),
+                    align: "center",
+                    headerClassName: "w-20",
+                    cellClassName: "w-20",
+                    stopRowClick: true,
+                    render: (m) => (
+                      <div className="flex items-center justify-center">
+                        <button
+                          onClick={() => router.push(`/match/${m.id}/scoreboard`)}
+                          className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors cursor-pointer"
+                          title={isPt ? "Pontuar Jogo" : "Score Match"}
+                        >
+                          <span className="material-symbols-outlined text-[16px]">scoreboard</span>
+                        </button>
+                      </div>
+                    ),
+                  },
+                ]}
+              />
             )}
 
             <Pagination

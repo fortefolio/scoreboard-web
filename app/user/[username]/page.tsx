@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import MatchCard from "@/components/MatchCard";
 import MatchListItem from "@/components/MatchListItem";
+import GroupedMatchList from "@/components/GroupedMatchList";
 import SportIcon from "@/components/SportIcon";
 import Pagination from "@/components/Pagination";
 import DataTable from "@/components/DataTable";
@@ -622,19 +623,7 @@ function UserProfileContent({
                   ))}
                 </div>
               ) : (
-                <>
-                  <div className="md:hidden space-y-2.5">
-                    {paginatedMatches.map((m) => (
-                      <MatchListItem key={m.id} match={m} />
-                    ))}
-                  </div>
-                  <DataTable
-                    data={paginatedMatches}
-                    columns={getMatchColumns(t, [], { showOrganizer: false })}
-                    getRowKey={(m) => m.id}
-                    onRowClick={(m) => router.push(`/match/${m.id}`)}
-                  />
-                </>
+                <GroupedMatchList matches={paginatedMatches} showOrganizer={false} />
               )}
             </div>
           )}

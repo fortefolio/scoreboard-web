@@ -400,3 +400,99 @@ describe("Home — modal toggling", () => {
   });
 });
 
+describe("Home — guest landing preview", () => {
+  beforeEach(resetState);
+
+  it("picks max 1 match per tournament (prioritizing ongoing), caps at 6, and renders flat without group headers or + New Match", async () => {
+    const now = new Date().toISOString();
+    supabaseMock.__queueResponse("matches", {
+      data: [
+        {
+          id: "dup-sched",
+          tournament_id: "t-dup",
+          sport_type: "Tennis",
+          status: "scheduled",
+          participants: [{ name: "Dup Scheduled A" }, { name: "Dup Scheduled B" }],
+          tournaments: { name: "Dup Open" },
+          created_at: now,
+        },
+        {
+          id: "dup-live",
+          tournament_id: "t-dup",
+          sport_type: "Tennis",
+          status: "ongoing",
+          participants: [{ name: "Dup Live A" }, { name: "Dup Live B" }],
+          tournaments: { name: "Dup Open" },
+          created_at: now,
+        },
+        {
+          id: "m-2",
+          tournament_id: "t-2",
+          sport_type: "Padel",
+          status: "ongoing",
+          participants: [{ name: "Padel Live A" }, { name: "Padel Live B" }],
+          tournaments: { name: "Padel Cup" },
+          created_at: now,
+        },
+        {
+          id: "m-3",
+          tournament_id: null,
+          sport_type: "Football",
+          status: "ongoing",
+          participants: [{ name: "Standalone 1 A" }, { name: "Standalone 1 B" }],
+          created_at: now,
+        },
+        {
+          id: "m-4",
+          tournament_id: null,
+          sport_type: "Basketball",
+          status: "scheduled",
+          participants: [{ name: "Standalone 2 A" }, { name: "Standalone 2 B" }],
+          created_at: now,
+        },
+        {
+          id: "m-5",
+          tournament_id: "t-5",
+          sport_type: "Volleyball",
+          status: "scheduled",
+          participants: [{ name: "Volley A" }, { name: "Volley B" }],
+          tournaments: { name: "Volley Cup" },
+          created_at: now,
+        },
+        {
+          id: "m-6",
+          tournament_id: null,
+          sport_type: "Tennis",
+          status: "completed",
+          participants: [{ name: "Completed 6 A" }, { name: "Completed 6 B" }],
+          created_at: now,
+        },
+        {
+          id: "m-7-overflow",
+          tournament_id: null,
+          sport_type: "Tennis",
+          status: "completed",
+          participants: [{ name: "Overflow 7 A" }, { name: "Overflow 7 B" }],
+          created_at: now,
+        },
+      ],
+      error: null,
+    });
+    supabaseMock.__queueResponse("tournaments", { data: [], error: null });
+
+    await renderHome();
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Dup Live A").length).toBeGreaterThan(0);
+    });
+
+    // Ongoing match from t-dup is chosen over scheduled match from t-dup
+    expect(screen.queryByText("Dup Scheduled A")).not.toBeInTheDocument();
+    // Capped at 6 records total (7th match excluded)
+    expect(screen.queryByText("Overflow 7 A")).not.toBeInTheDocument();
+    // Flat ungrouped list (no collapsible tournament group headers) and no + New Match CTA
+    expect(screen.queryByRole("button", { name: /new match/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { expanded: true })).not.toBeInTheDocument();
+  });
+});
+

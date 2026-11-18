@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import MatchCard from "@/components/MatchCard";
 import MatchListItem from "@/components/MatchListItem";
+import GroupedMatchList from "@/components/GroupedMatchList";
 import DataTable from "@/components/DataTable";
 import Pagination from "@/components/Pagination";
 import { getMatchColumns } from "@/components/entityTableColumns";
@@ -283,49 +284,38 @@ function MyMatchesContent() {
               ))}
             </div>
           ) : (
-            <>
-              {/* Mobile List View */}
-              <div className="md:hidden divide-y divide-outline-variant rounded-xl border border-outline-variant bg-surface-container overflow-hidden">
-                {paginatedMatches.map((match) => (
-                  <MatchListItem key={match.id} match={match} />
-                ))}
-              </div>
-
-              {/* Desktop Data Table View */}
-              <DataTable
-                data={paginatedMatches}
-                columns={getMatchColumns(t, [
-                  {
-                    key: "action",
-                    header: t("common.action"),
-                    align: "center",
-                    headerClassName: "w-24",
-                    cellClassName: "w-24",
-                    stopRowClick: true,
-                    render: (m) => (
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          onClick={() => router.push(`/match/${m.id}/scoreboard`)}
-                          className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors cursor-pointer"
-                          title="Score Match"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">scoreboard</span>
-                        </button>
-                        <button
-                          onClick={() => setMatchToDelete(m)}
-                          className="p-1.5 rounded-lg text-text-muted hover:text-error hover:bg-error/10 transition-colors cursor-pointer"
-                          title="Delete Match"
-                        >
-                          <span className="material-symbols-outlined text-[16px]">delete</span>
-                        </button>
-                      </div>
-                    ),
-                  },
-                ], { showOrganizer: false })}
-                getRowKey={(m) => m.id}
-                onRowClick={(m) => router.push(`/match/${m.id}`)}
-              />
-            </>
+            <GroupedMatchList
+              matches={paginatedMatches}
+              showOrganizer={false}
+              extraColumns={[
+                {
+                  key: "action",
+                  header: t("common.action"),
+                  align: "center",
+                  headerClassName: "w-24",
+                  cellClassName: "w-24",
+                  stopRowClick: true,
+                  render: (m) => (
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => router.push(`/match/${m.id}/scoreboard`)}
+                        className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors cursor-pointer"
+                        title="Score Match"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">scoreboard</span>
+                      </button>
+                      <button
+                        onClick={() => setMatchToDelete(m)}
+                        className="p-1.5 rounded-lg text-text-muted hover:text-error hover:bg-error/10 transition-colors cursor-pointer"
+                        title="Delete Match"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">delete</span>
+                      </button>
+                    </div>
+                  ),
+                },
+              ]}
+            />
           )}
 
           <Pagination

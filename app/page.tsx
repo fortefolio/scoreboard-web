@@ -11,6 +11,7 @@ import MatchCard from "@/components/MatchCard";
 import SportIcon from "@/components/SportIcon";
 import SportFilterBar from "@/components/SportFilterBar";
 import MatchListItem from "@/components/MatchListItem";
+import GroupedMatchList from "@/components/GroupedMatchList";
 import DataTable from "@/components/DataTable";
 import { getMatchColumns, getTournamentColumns } from "@/components/entityTableColumns";
 import { FollowButton } from "@/components/FollowButton";
@@ -495,7 +496,24 @@ function HomeContent() {
   }, [totalMatchesCount, totalTournamentsCount, totalFollowedCount]);
 
   const paginatedMatches = useMemo(() => {
-    if (!user) return filteredMatches.slice(0, GUEST_PREVIEW_LIMIT);
+    if (!user) {
+      // Guest landing: prioritize live/ongoing matches, max 1 match per tournament, up to 6 total.
+      const prioritized = [...filteredMatches].sort((a, b) => {
+        const rank = (s?: string) => (s === "ongoing" ? 0 : s === "scheduled" || s === "pending" ? 1 : 2);
+        return rank(a.status) - rank(b.status);
+      });
+      const seenTournaments = new Set<string>();
+      const picked: any[] = [];
+      for (const m of prioritized) {
+        if (m.tournament_id) {
+          if (seenTournaments.has(m.tournament_id)) continue;
+          seenTournaments.add(m.tournament_id);
+        }
+        picked.push(m);
+        if (picked.length >= GUEST_PREVIEW_LIMIT) break;
+      }
+      return picked;
+    }
     const start = (safePage - 1) * MATCHES_PER_PAGE;
     return filteredMatches.slice(start, start + MATCHES_PER_PAGE);
   }, [user, filteredMatches, safePage]);
@@ -926,23 +944,23 @@ function HomeContent() {
                     <MatchCard key={m.id} match={m} />
                   ))}
                 </div>
-              ) : (
+              ) : !user ? (
                 <>
-                  {/* Mobile Compact Match List View */}
+                  {/* Guest Flat Preview List (plain SportIcon, no grouping or favorite star) */}
                   <div className="md:hidden space-y-2.5">
                     {paginatedMatches.map((m) => (
-                      <MatchListItem key={m.id} match={m} />
+                      <MatchListItem key={m.id} match={m} showFavorite={false} />
                     ))}
                   </div>
-
-                  {/* Desktop Data Table View */}
                   <DataTable
                     data={paginatedMatches}
-                    columns={getMatchColumns(t)}
+                    columns={getMatchColumns(t, [], { showFavorite: false })}
                     getRowKey={(m) => m.id}
                     onRowClick={(m) => router.push(`/match/${m.id}`)}
                   />
-              </>
+                </>
+              ) : (
+                <GroupedMatchList matches={paginatedMatches} />
               )}
             </div>
           )}
@@ -1130,22 +1148,7 @@ function HomeContent() {
                           ))}
                         </div>
                       ) : (
-                        <>
-                          {/* Mobile List View */}
-                          <div className="md:hidden divide-y divide-outline-variant rounded-xl border border-outline-variant bg-surface-container overflow-hidden">
-                            {followedMatches.map((m) => (
-                              <MatchListItem key={m.id} match={m} />
-                            ))}
-                          </div>
-
-                          {/* Desktop Data Table View */}
-                          <DataTable
-                            data={followedMatches}
-                            columns={getMatchColumns(t)}
-                            getRowKey={(m) => m.id}
-                            onRowClick={(m) => router.push(`/match/${m.id}`)}
-                          />
-                        </>
+                        <GroupedMatchList matches={followedMatches} />
                       )}
                     </div>
                   )}
