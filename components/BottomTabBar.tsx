@@ -13,8 +13,12 @@ export default function BottomTabBar() {
   const { t } = useTranslation();
   const { unreadCount } = useNotifications();
 
-  // Hide on overlay and scoreboard pages
-  if (pathname?.includes("/overlay") || pathname?.includes("/scoreboard")) {
+  // Hide on overlay, scoreboard, and guest landing page
+  if (
+    pathname?.includes("/overlay") ||
+    pathname?.includes("/scoreboard") ||
+    (!user && pathname === "/")
+  ) {
     return null;
   }
 

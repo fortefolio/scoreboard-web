@@ -524,11 +524,29 @@ function HomeContent() {
           />
         )}
 
-        {/* Precision Controls Toolbar */}
-        <div
-          id="live-feed"
-          className="relative z-20 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4 bg-surface-container/70 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-outline-variant shadow-sm"
-        >
+        {!user ? (
+          activeTab !== "following" && (
+            <div id="live-feed" className="flex items-center gap-4 mb-5 sm:mb-6 pt-2">
+              <div className="h-px flex-1 bg-outline-variant" />
+              <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary shrink-0">
+                {activeTab === "tournaments"
+                  ? locale === "pt"
+                    ? "Torneios Recentes"
+                    : "Recent Tournaments"
+                  : locale === "pt"
+                  ? "Jogos em Direto e Recentes"
+                  : "Live & Recent Matches"}
+              </h2>
+              <div className="h-px flex-1 bg-outline-variant" />
+            </div>
+          )
+        ) : (
+          <>
+            {/* Precision Controls Toolbar */}
+            <div
+              id="live-feed"
+              className="relative z-20 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-4 mb-3 sm:mb-4 bg-surface-container/70 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-outline-variant shadow-sm"
+            >
           {/* Top (mobile) / Left (desktop): Following Filter + Search */}
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 shrink-0">
             {/* Favorites/Following Type Segmented Control */}
@@ -777,16 +795,10 @@ function HomeContent() {
 
             {/* Right: Actions & View Mode Toggle */}
             <div className="flex items-center gap-2 shrink-0">
-            {activeTab === "matches" && (
+            {user && activeTab === "matches" && (
               <button
                 type="button"
-                onClick={() => {
-                  if (!user) {
-                    setAuthModal("login");
-                  } else {
-                    router.push("/my-matches?create=true");
-                  }
-                }}
+                onClick={() => router.push("/my-matches?create=true")}
                 aria-label={t("common.newMatch")}
                 title={t("common.newMatch")}
                 className="h-8 w-8 sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
@@ -796,16 +808,10 @@ function HomeContent() {
               </button>
             )}
 
-            {activeTab === "tournaments" && (
+            {user && activeTab === "tournaments" && (
               <button
                 type="button"
-                onClick={() => {
-                  if (!user) {
-                    setAuthModal("login");
-                  } else {
-                    router.push("/my-tournaments?create=true");
-                  }
-                }}
+                onClick={() => router.push("/my-tournaments?create=true")}
                 aria-label={t("common.newTournament")}
                 title={t("common.newTournament")}
                 className="h-8 w-8 sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 shadow-sm"
@@ -846,16 +852,18 @@ function HomeContent() {
           </div>
         </div>
 
-        {/* Horizontal Sport Filter Bar (mirrors scoreboard-mobile) */}
-        <div className="mb-5 sm:mb-6">
-          <SportFilterBar
-            selectedSport={sportFilter}
-            onSelectSport={(sport) => {
-              setSportFilter(sport);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
+            {/* Horizontal Sport Filter Bar (mirrors scoreboard-mobile) */}
+            <div className="mb-5 sm:mb-6">
+              <SportFilterBar
+                selectedSport={sportFilter}
+                onSelectSport={(sport) => {
+                  setSportFilter(sport);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
+          </>
+        )}
 
       {/* Loading Indicator */}
       {loading ? (
@@ -882,20 +890,16 @@ function HomeContent() {
                     {t("home.noMatchesFilterDesc")}
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!user) {
-                          setAuthModal("login");
-                        } else {
-                          router.push("/my-matches?create=true");
-                        }
-                      }}
-                      className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                    >
-                      <span className="material-symbols-outlined text-[15px]">add</span>
-                      {t("common.newMatch")}
-                    </button>
+                    {user && (
+                      <button
+                        type="button"
+                        onClick={() => router.push("/my-matches?create=true")}
+                        className="px-3.5 py-2 rounded-lg bg-text-primary hover:bg-white text-surface-container-lowest text-xs font-medium inline-flex items-center gap-1.5 transition-colors cursor-pointer"
+                      >
+                        <span className="material-symbols-outlined text-[15px]">add</span>
+                        {t("common.newMatch")}
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => handleTabChange("tournaments")}
