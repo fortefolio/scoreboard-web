@@ -290,26 +290,26 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Premier Padel Game Mech
       });
     }
 
-    ({ data: match } = await supabaseAdmin
+    const { data: finalMatch } = await supabaseAdmin
       .from("matches")
       .select("scores, status")
       .eq("id", matchId)
-      .single());
+      .single();
 
     // Jogo deve terminar com vitória de Coello / Tapia (2-0 em sets: 6-4, 7-6)
-    expect(match?.status).toBe("completed");
-    expect(match?.scores?.match_won).toBe(true);
-    expect(match?.scores?.tennis?.sets).toHaveLength(2);
-    expect(match?.scores?.tennis?.sets[1]?.home).toBe(7);
-    expect(match?.scores?.tennis?.sets[1]?.away).toBe(6);
-    expect(match?.scores?.tennis?.sets[1]?.tiebreak).toEqual({ home: 7, away: 4 });
+    expect(finalMatch?.status).toBe("completed");
+    expect(finalMatch?.scores?.match_won).toBe(true);
+    expect(finalMatch?.scores?.tennis?.sets).toHaveLength(2);
+    expect(finalMatch?.scores?.tennis?.sets[1]?.home).toBe(7);
+    expect(finalMatch?.scores?.tennis?.sets[1]?.away).toBe(6);
+    expect(finalMatch?.scores?.tennis?.sets[1]?.tiebreak).toEqual({ home: 7, away: 4 });
   });
 
   it("verifica suporte a vantagens tradicionais quando no_ad: false é configurado explicitamente", () => {
     const rulesWithAd: TennisRules = {
       no_ad: false,
       max_sets: 3,
-      points_per_set: 6,
+      set_type: "tiebreak",
     };
 
     let state = createInitialTennisScores(0);

@@ -125,7 +125,7 @@ describe("updateSession — cookie refresh", () => {
     // To simulate the supabase client writing fresh tokens, we hook into the cookie
     // handlers before getUser resolves.
     getUserMock.mockImplementation(async () => {
-      capturedCookies!.setAll(
+      capturedCookies!.setAll!(
         [
           { name: "sb-refresh", value: "new-refresh", options: { path: "/", httpOnly: true } },
           { name: "sb-access", value: "new-access", options: { path: "/" } },

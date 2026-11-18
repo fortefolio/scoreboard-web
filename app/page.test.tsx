@@ -58,10 +58,10 @@ const resetState = () => {
   supabaseMock.auth.signInWithPassword.mockClear();
   supabaseMock.auth.signUp.mockClear();
   supabaseMock.auth.signInWithPassword.mockImplementation(() =>
-    Promise.resolve({ data: { user: null, session: null }, error: null })
+    Promise.resolve({ data: { user: null, session: null }, error: null } as any)
   );
   supabaseMock.auth.signUp.mockImplementation(() =>
-    Promise.resolve({ data: { user: null, session: null }, error: null })
+    Promise.resolve({ data: { user: null, session: null }, error: null } as any)
   );
   routerPush.mockClear();
   routerReplace.mockClear();
@@ -241,7 +241,7 @@ describe("Home — auth errors", () => {
   it("surfaces the supabase error message and keeps the modal open", async () => {
     searchParams = new URLSearchParams({ auth: "login" });
     supabaseMock.auth.signInWithPassword.mockImplementationOnce(() =>
-      Promise.resolve({ data: { user: null, session: null }, error: { message: "Invalid login credentials" } as any })
+      Promise.resolve({ data: { user: null, session: null }, error: { message: "Invalid login credentials" } } as any)
     );
     const user = userEvent.setup();
     await renderHome();

@@ -28,7 +28,7 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.en
  */
 export const MADRID_P1_SPECS: SetScoreSpec[] = [
   { home: 6, away: 4 },
-  { home: 7, away: 6, tiebreak: { home: 7, away: 4 } },
+  { home: 7, away: 6, tbLoserPoints: 4 },
 ];
 
 export const MADRID_P1_RULES: TennisRules = {
@@ -63,7 +63,7 @@ describe("Final Madrid Premier Padel P1 (Coello/Tapia vs Galán/Chingotto) — M
   it("valida Set 1 completo: progressão jogo a jogo até 6-4 a favor de Coello / Tapia", () => {
     let state = createInitialTennisScores(0);
 
-    const points = generatePointSequenceForMatch([MADRID_P1_SPECS[0]], MADRID_P1_RULES);
+    const points = generatePointSequenceForMatch([MADRID_P1_SPECS[0]]);
     for (const winnerIdx of points) {
       state = calculateTennisScore(state, winnerIdx, MADRID_P1_RULES);
     }
@@ -81,7 +81,7 @@ describe("Final Madrid Premier Padel P1 (Coello/Tapia vs Galán/Chingotto) — M
     let state = createInitialTennisScores(0);
 
     // Jogar ambos os sets da final
-    const points = generatePointSequenceForMatch(MADRID_P1_SPECS, MADRID_P1_RULES);
+    const points = generatePointSequenceForMatch(MADRID_P1_SPECS);
     for (const winnerIdx of points) {
       state = calculateTennisScore(state, winnerIdx, MADRID_P1_RULES);
     }
@@ -179,7 +179,7 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Final Madrid Premier Pa
     expect(startErr).toBeNull();
 
     // 2. Inserir a sequência de pontos oficial via match_events
-    const allPoints = generatePointSequenceForMatch(MADRID_P1_SPECS, MADRID_P1_RULES);
+    const allPoints = generatePointSequenceForMatch(MADRID_P1_SPECS);
     for (const winnerIdx of allPoints) {
       const side = winnerIdx === 0 ? "home" : "away";
       const { error: ptErr } = await supabaseAdmin.from("match_events").insert({

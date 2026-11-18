@@ -80,7 +80,7 @@ describe("NotificationBell — authenticated", () => {
     supabaseMock.__resetResponses();
     supabaseMock.channel.mockClear();
     // Channel mock is a singleton; clear its inner mocks too.
-    const ch = supabaseMock.channel.getMockImplementation()?.("anything");
+    const ch = supabaseMock.channel.getMockImplementation()?.();
     ch?.on?.mockClear?.();
     ch?.subscribe?.mockClear?.();
     toastInfo.mockClear();
