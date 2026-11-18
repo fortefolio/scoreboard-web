@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import SportIcon from "@/components/SportIcon";
 import { useTranslation } from "@/lib/i18n";
 
 export interface GuestLandingHeroProps {
@@ -30,13 +29,13 @@ export function GuestLandingHero({
         <h1 className="text-3xl sm:text-5xl font-semibold tracking-tight text-text-primary leading-[1.08]">
           {isPt ? (
             <>
-              Não te limites a seguir.
+              Não te limites a seguir o resultado.
               <br />
               Faz parte do jogo.
             </>
           ) : (
             <>
-              Don&apos;t just follow.
+              Don&apos;t just follow the score.
               <br />
               Be part of the game.
             </>
@@ -68,46 +67,21 @@ export function GuestLandingHero({
         </div>
       </div>
 
-      {/* Right: Framed court preview with ScoreBoard live bug */}
+      {/* Right: Courtside over-the-shoulder live scoring preview */}
       <div className="relative rounded-2xl bg-surface-container border border-outline-variant overflow-hidden shadow-xl aspect-[16/10] w-full">
         <Image
-          src="/backgrounds/basketball-landscape.webp"
-          alt="ScoreBoard live stadium court"
+          src="/backgrounds/hero-courtside.webp"
+          alt="Courtside scorer tracking a live basketball match on a tablet"
           fill
           priority
           sizes="(max-width: 1024px) 100vw, 50vw"
-          className="object-cover opacity-55"
+          className="object-cover opacity-90"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0d14] via-[#0b0d14]/45 to-[#0b0d14]/70" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0d14]/85 via-transparent to-[#0b0d14]/25" />
 
-        {/* Top ScoreBoard Live Bug */}
-        <div className="relative z-10 p-3.5 sm:p-5 h-full flex flex-col justify-between">
-          <div className="mx-auto w-full max-w-md bg-[#0b0d14]/90 backdrop-blur-md border border-outline-variant rounded-xl px-3.5 py-2.5 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-6 h-6 rounded-md bg-surface-container-high border border-outline-variant flex items-center justify-center shrink-0">
-                <SportIcon sport="Basketball" className="text-[13px] text-text-secondary" />
-              </div>
-              <span className="text-xs font-medium text-text-primary truncate">SLB</span>
-            </div>
-
-            <div className="flex items-center gap-2.5 shrink-0">
-              <span className="font-digital text-xl sm:text-2xl font-semibold text-text-primary tabular-nums">
-                128 : 127
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface-container-high border border-outline-variant text-[10px] font-medium text-text-primary">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                {isPt ? "Ao Vivo" : "Live"}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 min-w-0 justify-end">
-              <span className="text-xs font-medium text-text-primary truncate">FCP</span>
-              <span className="text-[11px] font-digital text-text-muted">Q4</span>
-            </div>
-          </div>
-
+        <div className="relative z-10 p-3.5 sm:p-5 h-full flex flex-col justify-end">
           <div className="flex items-center justify-between text-[11px] text-text-muted">
-            <span className="inline-flex items-center gap-1.5 bg-[#0b0d14]/80 border border-outline-variant rounded-md px-2.5 py-1">
+            <span className="inline-flex items-center gap-1.5 bg-[#0b0d14]/85 backdrop-blur-sm border border-outline-variant rounded-md px-2.5 py-1">
               <span className="material-symbols-outlined text-[13px] text-text-secondary">
                 scoreboard
               </span>

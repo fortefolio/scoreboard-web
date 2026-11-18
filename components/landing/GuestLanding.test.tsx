@@ -17,8 +17,12 @@ describe("GuestLandingHero", () => {
       </LanguageProvider>
     );
 
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/don't just follow/i);
-    expect(screen.getByText("128 : 127")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      /don't just follow the score\./i
+    );
+    expect(
+      screen.getByAltText(/courtside scorer tracking a live basketball match on a tablet/i)
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /get started/i }));
     expect(onGetStarted).toHaveBeenCalledTimes(1);
@@ -38,8 +42,9 @@ describe("TechnicalCapabilitiesSection", () => {
 
     expect(screen.getByText(/technical capabilities/i)).toBeInTheDocument();
     expect(screen.getByText(/umpire-to-crowd instant sync/i)).toBeInTheDocument();
+    expect(screen.getByText(/crowd overview/i)).toBeInTheDocument();
     expect(screen.getByText(/automated tournament engine/i)).toBeInTheDocument();
     expect(screen.getByText(/broadcast overlays \(obs \/ vmix\)/i)).toBeInTheDocument();
-    expect(screen.getByText("2 - 1")).toBeInTheDocument();
+    expect(screen.getByText("128 : 127")).toBeInTheDocument();
   });
 });

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import SportIcon from "@/components/SportIcon";
 import { useTranslation } from "@/lib/i18n";
 
@@ -115,6 +116,47 @@ export function TechnicalCapabilitiesSection() {
                 </span>
               </div>
             </div>
+
+            {/* Minimalistic Crowd Match Overview */}
+            <div className="pt-2 border-t border-outline-variant/70 space-y-1.5">
+              <div className="flex items-center justify-between text-[10px] text-text-muted">
+                <span className="inline-flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[12px] text-text-secondary">
+                    arrow_downward
+                  </span>
+                  {isPt ? "Vista do Público" : "Crowd Overview"}
+                </span>
+                <span className="font-mono text-[9px] text-text-muted">
+                  {isPt ? "Em direto" : "Synced live"}
+                </span>
+              </div>
+
+              <div className="bg-surface-container/70 border border-outline-variant rounded-lg px-2.5 py-2 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-7 h-7 rounded-lg bg-surface-container-high border border-outline-variant flex items-center justify-center shrink-0">
+                    <SportIcon sport="Tennis" className="text-[14px] text-text-secondary" />
+                  </div>
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="text-[11px] font-medium text-text-primary truncate leading-tight">
+                      Braga
+                    </span>
+                    <span className="text-[11px] font-medium text-text-primary truncate leading-tight">
+                      Évora
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2.5 shrink-0">
+                  <span className="text-[10px] font-digital text-text-muted">
+                    S1 · 4-3
+                  </span>
+                  <div className="flex flex-col items-end font-digital text-xs font-semibold text-text-primary leading-tight tabular-nums">
+                    <span>15</span>
+                    <span>40</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -219,40 +261,50 @@ export function TechnicalCapabilitiesSection() {
             </p>
           </div>
 
-          {/* Mini MatchOverlayClient preview */}
-          <div className="bg-[#07080d] border border-outline-variant rounded-xl p-4 flex flex-col items-center justify-center gap-3 min-h-[168px] relative overflow-hidden">
-            {/* Subtle technical dot grid representing transparency */}
-            <div
-              className="absolute inset-0 opacity-20"
-              style={{
-                backgroundImage:
-                  "radial-gradient(rgba(238,240,245,0.25) 1px, transparent 1px)",
-                backgroundSize: "12px 12px",
-              }}
+          {/* Mini MatchOverlayClient stadium + floating score bug preview */}
+          <div className="relative bg-[#07080d] border border-outline-variant rounded-xl p-3.5 flex flex-col justify-between gap-3 min-h-[188px] overflow-hidden">
+            <Image
+              src="/backgrounds/basketball-landscape.webp"
+              alt="Broadcast stadium overlay preview"
+              fill
+              sizes="(max-width: 768px) 100vw, 33vw"
+              className="object-cover opacity-55"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0b0d14] via-[#0b0d14]/45 to-[#0b0d14]/70" />
 
-            <div className="relative z-10 w-full bg-[#0b0d14]/95 border border-outline-variant rounded-xl overflow-hidden shadow-lg">
-              <div className="px-3 py-1 bg-surface-container-high/60 border-b border-outline-variant flex items-center justify-between text-[10px]">
-                <span className="font-digital-logo text-text-secondary tracking-tight">
-                  SCORE:BOARD
+            {/* Floating Broadcast Score Bug */}
+            <div className="relative z-10 w-full bg-[#0b0d14]/90 backdrop-blur-md border border-outline-variant rounded-xl px-3 py-2 flex items-center justify-between gap-2 shadow-lg">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <div className="w-5 h-5 rounded-md bg-surface-container-high border border-outline-variant flex items-center justify-center shrink-0">
+                  <SportIcon sport="Basketball" className="text-[11px] text-text-secondary" />
+                </div>
+                <span className="text-[11px] font-medium text-text-primary truncate">SLB</span>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="font-digital text-base font-semibold text-text-primary tabular-nums">
+                  128 : 127
                 </span>
-                <span className="inline-flex items-center gap-1 text-text-primary font-medium">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container-high border border-outline-variant text-[9px] font-medium text-text-primary">
                   <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                  72:14
+                  {isPt ? "Ao Vivo" : "Live"}
                 </span>
               </div>
-              <div className="px-3 py-2 flex items-center justify-between gap-2">
-                <span className="text-xs font-semibold text-text-primary truncate">MCI</span>
-                <div className="px-2.5 py-0.5 rounded bg-surface-container border border-outline-variant font-digital text-base font-semibold text-text-primary tabular-nums">
-                  2 - 1
-                </div>
-                <span className="text-xs font-semibold text-text-primary truncate">RMA</span>
+
+              <div className="flex items-center gap-1.5 min-w-0 justify-end">
+                <span className="text-[11px] font-medium text-text-primary truncate">FCP</span>
+                <span className="text-[10px] font-digital text-text-muted">Q4</span>
               </div>
             </div>
 
-            <span className="relative z-10 text-[10px] font-mono text-text-muted">
-              /match/[id]/overlay?pos=bottom
-            </span>
+            <div className="relative z-10 flex items-center justify-between gap-2 text-[10px] text-text-muted">
+              <span className="font-mono bg-[#0b0d14]/80 border border-outline-variant rounded px-2 py-0.5 truncate">
+                /match/[id]/overlay
+              </span>
+              <span className="font-digital-logo text-xs text-text-secondary tracking-tight shrink-0">
+                SCORE:BOARD
+              </span>
+            </div>
           </div>
         </div>
       </div>
