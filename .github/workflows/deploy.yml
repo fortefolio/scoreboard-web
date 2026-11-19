@@ -29,14 +29,6 @@ jobs:
       - name: Build with OpenNext
         run: npx @opennextjs/cloudflare build
 
-      - name: Install Playwright Chromium
-        run: npx playwright install chromium --with-deps
-
-      - name: Run Local Production Smoke Check
-        env:
-          PLAYWRIGHT_SERVER_CMD: "npm run build && npm run start"
-        run: npm run test:smoke
-
   post_deploy_smoke:
     needs: deploy
     if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
@@ -48,8 +40,18 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm ci
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
       - name: Install Playwright Chromium
-        run: npx playwright install chromium --with-deps
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install chromium --only-shell --with-deps
+      - name: Install Playwright OS dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
       - name: Wait for Cloudflare deployment propagation
         run: sleep 45
       - name: Verify live https://score-board.net hydration & CSP

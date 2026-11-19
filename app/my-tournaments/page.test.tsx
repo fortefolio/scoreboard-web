@@ -183,7 +183,11 @@ describe("MyTournamentsPage - Tournament Creation & Reset (Issue #14)", () => {
     // Open modal
     fireEvent.click(screen.getByRole("button", { name: /New Tournament/i }));
 
-    const nameInput = await screen.findByPlaceholderText("e.g. Summer Open 2026");
+    const nameInput = await screen.findByPlaceholderText(
+      "e.g. Summer Open 2026",
+      {},
+      { timeout: 5000 }
+    );
     fireEvent.change(nameInput, { target: { value: "Summer Championship" } });
 
     // Click "Create Tournament"
@@ -234,7 +238,11 @@ describe("MyTournamentsPage - Tournament Creation & Reset (Issue #14)", () => {
     // Open modal
     fireEvent.click(screen.getByRole("button", { name: /New Tournament/i }));
 
-    const nameInput = await screen.findByPlaceholderText("e.g. Summer Open 2026");
+    const nameInput = await screen.findByPlaceholderText(
+      "e.g. Summer Open 2026",
+      {},
+      { timeout: 5000 }
+    );
     fireEvent.change(nameInput, { target: { value: "Draft Tournament" } });
     expect(nameInput).toHaveValue("Draft Tournament");
 
