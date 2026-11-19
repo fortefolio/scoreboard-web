@@ -46,6 +46,12 @@ This project uses `@supabase/ssr`. Do not regress to the patterns below.
 - Never deploy Web changes that assume destructive backend changes (`DROP`/`RENAME` column, mutated RPC/Realtime shapes) before old Mobile clients are migrated.
 - Coordinate breaking API/schema changes via Expand-and-Contract: deploy additive backend support first, ship Web (optionally behind a feature flag) + Mobile (`EAS Update` or store release), and only contract legacy backend fields after old mobile versions are retired (see `../scoreboard-backend/docs/04-zero-downtime-deployments.md`).
 
+## CSP & Production Smoke Checks (Cloudflare / OpenNext)
+- `next.config.ts` and `lib/supabase/proxy.ts` must keep `'unsafe-inline'` in `script-src` while `cacheComponents: true` / static prerendering is enabled; removing it blocks Next.js inline RSC hydration scripts (`self.__next_f.push(...)`) on prerendered pages even though `next build` succeeds.
+- After modifying `next.config.ts` headers, `middleware.ts`, or `lib/supabase/proxy.ts`, always run the Playwright production smoke check:
+  - Local production build: `PLAYWRIGHT_SERVER_CMD="npm run build && npm run start" npm run test:smoke`
+  - Post-deploy Cloudflare: `PLAYWRIGHT_BASE_URL=https://score-board.net npm run test:smoke`
+
 ---
 
 ## Pages, Views & Components Inventory (UI Audit Checklist)

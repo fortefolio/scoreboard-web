@@ -126,6 +126,12 @@ npm run test:ui
 # Executar testes end-to-end
 npm run test:e2e
 
+# Smoke test de produção (verifica hidratação React + zero erros de CSP/JS)
+# Contra build de produção local:
+PLAYWRIGHT_SERVER_CMD="npm run build && npm run start" npm run test:smoke
+# Contra produção Cloudflare após deploy:
+PLAYWRIGHT_BASE_URL=https://score-board.net npm run test:smoke
+
 # Verificar paridade entre ficheiros de tradução PT e EN
 npm run check:i18n
 ```

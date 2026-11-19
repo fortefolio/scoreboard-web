@@ -14,6 +14,7 @@
     "test:report:preview": "npx vite preview --outDir test-results/html",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
+    "test:smoke": "playwright test tests/e2e/smoke-prod.spec.ts",
     "sync:i18n": "node scripts/sync-i18n.js",
     "check:i18n": "node scripts/sync-i18n.js --check",
     "replay:match136": "tsx scripts/interactive-match-136.ts",
