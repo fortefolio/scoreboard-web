@@ -3,23 +3,11 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useScreenOrientation, ScreenOrientation } from "@/lib/hooks/useScreenOrientation";
+import { SUPPORTED_SPORT_SLUGS, type SportSlug } from "@/lib/sports";
 
-export type SportType =
-  | "football"
-  | "tennis"
-  | "beach_volleyball"
-  | "volleyball"
-  | "basketball"
-  | "padel";
+export type SportType = SportSlug;
 
-const ALL_SPORTS: SportType[] = [
-  "football",
-  "tennis",
-  "beach_volleyball",
-  "volleyball",
-  "basketball",
-  "padel",
-];
+const ALL_SPORTS: readonly SportType[] = SUPPORTED_SPORT_SLUGS;
 
 export interface MatchAtmosphereBackgroundProps {
   sportType?: string | null;

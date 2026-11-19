@@ -2,6 +2,7 @@
 
 import SportIcon from "@/components/SportIcon";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
+import { SUPPORTED_SPORTS } from "@/lib/sports";
 
 export interface SportOption {
   key: string;
@@ -11,12 +12,11 @@ export interface SportOption {
 
 const SPORTS: SportOption[] = [
   { key: "all", labelKey: "sports.all" },
-  { key: "Tennis", labelKey: "sports.tennis", sportType: "Tennis" },
-  { key: "Padel", labelKey: "sports.padel", sportType: "Padel" },
-  { key: "Volleyball", labelKey: "sports.volleyball", sportType: "Volleyball" },
-  { key: "Beach Volleyball", labelKey: "sports.beachVolleyball", sportType: "Beach Volleyball" },
-  { key: "Football", labelKey: "sports.football", sportType: "Football" },
-  { key: "Basketball", labelKey: "sports.basketball", sportType: "Basketball" },
+  ...SUPPORTED_SPORTS.map((s) => ({
+    key: s.value,
+    labelKey: `sports.${s.i18nKey}`,
+    sportType: s.value,
+  })),
 ];
 
 interface SportFilterBarProps {

@@ -7,6 +7,8 @@ import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 import { Locale } from "@/lib/i18n/types";
 import { isValidStripeRedirectUrl } from "@/lib/stripe/validateRedirect";
+import SelectField from "@/components/SelectField";
+import { SUPPORTED_SPORTS } from "@/lib/sports";
 import { toast } from "sonner";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
 import { validatePassword } from "@/lib/auth/passwordValidation";
@@ -658,19 +660,18 @@ export default function SettingsPage() {
                 <label className="block text-xs font-medium text-text-secondary mb-1.5">
                   {t("settings.preferences.defaultSport")}
                 </label>
-                <select
+                <SelectField
                   value={defaultSport}
-                  onChange={(e) => setDefaultSport(e.target.value)}
-                  className="w-full max-w-md px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-xs outline-none focus:border-outline transition-colors"
-                >
-                  <option value="all">{t("settings.preferences.allSports")}</option>
-                  <option value="volleyball">Volleyball</option>
-                  <option value="beach_volleyball">Beach Volleyball</option>
-                  <option value="tennis">Tennis</option>
-                  <option value="padel">Padel</option>
-                  <option value="basketball">Basketball</option>
-                  <option value="football">Football / Soccer</option>
-                </select>
+                  onChange={setDefaultSport}
+                  className="w-full max-w-md"
+                  options={[
+                    { value: "all", label: t("settings.preferences.allSports") },
+                    ...SUPPORTED_SPORTS.map((s) => ({
+                      value: s.slug,
+                      label: t(`sports.${s.i18nKey}`),
+                    })),
+                  ]}
+                />
               </div>
 
               {/* Sound Feedback */}

@@ -6,6 +6,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
+import SelectField from "@/components/SelectField";
+import { SUPPORTED_SPORTS } from "@/lib/sports";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
 import SportIcon from "@/components/SportIcon";
 import DataTable from "@/components/DataTable";
@@ -418,17 +420,14 @@ function MyTournamentsContent() {
                   <label className="block text-xs font-medium text-text-muted mb-1.5">
                     {isPt ? "Modalidade" : "Sport Type"}
                   </label>
-                  <select 
-                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
+                  <SelectField
                     value={newSport}
-                    onChange={e => setNewSport(e.target.value)}
-                  >
-                    {["Tennis", "Padel", "Basketball", "Volleyball", "Beach Volleyball", "Football"].map((s) => (
-                      <option key={s} value={s}>
-                        {getSportTranslation(s, tr)}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setNewSport}
+                    options={SUPPORTED_SPORTS.map((s) => ({
+                      value: s.value,
+                      label: getSportTranslation(s.value, tr),
+                    }))}
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-text-muted mb-1.5">

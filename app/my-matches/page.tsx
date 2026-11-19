@@ -15,8 +15,11 @@ import { MyWorkspaceTabs } from "@/components/MyWorkspaceTabs";
 import { WorkspaceControlsBar, filterAndSortMatches } from "@/components/WorkspaceControlsBar";
 import SportIcon from "@/components/SportIcon";
 import ConfirmationModal from "@/components/ConfirmationModal";
+import SelectField from "@/components/SelectField";
+import DateTimeField from "@/components/DateTimeField";
 import MatchAtmosphereBackground from "@/components/match/MatchAtmosphereBackground";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
+import { SUPPORTED_SPORTS } from "@/lib/sports";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 
@@ -369,41 +372,34 @@ function MyMatchesContent() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-text-muted mb-1.5">Sport Type</label>
-                  <select 
-                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
+                  <SelectField
                     value={sportType}
-                    onChange={e => setSportType(e.target.value)}
-                  >
-                    <option value="Tennis">Tennis</option>
-                    <option value="Padel">Padel</option>
-                    <option value="Basketball">Basketball</option>
-                    <option value="Volleyball">Volleyball</option>
-                    <option value="Beach Volleyball">Beach Volleyball</option>
-                    <option value="Football">Football</option>
-                  </select>
+                    onChange={setSportType}
+                    options={SUPPORTED_SPORTS.map((s) => ({
+                      value: s.value,
+                      label: getSportTranslation(s.value, t),
+                    }))}
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-text-muted mb-1.5">Tournament (Optional)</label>
-                  <select 
-                    className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
+                  <SelectField
                     value={selectedTournamentId}
-                    onChange={e => setSelectedTournamentId(e.target.value)}
-                  >
-                    <option value="">No Tournament</option>
-                    {userTournaments.map(t => (
-                      <option key={t.id} value={t.id}>{t.name}</option>
-                    ))}
-                  </select>
+                    onChange={setSelectedTournamentId}
+                    options={[
+                      { value: "", label: "No Tournament" },
+                      ...userTournaments.map((t) => ({ value: t.id, label: t.name })),
+                    ]}
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-text-muted mb-1.5">Match Date</label>
-                <input 
-                  type="datetime-local"
-                  className="w-full px-3.5 py-2.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary text-xs outline-none focus:border-outline-focus transition-colors"
+                <DateTimeField
                   value={matchDate}
-                  onChange={e => setMatchDate(e.target.value)}
+                  onChange={setMatchDate}
+                  placeholder="dd/mm/yyyy, --:--"
                 />
               </div>
 

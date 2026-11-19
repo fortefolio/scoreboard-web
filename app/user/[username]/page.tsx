@@ -11,6 +11,7 @@ import SportIcon from "@/components/SportIcon";
 import Pagination from "@/components/Pagination";
 import DataTable from "@/components/DataTable";
 import SelectField from "@/components/SelectField";
+import { SUPPORTED_SPORTS } from "@/lib/sports";
 import { getMatchColumns, getTournamentColumns } from "@/components/entityTableColumns";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
@@ -401,12 +402,10 @@ function UserProfileContent({
                   }}
                   options={[
                     { value: "all", label: t("sports.all") },
-                    { value: "Basketball", label: t("sports.basketball") },
-                    { value: "Volleyball", label: t("sports.volleyball") },
-                    { value: "Beach Volleyball", label: t("sports.beachVolleyball") },
-                    { value: "Football", label: t("sports.football") },
-                    { value: "Tennis", label: t("sports.tennis") },
-                    { value: "Padel", label: t("sports.padel") },
+                    ...SUPPORTED_SPORTS.map((s) => ({
+                      value: s.value,
+                      label: t(`sports.${s.i18nKey}`),
+                    })),
                   ]}
                 />
 
