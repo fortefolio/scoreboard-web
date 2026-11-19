@@ -25,21 +25,31 @@ export function AuthProvider({
   const router = useRouter();
   const [user, setUser] = useState<User | null>(initialUser);
   const lastSessionRef = useRef<Session | null>(null);
+  const lastUserIdRef = useRef<string | null>(initialUser?.id ?? null);
 
   useEffect(() => {
     const { data: listener } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
+      const nextUserId = session?.user?.id ?? null;
       setUser(session?.user ?? null);
 
       const hadSession = lastSessionRef.current !== null;
+      const prevUserId = lastUserIdRef.current;
       lastSessionRef.current = session ?? null;
+      if (nextUserId) {
+        lastUserIdRef.current = nextUserId;
+      }
 
       if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
-        if (event === "SIGNED_OUT") {
+        if (event === "SIGNED_OUT" || (prevUserId && nextUserId && prevUserId !== nextUserId)) {
           clearOfflineQueue();
+        }
+        if (event === "SIGNED_OUT") {
+          lastUserIdRef.current = null;
         }
         router.refresh();
       } else if (event === "TOKEN_REFRESHED" && hadSession && !session) {
         clearOfflineQueue();
+        lastUserIdRef.current = null;
         router.refresh();
       }
     });

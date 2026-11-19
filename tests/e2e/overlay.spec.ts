@@ -28,7 +28,7 @@ test.describe("Broadcast Scoreboard Overlay E2E", () => {
     await expect(page.getByText(/Padel/i)).toBeVisible();
 
     // Check that games score is rendered
-    await expect(page.getByText("1")).toBeVisible();
+    await expect(page.getByText("1", { exact: true })).toBeVisible();
 
     // Check that there were no page crashes
     expect(pageErrors).toEqual([]);

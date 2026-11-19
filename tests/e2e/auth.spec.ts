@@ -37,5 +37,5 @@ test("guest is redirected from /my-matches, signs up, lands back on /my-matches"
   // Auto-confirm email is on by default in `supabase start`, so signup yields
   // an immediate session and the post-login next=/my-matches push fires.
   await expect(page).toHaveURL(/\/my-matches$/, { timeout: 15_000 });
-  await expect(page.getByRole("heading", { name: /my/i, level: 1 })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: /workspace navigation/i })).toBeVisible();
 });

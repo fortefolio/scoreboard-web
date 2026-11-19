@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
@@ -11,6 +11,8 @@ import SelectField from "@/components/SelectField";
 function SignupContent() {
   const { t } = useTranslation();
   const { id } = useParams();
+  const searchParams = useSearchParams();
+  const confirmToken = searchParams.get("confirm");
   const [tournament, setTournament] = useState<any>(null);
   const [participantCount, setParticipantCount] = useState(0);
   const [teamName, setTeamName] = useState("");
@@ -19,6 +21,8 @@ function SignupContent() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [requiresConfirmation, setRequiresConfirmation] = useState(false);
+  const [confirmedViaEmail, setConfirmedViaEmail] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const tournamentId = Array.isArray(id) ? id[0] : id;
@@ -40,6 +44,37 @@ function SignupContent() {
       .eq("tournament_id", tournamentId);
     setParticipantCount(count || 0);
   };
+
+  useEffect(() => {
+    if (!confirmToken) return;
+    const confirmSignup = async () => {
+      try {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+        const res = await fetch(`${supabaseUrl}/functions/v1/tournament-signup`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(anonKey ? { apikey: anonKey } : {}),
+          },
+          body: JSON.stringify({ action: "confirm", token: confirmToken }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.error || "Could not confirm registration.");
+        }
+        setConfirmedViaEmail(true);
+        setSuccess(true);
+        toast.success("Your tournament registration is confirmed!");
+        await refreshParticipantCount();
+      } catch (err: any) {
+        const msg = err?.message || "Invalid or expired confirmation link.";
+        setSubmitError(msg);
+        toast.error(msg);
+      }
+    };
+    confirmSignup();
+  }, [confirmToken]);
 
   useEffect(() => {
     if (tournamentId) {
@@ -86,20 +121,38 @@ function SignupContent() {
 
     setSubmitting(true);
     try {
-      const { error } = await supabase
-        .from("tournament_participants")
-        .insert({
-          tournament_id: tournamentId,
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      const res = await fetch(`${supabaseUrl}/functions/v1/tournament-signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(anonKey ? { apikey: anonKey } : {}),
+        },
+        body: JSON.stringify({
+          tournamentId,
           name: teamName.trim(),
-          contact_email: contactEmail.trim(),
-          form_responses: formResponses
-        });
+          contactEmail: contactEmail.trim(),
+          formResponses,
+          returnOrigin: window.location.origin,
+        }),
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || "Could not complete registration. Please try again.");
+      }
 
-      setParticipantCount((prev) => prev + 1);
+      setRequiresConfirmation(Boolean(data?.requiresConfirmation));
+      if (!data?.requiresConfirmation) {
+        setParticipantCount((prev) => prev + 1);
+      }
       setSuccess(true);
-      toast.success("Successfully registered for the tournament!");
+      toast.success(
+        data?.requiresConfirmation
+          ? "Check your email to confirm your tournament registration!"
+          : "Successfully registered for the tournament!"
+      );
     } catch (err: any) {
       const message = err?.message || "Could not complete registration. Please try again.";
       setSubmitError(message);

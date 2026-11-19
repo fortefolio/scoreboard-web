@@ -145,7 +145,7 @@ export const en: Translations = {
     alreadyHaveAccount: "Already have an account?",
     dontHaveAccount: "Don't have an account?",
     usernameRequired: "Username is required",
-    passwordRequirements: "Password must be at least 8 characters long and include uppercase, lowercase, numbers, and symbols.",
+    passwordRequirements: "Password must be at least 8 characters long (15+ character passphrase recommended).",
     passwordsDoNotMatch: "Passwords do not match",
     usernameTaken: "Username already taken. Please choose another one.",
     userAlreadyRegistered: "An account with this email already exists.",

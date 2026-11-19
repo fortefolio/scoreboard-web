@@ -20,19 +20,17 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Phase 4: Concurrency, L
     supabaseAdmin = createClient(SUPABASE_URL, SERVICE_KEY, {
       auth: { autoRefreshToken: false, persistSession: false },
     });
-    // 1. Get or create organizer user
-    const { data: users } = await supabaseAdmin.from("users").select("id, email").limit(1);
-    if (users && users.length > 0) {
-      organizerUser = users[0];
-    } else {
-      const email = `perf-${Date.now()}@scoreboard.local`;
-      const { data: authUser } = await supabaseAdmin.auth.admin.createUser({
-        email,
-        password: "Password123!",
-        email_confirm: true,
-      });
-      organizerUser = { id: authUser.user!.id, email };
+    // 1. Create dedicated auth organizer user for this test run
+    const email = `perf-${Date.now()}@scoreboard.local`;
+    const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: "Password123!",
+      email_confirm: true,
+    });
+    if (authErr || !authUser?.user) {
+      throw new Error(`Failed to create test user: ${authErr?.message}`);
     }
+    organizerUser = { id: authUser.user.id, email };
 
     // 2. Create test match
     const { data: match, error } = await supabaseAdmin

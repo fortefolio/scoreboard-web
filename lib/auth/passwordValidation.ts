@@ -2,41 +2,31 @@ export interface PasswordValidationResult {
   isValid: boolean;
   errors: {
     minLength: boolean;
-    hasLower: boolean;
-    hasUpper: boolean;
-    hasNumber: boolean;
-    hasSymbol: boolean;
+    maxLength: boolean;
   };
 }
 
 export const MIN_PASSWORD_LENGTH = 8;
+export const MAX_PASSWORD_LENGTH = 128;
 
 /**
- * Validates password strength according to security standards:
- * - Minimum 8 characters
- * - At least one lowercase letter
- * - At least one uppercase letter
- * - At least one digit
- * - At least one special character / symbol
+ * Validates password length according to OWASP ASVS 5.0 V6.2.5:
+ * - Minimum 8 characters (15+ recommended for passphrases)
+ * - Maximum 128 characters
+ * - No character-class composition restrictions
  */
 export function validatePassword(password: string): PasswordValidationResult {
   const pwd = password || "";
   const minLength = pwd.length >= MIN_PASSWORD_LENGTH;
-  const hasLower = /[a-z]/.test(pwd);
-  const hasUpper = /[A-Z]/.test(pwd);
-  const hasNumber = /[0-9]/.test(pwd);
-  const hasSymbol = /[^a-zA-Z0-9]/.test(pwd);
+  const maxLength = pwd.length <= MAX_PASSWORD_LENGTH;
 
-  const isValid = minLength && hasLower && hasUpper && hasNumber && hasSymbol;
+  const isValid = minLength && maxLength;
 
   return {
     isValid,
     errors: {
       minLength,
-      hasLower,
-      hasUpper,
-      hasNumber,
-      hasSymbol,
+      maxLength,
     },
   };
 }

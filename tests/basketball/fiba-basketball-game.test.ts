@@ -14,19 +14,17 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("FIBA Basketball Game â€
       auth: { persistSession: false },
     });
 
-    // Encontrar ou criar um utilizador para organizer
-    const { data: users } = await supabaseAdmin.from("users").select("id").limit(1);
-    if (users && users.length > 0) {
-      organizerId = users[0].id;
-    } else {
-      const email = `bball-test-${Date.now()}@scoreboard.test`;
-      const { data: authData } = await supabaseAdmin.auth.admin.createUser({
-        email,
-        password: "BballPassword!23",
-        email_confirm: true,
-      });
-      organizerId = authData.user!.id;
+    // Criar utilizador de teste autenticado para organizer
+    const email = `bball-test-${Date.now()}@scoreboard.test`;
+    const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: "BballPassword!23",
+      email_confirm: true,
+    });
+    if (authErr || !authData?.user) {
+      throw new Error(`Falha ao criar utilizador de teste: ${authErr?.message}`);
     }
+    organizerId = authData.user.id;
 
     // Criar jogo de Basquetebol
     const { data: createdMatch, error: mErr } = await supabaseAdmin

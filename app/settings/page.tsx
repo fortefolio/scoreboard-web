@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 import { Locale } from "@/lib/i18n/types";
+import { isValidStripeRedirectUrl } from "@/lib/stripe/validateRedirect";
 import { toast } from "sonner";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
 import { validatePassword } from "@/lib/auth/passwordValidation";
@@ -139,7 +140,7 @@ export default function SettingsPage() {
       });
 
       const data = await res.json();
-      if (!res.ok || !data?.url) {
+      if (!res.ok || !data?.url || !isValidStripeRedirectUrl(data.url)) {
         throw new Error(data?.error || "Failed to load billing portal");
       }
 

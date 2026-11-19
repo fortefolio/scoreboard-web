@@ -6,6 +6,7 @@
 
 export interface QueuedAtomicEvent {
   id: string;
+  userId?: string | null;
   idempotencyKey: string;
   matchId: string;
   newScores?: any;
@@ -72,6 +73,7 @@ export function saveOfflineQueue(queue: QueuedAtomicEvent[]): void {
 }
 
 export function enqueueOfflineEvent(params: {
+  userId?: string | null;
   matchId: string;
   newScores?: any;
   eventData: Record<string, any>;
@@ -81,6 +83,7 @@ export function enqueueOfflineEvent(params: {
   const queue = getOfflineQueue();
   const event: QueuedAtomicEvent = {
     id: `offline-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    userId: params.userId ?? null,
     idempotencyKey: params.idempotencyKey,
     matchId: params.matchId,
     newScores: params.newScores ?? null,
@@ -117,6 +120,14 @@ export async function flushOfflineQueue(
       return { processed: 0, remaining: 0 };
     }
 
+    let currentUserId: string | null = null;
+    if (typeof supabase?.auth?.getUser === "function") {
+      try {
+        const { data } = await supabase.auth.getUser();
+        currentUserId = data?.user?.id ?? null;
+      } catch {}
+    }
+
     const itemsToProcess = matchIdFilter
       ? queue.filter((item) => item.matchId === matchIdFilter)
       : [...queue];
@@ -124,6 +135,12 @@ export async function flushOfflineQueue(
     let processedCount = 0;
 
     for (const item of itemsToProcess) {
+      // Discard events queued by a different authenticated user to prevent cross-account replay
+      if (item.userId && currentUserId && item.userId !== currentUserId) {
+        queue = queue.filter((q) => q.id !== item.id);
+        saveOfflineQueue(queue);
+        continue;
+      }
       try {
         let res: any;
         if (typeof supabase?.rpc === "function") {

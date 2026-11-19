@@ -24,19 +24,17 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Premier Padel Game Mech
       auth: { persistSession: false },
     });
 
-    // Obtain or create an organizer user
-    const { data: users } = await supabaseAdmin.from("users").select("id").limit(1);
-    if (users && users.length > 0) {
-      organizerId = users[0].id;
-    } else {
-      const email = `padel-test-${Date.now()}@scoreboard.test`;
-      const { data: authData } = await supabaseAdmin.auth.admin.createUser({
-        email,
-        password: "PadelPassword!23",
-        email_confirm: true,
-      });
-      organizerId = authData.user!.id;
+    // Criar utilizador de teste autenticado para organizer
+    const email = `padel-test-${Date.now()}@scoreboard.test`;
+    const { data: authData, error: authErr } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password: "PadelPassword!23",
+      email_confirm: true,
+    });
+    if (authErr || !authData?.user) {
+      throw new Error(`Falha ao criar utilizador de teste: ${authErr?.message}`);
     }
+    organizerId = authData.user.id;
 
     // Create Premier Padel Final match
     // Arturo Coello / Agustín Tapia (#1) vs Alejandro Galán / Federico Chingotto (#2)

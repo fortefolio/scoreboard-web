@@ -584,65 +584,30 @@ export default function MatchDetailClient() {
       <MatchAtmosphereBackground sportType={match.sport_type} mode="spectator" />
 
       <div className="w-full max-w-4xl relative z-10">
-        <div className="mb-3 sm:mb-5 grid grid-cols-[32px_1fr_32px] items-center gap-3">
-          <Link
-            href={backHref}
-            aria-label={getBackLabel(prevPath)}
-            title={getBackLabel(prevPath)}
-            className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant text-text-secondary hover:text-text-primary inline-flex items-center justify-center transition-colors shrink-0"
-          >
-            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-          </Link>
-
-          {match.tournaments?.name ? (
-            <div className="min-w-0 flex justify-center">
-              {match.tournament_id ? (
-                <Link
-                  href={`/tournament/${match.tournament_id}`}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant text-text-secondary hover:text-text-primary transition-colors max-w-full sm:max-w-md"
-                  title={match.tournaments.name}
-                >
-                  <span className="material-symbols-outlined text-[14px] text-text-muted shrink-0">emoji_events</span>
-                  <span className="text-xs font-medium truncate">
-                    {match.tournaments.name}
-                  </span>
-                </Link>
-              ) : (
-                <div
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-surface-container border border-outline-variant text-text-secondary max-w-full sm:max-w-md"
-                  title={match.tournaments.name}
-                >
-                  <span className="material-symbols-outlined text-[14px] text-text-muted shrink-0">emoji_events</span>
-                  <span className="text-xs font-medium truncate">
-                    {match.tournaments.name}
-                  </span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div aria-hidden="true" />
-          )}
-
-          <div className="w-8 shrink-0" aria-hidden="true" />
-        </div>
-
-        {/* HERO / BIG MATCH CARD (Image 0) */}
+        {/* HERO / BIG MATCH CARD */}
         <div
           ref={heroRef}
           className="relative bg-surface-container rounded-2xl p-4 sm:p-6 border border-outline-variant shadow-xl overflow-hidden mb-6"
         >
-          {/* Top Bar: Author Chip & Actions (Sport+Favorite, Options Menu) */}
-          <div className="relative z-20 flex items-center justify-between gap-3 mb-4 sm:mb-6">
-            {/* Left: Author / Owner Pill */}
-            <div className="flex flex-wrap items-center gap-2.5">
+          {/* Top Bar: Back + Author Chip, Tournament Pill, Actions (Sport+Favorite, Options Menu) */}
+          <div className="relative z-20 grid grid-cols-2 md:grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-2.5 mb-4 sm:mb-6">
+            {/* Left: Back Button & Owner Pill */}
+            <div className="col-start-1 row-start-1 flex items-center gap-2 min-w-0">
+              <Link
+                href={backHref}
+                aria-label={getBackLabel(prevPath)}
+                title={getBackLabel(prevPath)}
+                className="w-8 h-8 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-secondary hover:text-text-primary inline-flex items-center justify-center transition-colors shrink-0"
+              >
+                <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+              </Link>
               {(match.organizer?.username || match.organizer?.email) && (
                 <Link
                   href={`/user/${encodeURIComponent(match.organizer.username || match.organizer.email.split("@")[0])}`}
-                  className="h-7 px-2.5 rounded-md bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-muted hover:text-text-primary transition-colors inline-flex items-center gap-1.5 text-xs font-medium cursor-pointer"
+                  className="h-7 px-2.5 rounded-md bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-secondary hover:text-text-primary transition-colors inline-flex items-center text-xs font-medium cursor-pointer truncate"
                   title={`@${match.organizer.username || match.organizer.email.split("@")[0]}`}
                 >
-                  <span className="material-symbols-outlined text-[13px] leading-none text-text-muted">person</span>
-                  <span className="leading-none">
+                  <span className="truncate leading-none">
                     @{match.organizer.username || match.organizer.email.split("@")[0]}
                   </span>
                 </Link>
@@ -650,7 +615,7 @@ export default function MatchDetailClient() {
             </div>
 
             {/* Top-Right: Compound Sport + Favorite Button & 3-Dots Dropdown Menu */}
-            <div className="flex items-center gap-2">
+            <div className="col-start-2 md:col-start-3 row-start-1 justify-self-end flex items-center gap-2 shrink-0">
               <SportFavoriteButton
                 entityId={matchIdStr}
                 entityType="match"
@@ -726,6 +691,31 @@ export default function MatchDetailClient() {
               )}
             </div>
             </div>
+
+            {match.tournaments?.name && (
+              <div className="col-span-2 md:col-span-1 md:col-start-2 md:row-start-1 min-w-0 flex justify-center">
+                {match.tournament_id ? (
+                  <Link
+                    href={`/tournament/${match.tournament_id}`}
+                    className="inline-flex items-center px-2.5 py-1 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-secondary hover:text-text-primary transition-colors max-w-full sm:max-w-md"
+                    title={match.tournaments.name}
+                  >
+                    <span className="text-xs font-medium truncate">
+                      {match.tournaments.name}
+                    </span>
+                  </Link>
+                ) : (
+                  <div
+                    className="inline-flex items-center px-2.5 py-1 rounded-lg bg-surface-container-high border border-outline-variant text-text-secondary max-w-full sm:max-w-md"
+                    title={match.tournaments.name}
+                  >
+                    <span className="text-xs font-medium truncate">
+                      {match.tournaments.name}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="relative flex flex-col items-center">

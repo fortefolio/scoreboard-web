@@ -1,0 +1,13 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["Q5YCFNPSPJ.dev.goncaloforte.scoreboard"],
+        "components": [
+          { "/": "/auth/callback" },
+          { "/": "/auth/reset-password" }
+        ]
+      }
+    ]
+  }
+}

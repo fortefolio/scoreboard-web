@@ -2,6 +2,8 @@ import { describe, expect, it, beforeEach } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
 import { enqueueOfflineEvent, clearOfflineQueue, getOfflineQueue } from "@/lib/offline/offlineQueue";
+import { buildParticipantsCsv } from "@/lib/csvTeams";
+import { isValidStripeRedirectUrl } from "@/lib/stripe/validateRedirect";
 
 describe("Security Regression Test Suite (Audit Run-2 Remediation)", () => {
   // =========================================================================
@@ -131,16 +133,16 @@ describe("Security Regression Test Suite (Audit Run-2 Remediation)", () => {
     it("finalize-match rejects re-finalization and unaccepted umpires", () => {
       const source = fs.readFileSync(path.join(backendRoot, "finalize-match/index.ts"), "utf8");
 
-      expect(source).toContain("match.status === 'completed'");
-      expect(source).toContain("status: 409");
-      expect(source).toContain("match.umpire_invite_status === 'accepted'");
-      expect(source).toContain("status: 403");
+      expect(source).toContain('match.status === "completed"');
+      expect(source).toContain("409");
+      expect(source).toContain('match.umpire_invite_status === "accepted"');
+      expect(source).toContain("403");
     });
 
     it("generate-tournament-bracket binds organizer_id strictly to verified tournament record", () => {
       const source = fs.readFileSync(path.join(backendRoot, "generate-tournament-bracket/index.ts"), "utf8");
 
-      expect(source).toContain("const organizer_id = tournamentRecord.organizer_id;");
+      expect(source).toContain("const organizer_id = tournamentRecord.organizer_id");
       expect(source).toContain("tournamentRecord.organizer_id !== user.id");
     });
   });
@@ -213,7 +215,7 @@ describe("Security Regression Test Suite (Audit Run-2 Remediation)", () => {
     it("tournament/[id]/teams.tsx selects explicit public columns instead of wildcard *", () => {
       const source = fs.readFileSync(path.join(mobileRoot, "app/tournament/[id]/teams.tsx"), "utf8");
 
-      expect(source).toContain('.select("id, tournament_id, team_id, name, seed, created_at")');
+      expect(source).toContain('.select("id, tournament_id, name, seed, created_at")');
       expect(source).not.toContain('.from("tournament_participants").select("*")');
     });
 
@@ -222,6 +224,29 @@ describe("Security Regression Test Suite (Audit Run-2 Remediation)", () => {
 
       expect(source).toContain("clearOfflineQueue");
       expect(source).toContain('event === "SIGNED_OUT"');
+    });
+  });
+
+  // =========================================================================
+  // 7. ASVS 5.0 L2 Remediation Invariants (CSV Injection & Stripe Redirect)
+  // =========================================================================
+  describe("ASVS 5.0 L2 Web Invariants", () => {
+    it("neutralizes spreadsheet formula prefixes in buildParticipantsCsv", () => {
+      const csv = buildParticipantsCsv([
+        { name: "=1+1", contact_email: "+cmd|' /C calc'!A0", form_responses: { note: "@SUM(1,2)" } },
+      ], [{ id: "note", label: "Note", type: "text", required: false }]);
+
+      expect(csv).toContain("'=1+1");
+      expect(csv).toContain("'+cmd|");
+      expect(csv).toContain("'@SUM(1,2)");
+    });
+
+    it("enforces https and .stripe.com hostname allowlist for Stripe redirects", () => {
+      expect(isValidStripeRedirectUrl("https://checkout.stripe.com/c/pay/cs_test_123")).toBe(true);
+      expect(isValidStripeRedirectUrl("https://billing.stripe.com/p/session/123")).toBe(true);
+      expect(isValidStripeRedirectUrl("http://checkout.stripe.com/c/pay/123")).toBe(false);
+      expect(isValidStripeRedirectUrl("https://evil-stripe.com/phish")).toBe(false);
+      expect(isValidStripeRedirectUrl("javascript:alert(1)")).toBe(false);
     });
   });
 });

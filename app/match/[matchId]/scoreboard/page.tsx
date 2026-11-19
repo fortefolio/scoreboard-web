@@ -57,9 +57,13 @@ function ScoreboardContent() {
         }
         setRules(resolvedRules);
         
-        const isUmpire = authUser?.id === mData.umpire_id;
-        // In local/demo or umpire match, allow editing if user is umpire or if umpire_id is not set
-        setCanEdit(isUmpire || !mData.umpire_id);
+        const isUmpire = Boolean(authUser?.id && authUser.id === mData.umpire_id);
+        const isOrganizer = Boolean(
+          authUser?.id &&
+            (authUser.id === mData.organizer_id ||
+              authUser.id === mData.tournaments?.organizer_id)
+        );
+        setCanEdit(isUmpire || isOrganizer);
       }
     };
     fetchAll();

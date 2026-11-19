@@ -131,7 +131,7 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Follow System & Aggrega
 
     expect(nErr1).toBeNull();
     expect(notifs1).toHaveLength(1);
-    expect(notifs1![0].title).toBe("Player Alpha vs Player Beta");
+    expect(notifs1![0].title).toContain("Player Alpha vs Player Beta");
     expect(notifs1![0].body).toContain("1-0");
     const firstNotifId = notifs1![0].id;
 

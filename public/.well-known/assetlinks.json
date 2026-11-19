@@ -1,0 +1,11 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "dev.goncaloforte.scoreboard",
+      "sha256_cert_fingerprints":
+        ["CA:B2:3F:8B:6D:F4:CA:06:44:E5:D5:0D:D2:E9:46:A1:C3:65:D6:BC:88:6E:8D:E0:B3:66:FB:14:56:B8:0C:A4"]
+    }
+  }
+]

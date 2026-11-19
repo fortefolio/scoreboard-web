@@ -112,19 +112,19 @@ describe("Home — signup validation", () => {
     expect(supabaseMock.auth.signUp).not.toHaveBeenCalled();
   });
 
-  it("rejects weak passwords with a toast and no API call", async () => {
+  it("rejects short passwords with a toast and no API call", async () => {
     searchParams = new URLSearchParams({ auth: "signup" });
     const user = userEvent.setup();
     await renderHome();
 
     await user.type(screen.getByPlaceholderText(/choose a username/i), "alice");
     await user.type(screen.getByPlaceholderText(/enter your email/i), "alice@example.com");
-    await user.type(screen.getByPlaceholderText(/enter your password/i), "weakpass");
-    await user.type(screen.getByPlaceholderText(/confirm your password/i), "weakpass");
+    await user.type(screen.getByPlaceholderText(/enter your password/i), "short7");
+    await user.type(screen.getByPlaceholderText(/confirm your password/i), "short7");
     await user.click(screen.getByRole("button", { name: /^sign up$/i }));
 
     expect(toastError).toHaveBeenCalledWith(
-      "Password must be at least 8 characters long and include uppercase, lowercase, numbers, and symbols."
+      "Password must be at least 8 characters long (15+ character passphrase recommended)."
     );
     expect(supabaseMock.auth.signUp).not.toHaveBeenCalled();
   });

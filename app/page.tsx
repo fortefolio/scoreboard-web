@@ -227,8 +227,31 @@ function HomeContent() {
           return;
         }
 
+        const next = searchParams.get("next");
+        const safeNext = (() => {
+          if (!next) return null;
+          try {
+            const parsed = new URL(next, window.location.origin);
+            if (
+              parsed.origin === window.location.origin &&
+              parsed.pathname.startsWith("/") &&
+              !next.startsWith("/\\") &&
+              !next.startsWith("\\")
+            ) {
+              return parsed.pathname + parsed.search + parsed.hash;
+            }
+          } catch {
+            // Malformed URL, skip redirect
+          }
+          return null;
+        })();
+
         toast.success(t("auth.accountCreatedToast"));
-        closeAuthModal();
+        if (data?.session && safeNext) {
+          router.push(safeNext);
+        } else {
+          closeAuthModal();
+        }
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -241,10 +264,8 @@ function HomeContent() {
           return;
         }
 
-        toast.success(t("auth.welcomeBackToast"));
-        closeAuthModal();
-
         const next = searchParams.get("next");
+        let safeNext: string | null = null;
         if (next) {
           try {
             const parsed = new URL(next, window.location.origin);
@@ -254,11 +275,18 @@ function HomeContent() {
               !next.startsWith("/\\") &&
               !next.startsWith("\\")
             ) {
-              router.push(parsed.pathname + parsed.search + parsed.hash);
+              safeNext = parsed.pathname + parsed.search + parsed.hash;
             }
           } catch {
             // Malformed URL, skip redirect
           }
+        }
+
+        toast.success(t("auth.welcomeBackToast"));
+        if (safeNext) {
+          router.push(safeNext);
+        } else {
+          closeAuthModal();
         }
       }
     } catch (err: any) {

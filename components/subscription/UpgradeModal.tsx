@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
+import { isValidStripeRedirectUrl } from "@/lib/stripe/validateRedirect";
 import { toast } from "sonner";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
 
@@ -53,7 +54,7 @@ export default function UpgradeModal({ isOpen, onClose, onSuccess, isAlreadyPro 
 
       const data = await res.json();
 
-      if (!res.ok || !data?.url) {
+      if (!res.ok || !data?.url || !isValidStripeRedirectUrl(data.url)) {
         throw new Error(data?.error || "Failed to create checkout session");
       }
 

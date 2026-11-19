@@ -145,7 +145,7 @@ export const pt: Translations = {
     alreadyHaveAccount: "Já tens uma conta?",
     dontHaveAccount: "Ainda não tens conta?",
     usernameRequired: "O nome de utilizador é obrigatório",
-    passwordRequirements: "A palavra-passe deve ter pelo menos 8 caracteres e incluir maiúsculas, minúsculas, números e símbolos.",
+    passwordRequirements: "A palavra-passe deve ter pelo menos 8 caracteres (recomendada frase-passe com 15+ caracteres).",
     passwordsDoNotMatch: "As palavras-passe não coincidem",
     usernameTaken: "Nome de utilizador já ocupado. Por favor escolhe outro.",
     userAlreadyRegistered: "Já existe uma conta com este email.",

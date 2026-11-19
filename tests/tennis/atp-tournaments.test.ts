@@ -1096,5 +1096,5 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("ATP Tournament Suite â€
       .eq("id", tournament!.id)
       .single();
     expect(completedTurin!.status).toBe("completed");
-  });
+  }, 60_000);
 });

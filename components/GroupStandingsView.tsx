@@ -80,53 +80,81 @@ export default function GroupStandingsView({ tournamentId }: { tournamentId: str
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {Object.entries(groups).sort().map(([label, teams]) => (
-        <div key={label} className="bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
-          <div className="bg-surface-container-high/60 px-4 py-3 border-b border-outline-variant flex justify-between items-center">
-            <h3 className="font-medium text-sm text-text-primary">Group {label}</h3>
-            <span className="text-xs text-text-muted font-medium">Standings</span>
-          </div>
-          
-          <div className="overflow-x-auto w-full">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-text-muted text-xs border-b border-outline-variant">
-                  <th className="px-4 py-2.5 text-left font-medium">Team</th>
-                  <th className="px-2 py-2.5 text-center font-medium">P</th>
-                  <th className="px-2 py-2.5 text-center font-medium">W</th>
-                  <th className="px-2 py-2.5 text-center font-medium">L</th>
-                  <th className="px-2 py-2.5 text-center font-medium">Sets</th>
-                  <th className="px-3 py-2.5 text-right font-medium pr-4">+/-</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant font-mono tabular-nums">
-                {teams.map((team, idx) => (
-                  <tr key={team.team_name} className="hover:bg-surface-container-high/40 transition-colors">
-                    <td className="px-4 py-2.5 font-sans font-medium text-text-primary flex items-center gap-2">
-                      {idx < 2 && <div className="w-1.5 h-1.5 rounded-full bg-success shrink-0" title="Qualification Zone" />}
-                      <span className="truncate">{team.team_name}</span>
-                    </td>
-                    <td className="px-2 py-2.5 text-center text-text-secondary">{team.played}</td>
-                    <td className="px-2 py-2.5 text-center font-semibold text-success">{team.wins}</td>
-                    <td className="px-2 py-2.5 text-center text-error">{team.losses}</td>
-                    <td className="px-2 py-2.5 text-center text-text-muted">
-                      {team.total_sets_won}-{team.total_sets_lost}
-                    </td>
-                    <td className="px-3 py-2.5 text-right pr-4 text-text-secondary">
-                      {team.point_diff > 0 ? `+${team.point_diff}` : team.point_diff}
-                    </td>
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {Object.entries(groups).sort().map(([label, teams]) => (
+          <div key={label} className="bg-surface-container rounded-xl border border-outline-variant overflow-hidden">
+            <div className="bg-surface-container-high/60 px-4 py-2.5 border-b border-outline-variant flex items-center justify-between">
+              <h3 className="font-medium text-sm text-text-primary">Group {label}</h3>
+            </div>
+            
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="text-text-muted text-xs border-b border-outline-variant">
+                    <th className="pl-4 pr-2 py-2.5 text-center font-medium w-8">#</th>
+                    <th className="px-2 py-2.5 text-left font-medium">Team</th>
+                    <th className="px-2 py-2.5 text-center font-medium">P</th>
+                    <th className="px-2 py-2.5 text-center font-medium">W</th>
+                    <th className="px-2 py-2.5 text-center font-medium">L</th>
+                    <th className="px-2 py-2.5 text-center font-medium">Sets</th>
+                    <th className="px-3 py-2.5 text-right font-medium pr-4">+/-</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-outline-variant font-mono tabular-nums">
+                  {teams.map((team, idx) => {
+                    const isAdvancing = idx < 2;
+                    return (
+                      <tr
+                        key={team.team_name}
+                        className={`hover:bg-surface-container-high/40 transition-colors border-l-2 ${
+                          isAdvancing ? "border-l-text-primary bg-surface-container-high/20" : "border-l-transparent"
+                        }`}
+                      >
+                        <td
+                          className={`pl-3.5 pr-2 py-2.5 text-center ${
+                            isAdvancing ? "font-bold text-text-primary" : "font-normal text-text-muted"
+                          }`}
+                          title={isAdvancing ? "Advancing to Knockout Stage" : undefined}
+                        >
+                          {idx + 1}
+                        </td>
+                        <td
+                          className={`px-2 py-2.5 font-sans ${
+                            isAdvancing ? "font-semibold text-text-primary" : "font-normal text-text-secondary"
+                          }`}
+                        >
+                          <span className="truncate block">{team.team_name}</span>
+                        </td>
+                        <td className={`px-2 py-2.5 text-center ${team.played > 0 ? "text-text-secondary" : "text-text-muted"}`}>
+                          {team.played}
+                        </td>
+                        <td className={`px-2 py-2.5 text-center ${team.wins > 0 ? "font-semibold text-text-primary" : "text-text-muted"}`}>
+                          {team.wins}
+                        </td>
+                        <td className={`px-2 py-2.5 text-center ${team.losses > 0 ? "text-text-secondary" : "text-text-muted"}`}>
+                          {team.losses}
+                        </td>
+                        <td className="px-2 py-2.5 text-center text-text-muted">
+                          {team.total_sets_won}-{team.total_sets_lost}
+                        </td>
+                        <td className={`px-3 py-2.5 text-right pr-4 ${team.point_diff === 0 ? "text-text-muted" : "text-text-secondary"}`}>
+                          {team.point_diff > 0 ? `+${team.point_diff}` : team.point_diff}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-          
-          <div className="p-3 bg-surface-container-high/30 border-t border-outline-variant text-[11px] text-text-muted">
-            * Top teams advance to Knockout Stage
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
+
+      <div className="flex items-center justify-center gap-2 text-xs text-text-muted pt-1">
+        <span className="w-0.5 h-3.5 bg-text-primary rounded-full shrink-0" />
+        <span>Highlighted rows advance to Knockout Stage</span>
+      </div>
     </div>
   );
 }

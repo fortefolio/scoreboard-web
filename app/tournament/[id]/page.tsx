@@ -71,8 +71,12 @@ function TournamentContent() {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   const tournamentId = Array.isArray(id) ? id[0] : id;
+  const isOrganizer = Boolean(
+    user?.id && tournament?.organizer_id && user.id === tournament.organizer_id
+  );
 
   const handleTabChange = (tab: typeof activeTab) => {
+    if (tab === 'settings' && !isOrganizer) return;
     setActiveTab(tab);
     const params = new URLSearchParams(searchParams.toString());
     params.set('tab', tab);
@@ -83,9 +87,13 @@ function TournamentContent() {
   useEffect(() => {
     const tab = searchParams.get('tab') as any;
     if (tab && ['standings', 'group_matches', 'bracket', 'teams', 'settings'].includes(tab)) {
+      if (tab === 'settings' && tournament && !isOrganizer) {
+        setActiveTab('teams');
+        return;
+      }
       setActiveTab(tab);
     }
-  }, [searchParams]);
+  }, [searchParams, tournament, isOrganizer]);
 
   useEffect(() => {
     if (tournamentId) {
@@ -124,7 +132,7 @@ function TournamentContent() {
   const loadTournament = async () => {
     const { data } = await supabase
       .from("tournaments")
-      .select("*")
+      .select("*, organizer:users!organizer_id(username)")
       .eq("id", tournamentId)
       .single();
     
@@ -718,54 +726,109 @@ function TournamentContent() {
     );
   }
 
+  const handleShareTournament = async () => {
+    const shareUrl = window.location.href;
+    try {
+      if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+        await navigator.share({
+          title: tournament?.name || "ScoreBoard Tournament",
+          url: shareUrl,
+        });
+        return;
+      }
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success("Tournament link copied!");
+    } catch {
+      // User cancelled native share or clipboard unavailable
+    }
+  };
+
+  const formatDateRange = () => {
+    if (!tournament?.start_date) return null;
+    const fmt = new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" });
+    const start = new Date(tournament.start_date);
+    if (!tournament?.end_date || tournament.end_date === tournament.start_date) {
+      return fmt.format(start);
+    }
+    const end = new Date(tournament.end_date);
+    return `${fmt.format(start)} – ${fmt.format(end)}`;
+  };
+
+  const dateRangeLabel = formatDateRange();
+  const organizerUsername = tournament?.organizer?.username || null;
+
   return (
     <div className="min-h-screen bg-transparent text-on-background font-sans selection:bg-text-primary selection:text-surface-container-lowest relative">
       <MatchAtmosphereBackground sportType={tournament?.sport_type} mode="spectator" />
       <main className="pt-3 sm:pt-6 pb-20 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto relative z-10">
-        <div className="mb-3 sm:mb-4">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            aria-label="Back"
-            title="Back"
-            className="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high border border-outline-variant text-text-secondary hover:text-text-primary inline-flex items-center justify-center transition-colors cursor-pointer"
-          >
-            <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-          </button>
-        </div>
-
-        <header className="bg-surface-container rounded-2xl p-4 sm:p-5 border border-outline-variant shadow-sm mb-4 sm:mb-6">
-          <div className="flex items-center justify-between gap-3 mb-2.5 sm:mb-3">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="h-7 px-2.5 rounded-md text-xs font-medium border border-outline-variant bg-surface-container-high text-text-secondary inline-flex items-center gap-1.5 capitalize">
-                {tournament?.status === "ongoing" && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                )}
-                {tournament?.status}
-              </span>
-              {tournament?.sport_type && (
-                <span className="h-7 px-2.5 rounded-md text-xs font-medium border border-outline-variant bg-surface-container-high text-text-muted inline-flex items-center">
-                  {getSportTranslation(tournament.sport_type, t)}
-                </span>
+        <header className="bg-surface-container rounded-2xl p-3.5 sm:p-4 border border-outline-variant shadow-sm mb-4 sm:mb-5">
+          <div className="grid grid-cols-2 md:grid-cols-[1fr_auto_1fr] items-center gap-x-3 gap-y-2.5 mb-2.5">
+            <div className="col-start-1 row-start-1 flex items-center gap-2 min-w-0">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                aria-label="Back"
+                title="Back"
+                className="w-8 h-8 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-secondary hover:text-text-primary inline-flex items-center justify-center transition-colors shrink-0 cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+              </button>
+              {organizerUsername && (
+                <Link
+                  href={`/user/${organizerUsername}`}
+                  className="h-7 px-2.5 rounded-md text-xs font-medium border border-outline-variant bg-surface-container-high text-text-secondary hover:text-text-primary hover:bg-surface-container-highest inline-flex items-center transition-colors truncate"
+                >
+                  <span className="truncate">@{organizerUsername}</span>
+                </Link>
               )}
             </div>
 
-            <SportFavoriteButton
-              entityId={tournamentId}
-              entityType="tournament"
-              sport={tournament?.sport_type}
-              size="sm"
-            />
+            <div className="col-start-2 md:col-start-3 row-start-1 justify-self-end flex items-center gap-2 shrink-0">
+              <SportFavoriteButton
+                entityId={tournamentId}
+                entityType="tournament"
+                sport={tournament?.sport_type}
+                size="sm"
+              />
+              <button
+                type="button"
+                onClick={handleShareTournament}
+                aria-label="Share tournament"
+                title="Share tournament"
+                className="w-8 h-8 rounded-lg bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant text-text-secondary hover:text-text-primary inline-flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-[18px]">share</span>
+              </button>
+            </div>
+
+            <h1 className="col-span-2 md:col-span-1 md:col-start-2 md:row-start-1 font-sans text-xl sm:text-2xl font-semibold tracking-tight text-text-primary leading-tight text-center">
+              {tournament?.name || "Tournament"}
+            </h1>
           </div>
 
-          <h1 className="font-sans text-xl sm:text-3xl font-semibold tracking-tight text-text-primary leading-tight">
-            {tournament?.name || "Tournament"}
-          </h1>
+          <div className="flex items-center justify-center flex-wrap gap-x-2.5 gap-y-1.5 text-xs text-text-muted">
+            <span className="h-6 px-2 rounded-md text-[11px] font-medium border border-outline-variant bg-surface-container-high text-text-secondary inline-flex items-center gap-1.5 capitalize">
+              {tournament?.status === "ongoing" && (
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+              )}
+              {tournament?.status}
+            </span>
+            {dateRangeLabel && (
+              <span className="inline-flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">calendar_today</span>
+                {dateRangeLabel}
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px]">groups</span>
+              {participants.length} / {maxTeams}
+            </span>
+          </div>
         </header>
 
         {/* Precision Telemetry Segmented Tab Bar */}
-        <div className="flex justify-center mb-5 sm:mb-6 overflow-x-auto no-scrollbar max-w-full pb-1">
-          <div className="bg-surface-container-low p-1 rounded-xl border border-outline-variant flex gap-1 shrink-0">
+        <div className="mb-5 sm:mb-6 overflow-x-auto no-scrollbar max-w-full pb-1">
+          <div className="bg-surface-container-low p-1 rounded-xl border border-outline-variant flex gap-1 w-max mx-auto">
             <button 
               onClick={() => handleTabChange('teams')}
               className={`px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 shrink-0 ${
@@ -816,17 +879,19 @@ function TournamentContent() {
                 Bracket
               </button>
             )}
-            <button 
-              onClick={() => handleTabChange('settings')}
-              className={`px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 shrink-0 ${
-                activeTab === 'settings'
-                  ? 'bg-surface-container text-text-primary border border-outline-variant shadow-sm'
-                  : 'text-text-muted hover:text-text-primary hover:bg-surface-container-high/40'
-              }`}
-            >
-              <span className="material-symbols-outlined text-[16px] leading-none">settings</span>
-              {t("tournament.settingsTab")}
-            </button>
+            {isOrganizer && (
+              <button 
+                onClick={() => handleTabChange('settings')}
+                className={`px-4 sm:px-6 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors flex items-center gap-1.5 shrink-0 ${
+                  activeTab === 'settings'
+                    ? 'bg-surface-container text-text-primary border border-outline-variant shadow-sm'
+                    : 'text-text-muted hover:text-text-primary hover:bg-surface-container-high/40'
+                }`}
+              >
+                <span className="material-symbols-outlined text-[16px] leading-none">settings</span>
+                {t("tournament.settingsTab")}
+              </button>
+            )}
           </div>
         </div>
 
@@ -842,14 +907,16 @@ function TournamentContent() {
                       <p className="text-text-muted text-xs sm:text-sm">Manage participating teams and players ({participants.length} / {maxTeams}).</p>
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                      <button 
-                        onClick={addTeam}
-                        disabled={isAddingTeam || participants.length >= maxTeams}
-                        className="flex-1 sm:flex-initial justify-center h-9 bg-text-primary hover:bg-white text-surface-container-lowest px-3.5 rounded-lg font-medium text-xs transition-colors flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-                      >
-                        <span className="material-symbols-outlined text-[16px] leading-none">add</span>
-                        {participants.length >= maxTeams ? 'Limit Reached' : 'Add Team'}
-                      </button>
+                      {isOrganizer && (
+                        <button 
+                          onClick={addTeam}
+                          disabled={isAddingTeam || participants.length >= maxTeams}
+                          className="flex-1 sm:flex-initial justify-center h-9 bg-text-primary hover:bg-white text-surface-container-lowest px-3.5 rounded-lg font-medium text-xs transition-colors flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                          <span className="material-symbols-outlined text-[16px] leading-none">add</span>
+                          {participants.length >= maxTeams ? 'Limit Reached' : 'Add Team'}
+                        </button>
+                      )}
 
                       {/* Grid / List View Toggle */}
                       <div className="h-9 flex items-center bg-surface-container-high p-1 rounded-lg border border-outline-variant shrink-0">
@@ -881,7 +948,8 @@ function TournamentContent() {
                         </button>
                       </div>
 
-                      {/* Three-dot Actions Menu */}
+                      {/* Three-dot Actions Menu (Organizer only) */}
+                      {isOrganizer && (
                       <div className="relative shrink-0" ref={rosterMenuRef}>
                         <button
                           type="button"
@@ -954,6 +1022,7 @@ function TournamentContent() {
                           </div>
                         )}
                       </div>
+                      )}
                     </div>
                   </div>
 
@@ -966,7 +1035,7 @@ function TournamentContent() {
                   ) : rosterViewMode === 'grid' ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {participants.map((p, idx) => (
-                        tournament.status === 'pending' && isManualParticipant(p) ? (
+                        isOrganizer && tournament.status === 'pending' && isManualParticipant(p) ? (
                           <div key={p.id} className="relative group flex items-center gap-2">
                             <div className="relative flex-1 min-w-0">
                               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-medium text-text-muted">
@@ -1002,14 +1071,16 @@ function TournamentContent() {
                                 <span className="text-xs text-text-muted font-normal truncate max-w-[140px]">{p.contact_email}</span>
                               </div>
                             </div>
-                            <button 
-                              onClick={() => setSelectedParticipant(p)}
-                              className="w-10 h-10 rounded-xl bg-surface-container-high text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors flex items-center justify-center border border-outline-variant shrink-0 cursor-pointer"
-                              title="View Participant Details"
-                            >
-                              <span className="material-symbols-outlined text-sm leading-none">visibility</span>
-                            </button>
-                            {tournament.status === 'pending' && (
+                            {isOrganizer && (
+                              <button 
+                                onClick={() => setSelectedParticipant(p)}
+                                className="w-10 h-10 rounded-xl bg-surface-container-high text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors flex items-center justify-center border border-outline-variant shrink-0 cursor-pointer"
+                                title="View Participant Details"
+                              >
+                                <span className="material-symbols-outlined text-sm leading-none">visibility</span>
+                              </button>
+                            )}
+                            {isOrganizer && tournament.status === 'pending' && (
                               <button
                                 onClick={() => removeTeam(p.id)}
                                 className="w-10 h-10 rounded-xl bg-surface-container-high text-text-muted hover:text-error hover:bg-error/10 transition-colors flex items-center justify-center border border-outline-variant shrink-0 cursor-pointer"
@@ -1030,7 +1101,7 @@ function TournamentContent() {
                             {String(idx + 1).padStart(2, '0')}
                           </span>
                           <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-4">
-                            {tournament.status === 'pending' && isManualParticipant(p) ? (
+                            {isOrganizer && tournament.status === 'pending' && isManualParticipant(p) ? (
                               <input
                                 className="w-full sm:max-w-xs px-2.5 py-1.5 bg-surface-container-high rounded-lg border border-outline-variant text-text-primary font-medium text-sm outline-none focus:border-outline-focus transition-colors placeholder:text-text-muted/40"
                                 placeholder={`Assign Team ${idx + 1}`}
@@ -1049,7 +1120,7 @@ function TournamentContent() {
                             )}
                           </div>
                           <div className="flex items-center gap-1.5 shrink-0">
-                            {!(tournament.status === 'pending' && isManualParticipant(p)) && (
+                            {isOrganizer && !(tournament.status === 'pending' && isManualParticipant(p)) && (
                               <button
                                 onClick={() => setSelectedParticipant(p)}
                                 className="w-8 h-8 rounded-lg bg-surface-container-high text-text-muted hover:text-text-primary hover:bg-surface-container-highest transition-colors flex items-center justify-center border border-outline-variant cursor-pointer"
@@ -1058,7 +1129,7 @@ function TournamentContent() {
                                 <span className="material-symbols-outlined text-[16px] leading-none">visibility</span>
                               </button>
                             )}
-                            {tournament.status === 'pending' && (
+                            {isOrganizer && tournament.status === 'pending' && (
                               <button
                                 onClick={() => removeTeam(p.id)}
                                 className="w-8 h-8 rounded-lg bg-surface-container-high text-text-muted hover:text-error hover:bg-error/10 transition-colors flex items-center justify-center border border-outline-variant cursor-pointer"
@@ -1085,7 +1156,7 @@ function TournamentContent() {
             </div>
           ) : activeTab === 'bracket' ? (
             <TournamentBracket tournamentId={tournamentId} tournamentFromParent={tournament} onSaveOverrideFromParent={saveOverride} onSaveScheduledDate={saveRoundDate} />
-          ) : (
+          ) : activeTab === 'settings' && isOrganizer ? (
             <div className="w-full max-w-4xl mx-auto space-y-6">
               <div className="bg-surface-container rounded-2xl p-6 sm:p-8 border border-outline-variant">
                 <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-text-primary mb-6">Tournament Settings</h2>
@@ -1445,7 +1516,7 @@ function TournamentContent() {
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
       </main>
 

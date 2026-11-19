@@ -55,6 +55,14 @@ export async function recordMatchEventAtomic(
           return v.toString(16);
         }));
 
+  let currentUserId: string | null = null;
+  if (typeof supabase?.auth?.getUser === "function") {
+    try {
+      const { data } = await supabase.auth.getUser();
+      currentUserId = data?.user?.id ?? null;
+    } catch {}
+  }
+
   if (typeof supabase?.rpc === "function") {
     try {
       const res = await supabase.rpc("record_match_event_atomic", {
@@ -73,6 +81,7 @@ export async function recordMatchEventAtomic(
 
       if (isNetworkIssue(res.error)) {
         enqueueOfflineEvent({
+          userId: currentUserId,
           matchId,
           newScores,
           eventData,
@@ -94,6 +103,7 @@ export async function recordMatchEventAtomic(
     } catch (err: any) {
       if (isNetworkIssue(err)) {
         enqueueOfflineEvent({
+          userId: currentUserId,
           matchId,
           newScores,
           eventData,
@@ -141,6 +151,7 @@ export async function recordMatchEventAtomic(
 
     if (insertRes?.error && isNetworkIssue(insertRes.error)) {
       enqueueOfflineEvent({
+        userId: currentUserId,
         matchId,
         newScores,
         eventData,
@@ -154,6 +165,7 @@ export async function recordMatchEventAtomic(
   } catch (err: any) {
     if (isNetworkIssue(err)) {
       enqueueOfflineEvent({
+        userId: currentUserId,
         matchId,
         newScores,
         eventData,

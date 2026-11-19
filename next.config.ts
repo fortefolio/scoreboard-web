@@ -55,17 +55,28 @@ const nextConfig: NextConfig = {
 
     const cspDirectives = [
       "default-src 'self';",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval';",
+      isDev
+        ? "script-src 'self' 'unsafe-inline' 'unsafe-eval';"
+        : "script-src 'self';",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;",
       "font-src 'self' data: https://fonts.gstatic.com;",
       "img-src 'self' data: blob: https:;",
       connectSrc,
       "frame-ancestors 'none';",
       "object-src 'none';",
-      "base-uri 'self';",
+      "base-uri 'none';",
     ].join(" ");
 
     return [
+      {
+        source: "/.well-known/apple-app-site-association",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "application/json",
+          },
+        ],
+      },
       {
         source: "/:path*",
         headers: [
