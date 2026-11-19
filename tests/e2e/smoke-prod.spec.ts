@@ -35,10 +35,13 @@ test.describe("Production Hydration & CSP Smoke Check", () => {
       await expect(page.getByText(/SCORE:BOARD/i).first()).toBeVisible({ timeout: 15_000 });
 
       if (route === "/") {
-        const tournamentsTab = page.getByRole("button", { name: /Tournaments/i }).first();
-        await expect(tournamentsTab).toBeVisible();
-        // Clicking verifies client JS event handlers actually hydrated
-        await tournamentsTab.click();
+        const tournamentsLink = page.getByRole("link", { name: /Tournaments/i }).first();
+        await expect(tournamentsLink).toBeVisible();
+        // Clicking Get Started verifies client JS event handlers actually hydrated
+        const getStartedBtn = page.getByRole("button", { name: /Get Started/i }).first();
+        await expect(getStartedBtn).toBeVisible();
+        await getStartedBtn.click();
+        await expect(page.getByPlaceholder(/enter your email/i)).toBeVisible({ timeout: 5_000 });
       }
 
       const recordedCsp = await page.evaluate(() => (window as any).__cspViolations || []);

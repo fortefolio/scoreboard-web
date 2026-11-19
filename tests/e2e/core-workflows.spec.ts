@@ -5,8 +5,8 @@ test.describe("Core Platform Workflows", () => {
     await page.goto("/");
 
     await expect(page.getByText(/SCORE:BOARD/i).first()).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByRole("button", { name: /Matches/i }).first()).toBeVisible();
-    await expect(page.getByRole("button", { name: /Tournaments/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Matches/i }).first()).toBeVisible();
+    await expect(page.getByRole("link", { name: /Tournaments/i }).first()).toBeVisible();
 
     // Protected route redirects unauthenticated user to login modal
     await page.goto("/my-tournaments");
