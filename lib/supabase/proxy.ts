@@ -12,7 +12,7 @@ const SECURITY_HEADERS: Record<string, string> = {
   "Cross-Origin-Opener-Policy": "same-origin",
 };
 
-function buildCspHeader(nonce: string): string {
+function buildCspHeader(): string {
   const isDev = process.env.NODE_ENV !== "production";
   const isLocalDb =
     process.env.NEXT_PUBLIC_SUPABASE_URL?.includes("localhost") ||
@@ -25,8 +25,8 @@ function buildCspHeader(nonce: string): string {
     : "connect-src 'self' https: wss:;";
 
   const scriptSrc = isDev
-    ? `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' 'unsafe-eval';`
-    : `script-src 'self' 'nonce-${nonce}' 'strict-dynamic';`;
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval';"
+    : "script-src 'self' 'unsafe-inline';";
 
   return [
     "default-src 'self';",
@@ -41,24 +41,18 @@ function buildCspHeader(nonce: string): string {
   ].join(" ");
 }
 
-function applySecurityHeaders(res: NextResponse, nonce: string): NextResponse {
+function applySecurityHeaders(res: NextResponse): NextResponse {
   Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
     if (!res.headers.has(key)) {
       res.headers.set(key, value);
     }
   });
-  res.headers.set("Content-Security-Policy", buildCspHeader(nonce));
+  res.headers.set("Content-Security-Policy", buildCspHeader());
   return res;
 }
 
 export async function updateSession(request: NextRequest) {
-  const nonce = btoa(crypto.randomUUID());
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", nonce);
-
-  let response = NextResponse.next({
-    request: { headers: requestHeaders },
-  });
+  let response = NextResponse.next({ request });
 
   const { url, anonKey } = supabaseEnv();
   const supabase = createServerClient(url, anonKey, {
@@ -70,11 +64,7 @@ export async function updateSession(request: NextRequest) {
         cookiesToSet.forEach(({ name, value }) => {
           request.cookies.set(name, value);
         });
-        const updatedReqHeaders = new Headers(request.headers);
-        updatedReqHeaders.set("x-nonce", nonce);
-        response = NextResponse.next({
-          request: { headers: updatedReqHeaders },
-        });
+        response = NextResponse.next({ request });
         cookiesToSet.forEach(({ name, value, options }) => {
           response.cookies.set(name, value, options);
         });
@@ -98,7 +88,7 @@ export async function updateSession(request: NextRequest) {
     redirectUrl.searchParams.set("next", pathname);
     const redirectResponse = NextResponse.redirect(redirectUrl);
     redirectResponse.headers.set("Cache-Control", "private, no-cache, no-store, must-revalidate");
-    return applySecurityHeaders(redirectResponse, nonce);
+    return applySecurityHeaders(redirectResponse);
   }
 
   // Enforce private caching on cookie-authenticated requests to prevent edge KV / CDN cross-tenant caching
@@ -109,5 +99,5 @@ export async function updateSession(request: NextRequest) {
     response.headers.set("Vary", "Cookie");
   }
 
-  return applySecurityHeaders(response, nonce);
+  return applySecurityHeaders(response);
 }
