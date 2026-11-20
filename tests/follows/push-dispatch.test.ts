@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import ts from "typescript";
 import { describe, it, expect, vi, beforeAll } from "vitest";
 import { SUPPORTED_SPORT_VALUES, type SportValue } from "@/lib/sports";
 
@@ -9,7 +10,37 @@ const backendDispatchPath = path.resolve(
 );
 const hasBackend = fs.existsSync(backendDispatchPath);
 
-type DispatchModule = typeof import("../../../scoreboard-backend/supabase/functions/fcm-notifications/dispatch.ts");
+interface DispatchModule {
+  isApnsDeviceToken: (token: string) => boolean;
+  classifyToken: (token: string) => "apns" | "fcm";
+  shouldDispatchWebhook: (payload: {
+    type: "INSERT" | "UPDATE" | "DELETE" | "SELECT";
+    table: string;
+    record: Record<string, any> | null;
+    old_record?: Record<string, any> | null;
+  }) => boolean;
+  dispatchPushNotifications: (
+    tokens: string[],
+    notification: Record<string, any>,
+    deps: {
+      fetchFn?: typeof fetch;
+      getFcmAccessToken?: () => Promise<string>;
+      fcmProjectId?: string;
+      apnsConfig?: {
+        keyId: string;
+        teamId: string;
+        privateKeyPem: string;
+        bundleId: string;
+      } | null;
+      nowSeconds?: () => number;
+    }
+  ) => Promise<{
+    fcmSent: number;
+    apnsSent: number;
+    apnsSandboxFallback: number;
+    errors: string[];
+  }>;
+}
 
 let mod: DispatchModule;
 let testApnsPem = "";
@@ -19,8 +50,15 @@ describe.skipIf(!hasBackend)("fcm-notifications webhook & token routing", () => 
   const fcmToken = "fMx9k2QpT8W:APA91bH7xYz1234567890_abcdefghijklmnopqrstuvwxyz";
 
   beforeAll(async () => {
+    const source = fs.readFileSync(backendDispatchPath, "utf8");
+    const { outputText } = ts.transpileModule(source, {
+      compilerOptions: {
+        module: ts.ModuleKind.ESNext,
+        target: ts.ScriptTarget.ES2022,
+      },
+    });
     mod = (await import(
-      "../../../scoreboard-backend/supabase/functions/fcm-notifications/dispatch.ts"
+      `data:text/javascript;base64,${Buffer.from(outputText).toString("base64")}`
     )) as DispatchModule;
 
     const keyPair = await crypto.subtle.generateKey(
