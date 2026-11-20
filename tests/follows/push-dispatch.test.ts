@@ -32,6 +32,7 @@ interface DispatchModule {
         privateKeyPem: string;
         bundleId: string;
       } | null;
+      badgeCount?: number;
       nowSeconds?: () => number;
     }
   ) => Promise<{
@@ -199,6 +200,7 @@ describe.skipIf(!hasBackend)("fcm-notifications webhook & token routing", () => 
           privateKeyPem: testApnsPem,
           bundleId: "dev.goncaloforte.scoreboard",
         },
+        badgeCount: 3,
         nowSeconds: () => 1795130000,
       }
     );
@@ -226,6 +228,9 @@ describe.skipIf(!hasBackend)("fcm-notifications webhook & token routing", () => 
     });
 
     expect(apnsCall?.url).toBe(`https://api.push.apple.com/3/device/${apnsToken}`);
+    const apnsBody = JSON.parse(String(apnsCall?.init.body));
+    expect(apnsBody.aps.badge).toBe(3);
+    expect(apnsBody.match_id).toBe("m-1");
     const apnsHeaders = apnsCall?.init.headers as Record<string, string>;
     expect(apnsHeaders["apns-topic"]).toBe("dev.goncaloforte.scoreboard");
     expect(apnsHeaders.authorization).toMatch(
