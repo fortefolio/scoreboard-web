@@ -159,10 +159,15 @@ export default function NotificationBell() {
                       </div>
                     </div>
 
-                    {/* Notification Title */}
+                    {/* Notification Title & Body */}
                     <h4 className={`text-xs font-semibold leading-snug line-clamp-2 ${isUnread ? "text-text-primary group-hover:text-white transition-colors" : "text-text-secondary"}`}>
-                      {formatVersusTitle(isInvitation ? (matchDetails.teams || n.title) : n.title)}
+                      {isInvitation ? formatVersusTitle(matchDetails.teams || n.title) : n.title}
                     </h4>
+                    {n.body ? (
+                      <p className="text-[11px] text-text-muted mt-0.5 line-clamp-2">
+                        {n.body}
+                      </p>
+                    ) : null}
                   </div>
                 );
               })

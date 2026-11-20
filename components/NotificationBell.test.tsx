@@ -126,8 +126,7 @@ describe("NotificationBell — authenticated", () => {
 
     await user.click(screen.getByRole("button"));
     expect(screen.getByText("First")).toBeInTheDocument();
-    // Body is no longer rendered in the notification bell drawer redesign
-    expect(screen.queryByText("Match starting")).not.toBeInTheDocument();
+    expect(screen.getByText("Match starting")).toBeInTheDocument();
   });
 
   it('shows "No activity detected" empty state when the list is empty', async () => {
