@@ -39,6 +39,7 @@ interface DispatchModule {
     fcmSent: number;
     apnsSent: number;
     apnsSandboxFallback: number;
+    invalidTokens: string[];
     errors: string[];
   }>;
 }
@@ -209,6 +210,7 @@ describe.skipIf(!hasBackend)("fcm-notifications webhook & token routing", () => 
       fcmSent: 1,
       apnsSent: 1,
       apnsSandboxFallback: 0,
+      invalidTokens: [],
       errors: [],
     });
 
@@ -267,6 +269,7 @@ describe.skipIf(!hasBackend)("fcm-notifications webhook & token routing", () => 
       fcmSent: 0,
       apnsSent: 1,
       apnsSandboxFallback: 1,
+      invalidTokens: [],
       errors: [],
     });
     expect(urls).toEqual([
@@ -298,6 +301,7 @@ describe.skipIf(!hasBackend)("fcm-notifications webhook & token routing", () => 
 
     expect(summary.apnsSent).toBe(0);
     expect(summary.apnsSandboxFallback).toBe(0);
+    expect(summary.invalidTokens).toEqual([apnsToken]);
     expect(summary.errors).toHaveLength(1);
     expect(urls).toEqual([`https://api.push.apple.com/3/device/${apnsToken}`]);
   });

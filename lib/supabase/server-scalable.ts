@@ -1,42 +1,42 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { supabaseEnv } from "./env";
 
-const { url: defaultUrl, anonKey: defaultAnonKey } = supabaseEnv();
+const CLIENT_OPTIONS = {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+  },
+} as const;
 
 /**
- * Primary Supavisor Pooler (Port 6543, Transaction Mode)
- * Used for live officiating mutations, atomic scoring RPCs, and authenticated state updates.
+ * Creates a per-request Supabase client targeting the Read Replica (if configured)
+ * for public, non-personalized, historical reads, or the Primary URL otherwise.
  */
-export const supabasePrimary = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || defaultUrl,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || defaultAnonKey,
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
+export function getScalableClient(
+  intent: "read_replica" | "primary_read" | "primary_admin" = "read_replica"
+): SupabaseClient {
+  const { url: defaultUrl, anonKey: defaultAnonKey } = supabaseEnv();
+
+  if (intent === "primary_admin") {
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!serviceRoleKey) {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for primary_admin intent");
+    }
+    return createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL || defaultUrl,
+      serviceRoleKey,
+      CLIENT_OPTIONS
+    );
   }
-);
 
-/**
- * Read Replica Pooler (Port 5432 / Direct or Replica endpoint)
- * Used for historical match archives, completed tournament standings, public search, and spectator feeds.
- * Falls back transparently to the primary URL if SUPABASE_READ_REPLICA_URL is not defined.
- */
-export const supabaseReplica = createClient(
-  process.env.SUPABASE_READ_REPLICA_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || defaultUrl,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || defaultAnonKey,
-  {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  }
-);
+  const targetUrl =
+    intent === "read_replica"
+      ? process.env.SUPABASE_READ_REPLICA_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || defaultUrl
+      : process.env.NEXT_PUBLIC_SUPABASE_URL || defaultUrl;
 
-/**
- * Dynamic helper to choose between Primary and Read Replica based on read/write intent.
- */
-export function getScalableClient(intent: "read_replica" | "primary_write" = "read_replica") {
-  return intent === "primary_write" ? supabasePrimary : supabaseReplica;
+  return createClient(
+    targetUrl,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || defaultAnonKey,
+    CLIENT_OPTIONS
+  );
 }
