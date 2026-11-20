@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, it, expect, vi, beforeAll } from "vitest";
+import { SUPPORTED_SPORT_VALUES, type SportValue } from "@/lib/sports";
 
 const backendDispatchPath = path.resolve(
   __dirname,
@@ -256,5 +257,85 @@ describe.skipIf(!hasBackend)("fcm-notifications webhook & token routing", () => 
     expect(summary.apnsSandboxFallback).toBe(0);
     expect(summary.errors).toHaveLength(1);
     expect(urls).toEqual([`https://api.push.apple.com/3/device/${apnsToken}`]);
+  });
+
+  it("enforces notification UPDATE dispatch and SQL extraction coverage for every SUPPORTED_SPORTS entry", () => {
+    const sportPayloads: Record<
+      SportValue,
+      { oldScores: Record<string, unknown>; newScores: Record<string, unknown>; body: string }
+    > = {
+      Basketball: {
+        oldScores: { current: { home: 40, away: 38 } },
+        newScores: { current: { home: 43, away: 38 } },
+        body: "Team A 43 - 38 Team B",
+      },
+      "Beach Volleyball": {
+        oldScores: { current: { home: 12, away: 10 }, set_scores: [] },
+        newScores: { current: { home: 13, away: 10 }, set_scores: [] },
+        body: "Team A 13 - 10 Team B",
+      },
+      Football: {
+        oldScores: { current: { home: 1, away: 0 } },
+        newScores: { current: { home: 1, away: 1 } },
+        body: "Team A 1 - 1 Team B",
+      },
+      Padel: {
+        oldScores: { padel: { sets: [{ home: 6, away: 4 }] }, current: { home: 30, away: 15 } },
+        newScores: { padel: { sets: [{ home: 6, away: 4 }] }, current: { home: 40, away: 15 } },
+        body: "Team A vs Team B · Sets: 6-4 (40-15)",
+      },
+      Tennis: {
+        oldScores: { tennis: { sets: [{ home: 6, away: 3 }] }, current: { home: 15, away: 0 } },
+        newScores: { tennis: { sets: [{ home: 6, away: 3 }] }, current: { home: 30, away: 0 } },
+        body: "Team A vs Team B · Sets: 6-3 (30-0)",
+      },
+      Volleyball: {
+        oldScores: { set_scores: [{ home: 25, away: 20 }], current: { home: 5, away: 4 } },
+        newScores: { set_scores: [{ home: 25, away: 20 }], current: { home: 6, away: 4 } },
+        body: "Team A vs Team B · Sets: 25-20 (6-4)",
+      },
+    };
+
+    for (const sport of SUPPORTED_SPORT_VALUES) {
+      const fixture = sportPayloads[sport];
+      expect(fixture, `Missing notification score contract for sport: ${sport}`).toBeDefined();
+      expect(fixture.body.length).toBeGreaterThan(0);
+
+      expect(
+        mod.shouldDispatchWebhook({
+          type: "UPDATE",
+          table: "notifications",
+          record: {
+            id: `notif-${sport}`,
+            user_id: "user-1",
+            title: `Score for Team A!`,
+            body: fixture.body,
+            data: { match_id: `m-${sport}`, sport_type: sport, scores: fixture.newScores },
+            read_at: null,
+          },
+          old_record: {
+            id: `notif-${sport}`,
+            user_id: "user-1",
+            title: `Score Update: Team A vs Team B`,
+            body: "previous",
+            data: { match_id: `m-${sport}`, sport_type: sport, scores: fixture.oldScores },
+            read_at: null,
+          },
+        })
+      ).toBe(true);
+    }
+
+    const migrationSql = fs.readFileSync(
+      path.resolve(
+        __dirname,
+        "../../../scoreboard-backend/supabase/migrations/20261120000000_improve_match_notification_text.sql"
+      ),
+      "utf8"
+    );
+    expect(migrationSql).toContain("NEW.scores->'current'->>'home'");
+    expect(migrationSql).toContain("NEW.scores->'tennis' ? 'sets'");
+    expect(migrationSql).toContain("NEW.scores->'padel' ? 'sets'");
+    expect(migrationSql).toContain("NEW.scores ? 'set_scores'");
+    expect(migrationSql).toContain("jsonb_array_length(");
   });
 });
