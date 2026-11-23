@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
 import MatchCard from "@/components/MatchCard";
+import { MatchListSkeleton } from "@/components/Skeleton";
 import MatchListItem from "@/components/MatchListItem";
 import GroupedMatchList from "@/components/GroupedMatchList";
 import SportIcon from "@/components/SportIcon";
@@ -263,12 +264,7 @@ function UserProfileContent({
       </button>
 
       {loading ? (
-        <div className="py-20 text-center">
-          <div className="inline-block w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-3 text-text-muted text-xs">
-            {locale === "pt" ? `A carregar perfil de @${rawParam}...` : `Loading @${rawParam}...`}
-          </p>
-        </div>
+        <MatchListSkeleton />
       ) : notFound ? (
         <div className="bg-surface-container rounded-xl p-12 text-center border border-outline-variant max-w-xl mx-auto">
           <div className="w-12 h-12 rounded-xl bg-surface-container-high border border-outline-variant flex items-center justify-center mx-auto mb-4 text-text-muted">

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 import SelectField from "@/components/SelectField";
+import { TournamentListSkeleton } from "@/components/Skeleton";
 import { SUPPORTED_SPORTS } from "@/lib/sports";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
 import SportIcon from "@/components/SportIcon";
@@ -273,10 +274,7 @@ function MyTournamentsContent() {
         />
 
       {loading ? (
-        <div className="py-20 text-center">
-          <div className="inline-block w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-3 text-text-muted text-xs">Loading tournaments...</p>
-        </div>
+        <TournamentListSkeleton />
       ) : filteredTournaments.length === 0 ? (
         <div 
           onClick={handleOpenCreate}

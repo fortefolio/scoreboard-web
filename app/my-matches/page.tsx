@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@/components/AuthProvider";
 import MatchCard from "@/components/MatchCard";
+import { MatchListSkeleton } from "@/components/Skeleton";
 import MatchListItem from "@/components/MatchListItem";
 import GroupedMatchList from "@/components/GroupedMatchList";
 import DataTable from "@/components/DataTable";
@@ -260,10 +261,7 @@ function MyMatchesContent() {
         />
 
       {loading ? (
-        <div className="py-20 text-center">
-          <div className="inline-block w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-3 text-text-muted text-xs">Loading matches...</p>
-        </div>
+        <MatchListSkeleton />
       ) : filteredMatches.length === 0 ? (
         <div className="border border-dashed border-outline-variant rounded-2xl p-16 flex flex-col items-center justify-center text-center bg-surface-container">
           <span className="material-symbols-outlined text-4xl mb-3 text-text-muted opacity-40">sports_tennis</span>

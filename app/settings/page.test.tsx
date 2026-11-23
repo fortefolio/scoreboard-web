@@ -131,6 +131,60 @@ describe("SettingsPage Component", () => {
     });
   });
 
+  it("switches to Notifications tab and renders toggle switches for global and sport-specific alerts", async () => {
+    render(<SettingsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("settings-tab-notifications")).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByTestId("settings-tab-notifications"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("web-notification-settings")).toBeInTheDocument();
+    });
+
+    const allNotifSwitch = screen.getByTestId("web-notif-switch-all");
+    const umpireSwitch = screen.getByTestId("web-notif-switch-umpire");
+    const tennisAllSwitch = screen.getByTestId("web-notif-switch-tennis-all");
+    const tennisSetsSwitch = screen.getByTestId("web-notif-switch-tennis-sets");
+    const tennisGamesSwitch = screen.getByTestId("web-notif-switch-tennis-games");
+    const volleyAllSwitch = screen.getByTestId("web-notif-switch-volley-all");
+    const footballAllSwitch = screen.getByTestId("web-notif-switch-football-all");
+    const footballGoalsSwitch = screen.getByTestId("web-notif-switch-football-goals");
+    const footballCardsSwitch = screen.getByTestId("web-notif-switch-football-cards");
+    const basketballAllSwitch = screen.getByTestId("web-notif-switch-basketball-all");
+    const basketballPointsSwitch = screen.getByTestId("web-notif-switch-basketball-points");
+    const basketballQuartersSwitch = screen.getByTestId("web-notif-switch-basketball-quarters");
+
+    expect(allNotifSwitch).toHaveAttribute("aria-checked", "true");
+    expect(umpireSwitch).toHaveAttribute("role", "switch");
+    expect(umpireSwitch).toHaveAttribute("aria-checked", "true");
+    expect(tennisAllSwitch).toHaveAttribute("aria-checked", "true");
+    expect(tennisSetsSwitch).toHaveAttribute("aria-checked", "true");
+    expect(tennisGamesSwitch).toHaveAttribute("aria-checked", "false");
+    expect(volleyAllSwitch).toHaveAttribute("aria-checked", "true");
+    expect(footballAllSwitch).toHaveAttribute("aria-checked", "true");
+    expect(footballGoalsSwitch).toHaveAttribute("aria-checked", "true");
+    expect(footballCardsSwitch).toHaveAttribute("aria-checked", "true");
+    expect(basketballAllSwitch).toHaveAttribute("aria-checked", "true");
+    expect(basketballPointsSwitch).toHaveAttribute("aria-checked", "true");
+    expect(basketballQuartersSwitch).toHaveAttribute("aria-checked", "true");
+
+    fireEvent.click(umpireSwitch);
+    expect(umpireSwitch).toHaveAttribute("aria-checked", "false");
+    fireEvent.click(footballCardsSwitch);
+    expect(footballCardsSwitch).toHaveAttribute("aria-checked", "false");
+    fireEvent.click(basketballQuartersSwitch);
+    expect(basketballQuartersSwitch).toHaveAttribute("aria-checked", "false");
+    fireEvent.click(tennisAllSwitch);
+    expect(tennisAllSwitch).toHaveAttribute("aria-checked", "false");
+    fireEvent.click(basketballAllSwitch);
+    expect(basketballAllSwitch).toHaveAttribute("aria-checked", "false");
+    fireEvent.click(allNotifSwitch);
+    expect(allNotifSwitch).toHaveAttribute("aria-checked", "false");
+  });
+
   it("switches to Security tab and allows GDPR data export trigger", async () => {
     render(<SettingsPage />);
 

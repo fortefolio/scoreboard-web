@@ -212,8 +212,11 @@ describe("Security Regression Test Suite (Audit Run-2 Remediation)", () => {
       expect(source).not.toContain("username.ilike.%${query.trim()}%");
     });
 
-    it("tournament/[id]/teams.tsx selects explicit public columns instead of wildcard *", () => {
-      const source = fs.readFileSync(path.join(mobileRoot, "app/tournament/[id]/teams.tsx"), "utf8");
+    it("TournamentRosterSection.tsx selects explicit public columns instead of wildcard *", () => {
+      const source = fs.readFileSync(
+        path.join(mobileRoot, "components/tournament/TournamentRosterSection.tsx"),
+        "utf8"
+      );
 
       expect(source).toContain('.select("id, tournament_id, name, seed, created_at")');
       expect(source).not.toContain('.from("tournament_participants").select("*")');

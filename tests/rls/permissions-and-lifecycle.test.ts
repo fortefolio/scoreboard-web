@@ -183,11 +183,12 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)(
       // Pro organizer starts match
       await proClient.from("matches").update({ status: "ongoing" }).eq("id", pubMatch!.id);
 
-      const { data: notifs } = await freeClient
+      const { data: notifs, error: notifErr } = await freeClient
         .from("notifications")
-        .select("id, entity_id")
+        .select("id, data")
         .eq("user_id", freeUserId)
-        .eq("entity_id", pubMatch!.id);
+        .eq("data->>match_id", pubMatch!.id);
+      expect(notifErr).toBeNull();
       expect(Array.isArray(notifs)).toBe(true);
     });
   }

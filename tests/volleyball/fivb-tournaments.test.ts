@@ -340,7 +340,7 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("FIVB Beach Volleyball &
           name: "Paris 2024 Olympic Beach Volleyball — Men's Knockout",
           sport_type: "Beach Volleyball",
           organizer_id: organizerId,
-          status: "ongoing",
+          status: "pending",
           visibility: "public",
           settings: {
             max_teams: 8,
@@ -371,6 +371,7 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("FIVB Beach Volleyball &
         .select();
       expect(pErr).toBeNull();
       expect(participants).toHaveLength(8);
+      await supabaseAdmin.from("tournaments").update({ status: "ongoing" }).eq("id", tournament.id);
 
       const pByName = Object.fromEntries(participants!.map((p) => [p.name, p]));
 
@@ -605,7 +606,7 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("FIVB Beach Volleyball &
           name: "FIVB Volleyball Nations League (VNL) Finals",
           sport_type: "Volleyball",
           organizer_id: organizerId,
-          status: "ongoing",
+          status: "pending",
           visibility: "public",
           settings: {
             max_teams: 8,
@@ -634,6 +635,7 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("FIVB Beach Volleyball &
         .insert(teams.map((name) => ({ tournament_id: tournament.id, name })))
         .select();
       const pByName = Object.fromEntries(participants!.map((p) => [p.name, p]));
+      await supabaseAdmin.from("tournaments").update({ status: "ongoing" }).eq("id", tournament.id);
 
       const bracketRows = [
         // Quarterfinals
@@ -860,7 +862,7 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("FIVB Beach Volleyball &
           name: "FIVB Beach Volleyball World Championships — Women's Finals",
           sport_type: "Beach Volleyball",
           organizer_id: organizerId,
-          status: "ongoing",
+          status: "pending",
           visibility: "public",
           settings: {
             max_teams: 8,
@@ -900,6 +902,7 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("FIVB Beach Volleyball &
         )
         .select();
       const pByName = Object.fromEntries(participants!.map((p) => [p.name, p]));
+      await supabaseAdmin.from("tournaments").update({ status: "ongoing" }).eq("id", tournament.id);
 
       // Create Pool A (6 matches) + Pool B (6 matches) + Knockout SF (2 matches) + Final (1 match)
       const poolAMatchSpecs = [

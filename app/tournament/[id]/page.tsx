@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/components/AuthProvider";
 import { toast } from "sonner";
 import GroupStandingsView from "@/components/GroupStandingsView";
+import { DetailPageSkeleton } from "@/components/Skeleton";
 import GroupMatchesView from "@/components/GroupMatchesView";
 import TournamentBracket from "@/components/TournamentBracket";
 import ConfirmationModal from "@/components/ConfirmationModal";
@@ -718,12 +719,7 @@ function TournamentContent() {
   if (!tournamentId) return null;
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-4 border-text-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-6 text-on-surface-variant font-label tracking-widest uppercase text-xs">Loading Tournament Details...</p>
-      </div>
-    );
+    return <DetailPageSkeleton />;
   }
 
   const handleShareTournament = async () => {

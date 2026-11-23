@@ -7,6 +7,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useNotifications } from "@/lib/hooks/useNotifications";
 import { formatVersusTitle } from "@/lib/utils/formatName";
 import { useTranslation } from "@/lib/i18n/LanguageContext";
+import { NotificationListSkeleton } from "@/components/Skeleton";
 
 const getRelativeTime = (dateString: string) => {
   const now = new Date();
@@ -308,12 +309,7 @@ export default function NotificationsPage() {
               </p>
             </div>
           ) : (
-            <div className="py-20 text-center">
-              <div className="w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-              <p className="text-text-muted text-xs">
-                {t("notifications.syncing")}
-              </p>
-            </div>
+            <NotificationListSkeleton />
           )}
         </div>
       </main>

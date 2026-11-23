@@ -157,6 +157,6 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Atomic & Idempotent Sco
     });
 
     expect(error).toBeDefined();
-    expect(error!.message).toContain("Unauthorized to score this match");
+    expect(error!.message).toContain("UNAUTHORIZED_SCORER");
   });
 });

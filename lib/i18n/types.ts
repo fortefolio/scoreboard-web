@@ -77,6 +77,7 @@ export interface Translations {
     cancelled: string;
     live: string;
     final: string;
+    finished: string;
   };
   home: {
     liveBadge: string;
@@ -188,6 +189,7 @@ export interface Translations {
     startsIn: string;
     soon: string;
     versus: string;
+    singleMatch: string;
     options: string;
     shareLink: string;
     linkCopied: string;
@@ -390,6 +392,48 @@ export interface Translations {
       soundDesc: string;
       savePreferences: string;
       saved: string;
+    };
+    notifications: {
+      title: string;
+      allEnabled: string;
+      allEnabledDesc: string;
+      generalTitle: string;
+      umpireInvited: string;
+      umpireInvitedDesc: string;
+      matchStarted: string;
+      matchStartedDesc: string;
+      matchEnded: string;
+      matchEndedDesc: string;
+      sportSpecificTitle: string;
+      sportSpecificAll: string;
+      sportSpecificAllDesc: string;
+      tennisPadel: string;
+      tennisPadelHint: string;
+      tennisPadelSets: string;
+      tennisPadelSetsDesc: string;
+      tennisPadelGames: string;
+      tennisPadelGamesDesc: string;
+      volleyball: string;
+      volleyballSets: string;
+      volleyballSetsDesc: string;
+      volleyballPoints: string;
+      volleyballPointsDesc: string;
+      granularityNone: string;
+      granularitySet: string;
+      granularityGame: string;
+      granularityPoint: string;
+      football: string;
+      footballGoals: string;
+      footballGoalsDesc: string;
+      footballCards: string;
+      footballCardsDesc: string;
+      basketball: string;
+      basketballPoints: string;
+      basketballPointsDesc: string;
+      basketballQuarters: string;
+      basketballQuartersDesc: string;
+      basketballUpdates: string;
+      basketballUpdatesDesc: string;
     };
     security: {
       title: string;

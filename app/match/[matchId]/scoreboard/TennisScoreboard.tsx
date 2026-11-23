@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
 import {
@@ -14,6 +14,12 @@ import {
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import { recordMatchEventAtomic } from "@/lib/scoring/atomicScoring";
 import { extractSetsData } from "@/lib/scoring/sets";
+import {
+  calculateTennisScore,
+  createInitialTennisScores,
+  TennisRules,
+  TennisScoresState,
+} from "@/lib/scoring/tennis-engine";
 import { useTranslation, getSportTranslation } from "@/lib/i18n";
 
 const TENNIS_POINTS = ["0", "15", "30", "40", "AD"];
@@ -31,7 +37,8 @@ export default function TennisScoreboard({
   const isPadel = matchData?.sport_type === "Padel";
   const defaultMaxSets = rules?.max_sets || 3;
   const setsToWin = Math.ceil(defaultMaxSets / 2);
-  const isGoldenPoint = isPadel || rules?.golden_point || false; // Padel traditionally plays golden point at 40-40
+  const isGoldenPoint = isPadel || rules?.golden_point || rules?.no_ad || false; // Padel traditionally plays golden point at 40-40
+  const effectiveRules: TennisRules = { ...rules, no_ad: isGoldenPoint };
 
   const getInitialSets = (data: any) => {
     const raw = extractSetsData(data?.scores);
@@ -41,6 +48,27 @@ export default function TennisScoreboard({
           away: s.team2 ?? s.away ?? 0,
         }))
       : [];
+  };
+
+  const normalizeScoresState = (raw: any): TennisScoresState => {
+    const base = createInitialTennisScores((raw?.serving_index ?? 0) as 0 | 1);
+    const tData = raw?.tennis || {};
+    const g: [number, number] = tData.games || [0, 0];
+    return {
+      ...base,
+      ...(raw || {}),
+      serving_index: (raw?.serving_index ?? 0) as 0 | 1,
+      match_won: Boolean(raw?.match_won),
+      tennis: {
+        ...base.tennis,
+        ...tData,
+        points: tData.points || [0, 0],
+        games: g,
+        sets: tData.sets || [],
+        current_set: tData.current_set ?? (tData.sets?.length || 0) + 1,
+        is_tiebreak: Boolean(tData.is_tiebreak ?? (g[0] === 6 && g[1] === 6 && rules?.set_type !== "advantage")),
+      },
+    };
   };
 
   // State
@@ -56,9 +84,19 @@ export default function TennisScoreboard({
   const [serverIdx, setServerIdx] = useState<number | null>(
     matchData?.scores?.serving_index ?? null
   );
+  const [isTiebreakState, setIsTiebreakState] = useState<boolean>(
+    Boolean(
+      matchData?.scores?.tennis?.is_tiebreak ??
+        ((matchData?.scores?.tennis?.games?.[0] ?? 0) === 6 &&
+          (matchData?.scores?.tennis?.games?.[1] ?? 0) === 6 &&
+          rules?.set_type !== "advantage")
+    )
+  );
   const [isTossing, setIsTossing] = useState(false);
   const [aces, setAces] = useState({ home: 0, away: 0 });
   const [doubleFaults, setDoubleFaults] = useState({ home: 0, away: 0 });
+  const scoresRef = useRef<TennisScoresState>(normalizeScoresState(matchData?.scores));
+  const serverIdxRef = useRef<number | null>(matchData?.scores?.serving_index ?? null);
 
   const teamHome = matchData?.participants?.[0]?.name || "Jogador 1";
   const teamAway = matchData?.participants?.[1]?.name || "Jogador 2";
@@ -66,10 +104,14 @@ export default function TennisScoreboard({
   // Sync state when matchData updates via real-time
   useEffect(() => {
     if (matchData?.scores) {
-      setPoints(matchData.scores.tennis?.points || [0, 0]);
-      setGames(matchData.scores.tennis?.games || [0, 0]);
+      const normalized = normalizeScoresState(matchData.scores);
+      scoresRef.current = normalized;
+      serverIdxRef.current = matchData.scores.serving_index ?? null;
+      setPoints(normalized.tennis.points);
+      setGames(normalized.tennis.games);
       setSetHistory(getInitialSets(matchData));
       setServerIdx(matchData.scores.serving_index ?? null);
+      setIsTiebreakState(normalized.tennis.is_tiebreak);
 
       if (matchData.scores.tennis?.stats) {
         setAces(matchData.scores.tennis.stats.aces || { home: 0, away: 0 });
@@ -86,7 +128,7 @@ export default function TennisScoreboard({
     else if (s.away > s.home) awaySetsWon++;
   });
 
-  const isTiebreak = games[0] === 6 && games[1] === 6;
+  const isTiebreak = isTiebreakState;
 
   // Format tennis point for display
   const formatPoint = (idx: number) => {
@@ -111,6 +153,11 @@ export default function TennisScoreboard({
 
   const handleToss = async (selectedIdx: number) => {
     if (!canEdit) return;
+    serverIdxRef.current = selectedIdx;
+    scoresRef.current = {
+      ...scoresRef.current,
+      serving_index: selectedIdx as 0 | 1,
+    };
     setServerIdx(selectedIdx);
     setIsTossing(true);
 
@@ -136,20 +183,37 @@ export default function TennisScoreboard({
 
   const handlePoint = async (winnerIdx: number) => {
     if (!canEdit) return;
-    if (serverIdx === null) {
+    if (serverIdxRef.current === null && serverIdx === null) {
       toast.error("Por favor seleciona o primeiro servidor!");
       return;
     }
 
     const side = winnerIdx === 0 ? "home" : "away";
 
-    // Optimistic UI update
-    const newPoints: [number, number] = [...points];
-    newPoints[winnerIdx]++;
-    setPoints(newPoints);
+    const prevState = scoresRef.current;
+    const nextScores = calculateTennisScore(prevState, winnerIdx as 0 | 1, effectiveRules);
+    const existingStats = (prevState.tennis as any)?.stats;
+    if (existingStats) {
+      (nextScores.tennis as any).stats = existingStats;
+    }
+
+    scoresRef.current = nextScores;
+    serverIdxRef.current = nextScores.serving_index;
+    setPoints(nextScores.tennis.points);
+    setGames(nextScores.tennis.games);
+    setSetHistory(
+      nextScores.tennis.sets.map((s) => ({
+        home: s.team1 ?? s.home ?? 0,
+        away: s.team2 ?? s.away ?? 0,
+      }))
+    );
+    setServerIdx(nextScores.serving_index);
+    setIsTiebreakState(nextScores.tennis.is_tiebreak);
 
     const { error } = await recordMatchEventAtomic(supabase, {
       matchId: matchData.id,
+      newScores: nextScores,
+      newStatus: nextScores.match_won ? "completed" : undefined,
       eventData: {
         type: "point_won",
         side,
@@ -205,21 +269,20 @@ export default function TennisScoreboard({
 
   const handleCorrectPoint = async (idx: number) => {
     if (!canEdit) return;
-    if (points[idx] <= 0) return;
+    const currentPoints = scoresRef.current.tennis.points;
+    if (currentPoints[idx] <= 0) return;
 
-    const newPoints: [number, number] = [...points];
+    const newPoints: [number, number] = [...currentPoints];
     newPoints[idx] = Math.max(0, newPoints[idx] - 1);
-    setPoints(newPoints);
-
-    // Update matches scores
-    const currentScores = matchData?.scores || {};
-    const updatedScores = {
-      ...currentScores,
+    const updatedScores: TennisScoresState = {
+      ...scoresRef.current,
       tennis: {
-        ...(currentScores.tennis || {}),
+        ...scoresRef.current.tennis,
         points: newPoints,
       },
     };
+    scoresRef.current = updatedScores;
+    setPoints(newPoints);
 
     const { error } = await recordMatchEventAtomic(supabase, {
       matchId: matchData.id,
@@ -240,7 +303,13 @@ export default function TennisScoreboard({
 
   const toggleServer = async () => {
     if (!canEdit) return;
-    const newIdx = serverIdx === 0 ? 1 : 0;
+    const newIdx = (serverIdxRef.current ?? serverIdx) === 0 ? 1 : 0;
+    serverIdxRef.current = newIdx;
+    const updated: TennisScoresState = {
+      ...scoresRef.current,
+      serving_index: newIdx as 0 | 1,
+    };
+    scoresRef.current = updated;
     setServerIdx(newIdx);
 
     const currentScores = matchData?.scores || {};

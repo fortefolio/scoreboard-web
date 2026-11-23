@@ -8,6 +8,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import MatchCard from "@/components/MatchCard";
+import { MatchListSkeleton } from "@/components/Skeleton";
 import SportIcon from "@/components/SportIcon";
 import SportFilterBar from "@/components/SportFilterBar";
 import MatchListItem from "@/components/MatchListItem";
@@ -913,11 +914,8 @@ function HomeContent() {
 
       {/* Loading Indicator */}
       {loading ? (
-        <div className="py-24 text-center">
-          <div className="inline-block w-8 h-8 border-2 border-text-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-text-muted text-xs font-medium">
-            {t("common.loading")}
-          </p>
+        <div className="py-6">
+          <MatchListSkeleton />
         </div>
       ) : (
         <>

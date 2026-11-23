@@ -227,4 +227,41 @@ describe("TennisScoreboard UI Interaction & Real Stats Tests", () => {
       );
     });
   });
+
+  it("wins the game and resets points when a player at AD scores", async () => {
+    const user = userEvent.setup();
+    const adMatch = {
+      ...mockMatchData,
+      scores: {
+        serving_index: 0,
+        tennis: {
+          points: [4, 3], // AD - 40
+          games: [0, 0],
+          sets: [],
+        },
+      },
+    };
+
+    render(<TennisScoreboard matchData={adMatch} canEdit={true} />);
+
+    expect(screen.getAllByText("AD").length).toBeGreaterThan(0);
+
+    const pointButtons = screen.getAllByRole("button", { name: /^POINT$/i });
+    await user.click(pointButtons[0]);
+
+    await waitFor(() => {
+      expect(screen.queryByText("AD")).toBeNull();
+      expect(updateMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          scores: expect.objectContaining({
+            serving_index: 1,
+            tennis: expect.objectContaining({
+              points: [0, 0],
+              games: [1, 0],
+            }),
+          }),
+        })
+      );
+    });
+  });
 });
