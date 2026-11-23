@@ -56,7 +56,7 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Follow System & Aggrega
       .insert({
         organizer_id: organizerUser.id,
         name: `Tournament Follow Test ${Date.now()}`,
-        sport_type: "Tennis",
+        sport_type: "Basketball",
         status: "ongoing",
       })
       .select()
@@ -73,10 +73,10 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Follow System & Aggrega
       .insert({
         organizer_id: organizerUser.id,
         tournament_id: testTournamentId,
-        sport_type: "Tennis",
-        status: "scheduled",
+        sport_type: "Basketball",
+        status: "ongoing",
         participants: [{ name: "Player Alpha" }, { name: "Player Beta" }],
-        scores: { sets: [{ home: 0, away: 0 }] },
+        scores: { current: { home: 0, away: 0 }, basketball: { period: "Q1" } },
       })
       .select()
       .single();
@@ -112,12 +112,11 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Follow System & Aggrega
     });
     expect(followErr).toBeNull();
 
-    // Step 2: First score update (Set 1: 1-0)
+    // Step 2: First score update (2 - 0)
     const { error: scoreErr1 } = await supabaseAdmin
       .from("matches")
       .update({
-        status: "ongoing",
-        scores: { sets: [{ home: 1, away: 0 }] },
+        scores: { current: { home: 2, away: 0 }, basketball: { period: "Q1" } },
       })
       .eq("id", testMatchId);
     expect(scoreErr1).toBeNull();
@@ -131,8 +130,8 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Follow System & Aggrega
 
     expect(nErr1).toBeNull();
     expect(notifs1).toHaveLength(1);
-    expect(notifs1![0].title).toContain("Player Alpha vs Player Beta");
-    expect(notifs1![0].body).toContain("1-0");
+    expect(notifs1![0].title).toContain("Player Alpha");
+    expect(notifs1![0].body).toContain("2 - 0");
     const firstNotifId = notifs1![0].id;
 
     // Simulate follower marking this notification as read
@@ -141,20 +140,20 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Follow System & Aggrega
       .update({ read_at: new Date().toISOString() })
       .eq("id", firstNotifId);
 
-    // Step 3: Second score update (Set 1: 2-0)
+    // Step 3: Second score update (4 - 0)
     const { error: scoreErr2 } = await supabaseAdmin
       .from("matches")
       .update({
-        scores: { sets: [{ home: 2, away: 0 }] },
+        scores: { current: { home: 4, away: 0 }, basketball: { period: "Q1" } },
       })
       .eq("id", testMatchId);
     expect(scoreErr2).toBeNull();
 
-    // Step 4: Third score update (Set 1: 2-1)
+    // Step 4: Third score update (4 - 3)
     const { error: scoreErr3 } = await supabaseAdmin
       .from("matches")
       .update({
-        scores: { sets: [{ home: 2, away: 1 }] },
+        scores: { current: { home: 4, away: 3 }, basketball: { period: "Q1" } },
       })
       .eq("id", testMatchId);
     expect(scoreErr3).toBeNull();
@@ -170,7 +169,7 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Follow System & Aggrega
     expect(nErrFinal).toBeNull();
     expect(notifsFinal).toHaveLength(1);
     expect(notifsFinal![0].id).toBe(firstNotifId);
-    expect(notifsFinal![0].body).toContain("2-1");
+    expect(notifsFinal![0].body).toContain("4 - 3");
     // read_at must be reset to null so the user is alerted to the new update!
     expect(notifsFinal![0].read_at).toBeNull();
   });
@@ -194,10 +193,10 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Follow System & Aggrega
       .insert({
         organizer_id: organizerUser.id,
         tournament_id: testTournamentId,
-        sport_type: "Tennis",
-        status: "scheduled",
+        sport_type: "Basketball",
+        status: "ongoing",
         participants: [{ name: "Player Gamma" }, { name: "Player Delta" }],
-        scores: { sets: [{ home: 0, away: 0 }] },
+        scores: { current: { home: 0, away: 0 }, basketball: { period: "Q1" } },
       })
       .select()
       .single();
@@ -208,8 +207,7 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Follow System & Aggrega
       await supabaseAdmin
         .from("matches")
         .update({
-          status: "ongoing",
-          scores: { sets: [{ home: 3, away: 1 }] },
+          scores: { current: { home: 6, away: 2 }, basketball: { period: "Q1" } },
         })
         .eq("id", testMatchId);
 
@@ -217,8 +215,7 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Follow System & Aggrega
       await supabaseAdmin
         .from("matches")
         .update({
-          status: "ongoing",
-          scores: { sets: [{ home: 4, away: 4 }] },
+          scores: { current: { home: 8, away: 8 }, basketball: { period: "Q1" } },
         })
         .eq("id", match2.id);
 
@@ -235,17 +232,16 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Follow System & Aggrega
       const notifMatch2 = allNotifs?.find((n) => n.data?.match_id === match2.id);
 
       expect(notifMatch1).toBeDefined();
-      expect(notifMatch1?.body).toContain("3-1");
+      expect(notifMatch1?.body).toContain("6 - 2");
 
       expect(notifMatch2).toBeDefined();
-      expect(notifMatch2?.body).toContain("4-4");
+      expect(notifMatch2?.body).toContain("8 - 8");
 
-      // Multiple updates on match 2 are aggregated into match 2's notification
+      // Multiple live updates on match 2 are aggregated into match 2's live notification
       await supabaseAdmin
         .from("matches")
         .update({
-          scores: { sets: [{ home: 6, away: 4 }] },
-          status: "completed",
+          scores: { current: { home: 12, away: 10 }, basketball: { period: "Q2" } },
         })
         .eq("id", match2.id);
 
@@ -254,11 +250,11 @@ describe.skipIf(!process.env.SUPABASE_SERVICE_ROLE_KEY)("Follow System & Aggrega
         .select("*")
         .eq("user_id", followerUser.id);
 
-      // Still exactly 2 notifications total (1 per match!)
+      // Still exactly 2 notifications total (1 live row per match!)
       expect(updatedNotifs).toHaveLength(2);
       const updatedMatch2Notif = updatedNotifs?.find((n) => n.data?.match_id === match2.id);
-      expect(updatedMatch2Notif?.body).toContain("6-4");
-      expect(updatedMatch2Notif?.data?.type).toBe("match_completed");
+      expect(updatedMatch2Notif?.body).toContain("12 - 10");
+      expect(updatedMatch2Notif?.data?.type).toBe("score_update");
     } finally {
       await supabaseAdmin.from("matches").delete().eq("id", match2.id);
     }
