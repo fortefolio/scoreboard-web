@@ -109,6 +109,18 @@ describe("FootballScoreboard UI Interaction & Real Stats Tests", () => {
 
     await waitFor(() => {
       expect(updateMock).toHaveBeenCalled();
+      expect(insertMock).toHaveBeenCalledWith(
+        "match_events",
+        expect.arrayContaining([
+          expect.objectContaining({
+            match_id: "match-football-1",
+            event_data: expect.objectContaining({
+              type: "correct_goal",
+              side: "home",
+            }),
+          }),
+        ])
+      );
     });
   });
 
