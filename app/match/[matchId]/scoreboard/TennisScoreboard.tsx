@@ -213,7 +213,7 @@ export default function TennisScoreboard({
     const { error } = await recordMatchEventAtomic(supabase, {
       matchId: matchData.id,
       newScores: nextScores,
-      newStatus: nextScores.match_won ? "completed" : undefined,
+      newStatus: nextScores.match_won ? "completed" : "ongoing",
       eventData: {
         type: "point_won",
         side,
