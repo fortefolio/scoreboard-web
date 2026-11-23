@@ -43,7 +43,7 @@
     "@vitejs/plugin-react": "^4.7.0",
     "@vitest/ui": "^4.1.12",
     "babel-plugin-react-compiler": "^1.0.0",
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-next": "^16.4.6",
     "fast-check": "^4.8.0",
     "happy-dom": "^21.0.4",
