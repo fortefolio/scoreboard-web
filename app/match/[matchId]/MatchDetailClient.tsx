@@ -1006,6 +1006,36 @@ export default function MatchDetailClient() {
           </div>
         </div>
 
+        <div className="mb-6">
+          {canStart && !isCompleted ? (
+            <button
+              onClick={async () => {
+                const { error } = await activeSupabase
+                  .from("matches")
+                  .update({ status: "ongoing" })
+                  .eq("id", matchIdStr);
+                if (error) {
+                  toast.error("Failed to start match: " + error.message);
+                } else {
+                  router.push(`/match/${matchIdStr}/scoreboard`);
+                }
+              }}
+              className="w-full py-3.5 rounded-xl bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[18px]">play_circle</span>
+              {match.status === "scheduled" ? t("match.startScoreboard") : t("match.openScoreboard")}
+            </button>
+          ) : isCompleted ? (
+            <div className="w-full py-3 rounded-xl bg-surface-container border border-outline-variant text-text-muted text-center text-xs font-medium">
+              {t("match.matchCompleted")}
+            </div>
+          ) : (
+            <div className="w-full py-3 rounded-xl bg-surface-container border border-outline-variant text-text-muted text-center text-xs font-medium px-4">
+              {t("match.waitingUmpireStart")}
+            </div>
+          )}
+        </div>
+
         {/* TAB 1: SCORE PROGRESS */}
         {activeDetailTab === "progress" && (
           <div>
@@ -1021,13 +1051,13 @@ export default function MatchDetailClient() {
           let cumAway = 0;
           const scoringEvents = (matchEvents || [])
             .filter((e: any) =>
-              ["point_scored", "score", "point_won", "goal"].includes(e.event_data?.type)
+              ["point_scored", "score", "point_won", "goal", "correct_score"].includes(e.event_data?.type)
             )
             .map((e: any, idx: number) => {
               const side = e.event_data?.side === "away" || e.event_data?.winner === 1 ? "away" : "home";
-              const points = Number(e.event_data?.points || 1);
-              if (side === "home") cumHome += points;
-              else cumAway += points;
+              const points = e.event_data?.type === "correct_score" ? -1 : Number(e.event_data?.points || 1);
+              if (side === "home") cumHome = Math.max(0, cumHome + points);
+              else cumAway = Math.max(0, cumAway + points);
 
               return {
                 id: e.id || idx,
@@ -1603,9 +1633,21 @@ export default function MatchDetailClient() {
 
         {/* FOOTBALL MATCH EVENTS & BREAKDOWN */}
         {match.sport_type === "Football" && (() => {
-          const footballGoals = (matchEvents || []).filter(
-            (e: any) => e.event_data?.type === "goal"
-          );
+          const footballGoals: any[] = [];
+          for (const e of matchEvents || []) {
+            const tType = e.event_data?.type;
+            if (tType === "goal") {
+              footballGoals.push(e);
+            } else if (tType === "correct_goal" || tType === "goal_reverted") {
+              const revertSide = e.event_data?.side || "home";
+              const lastIdx = footballGoals.findLastIndex(
+                (g: any) => (g.event_data?.side || "home") === revertSide
+              );
+              if (lastIdx !== -1) {
+                footballGoals.splice(lastIdx, 1);
+              }
+            }
+          }
 
           return (
             <div className="bg-surface-container rounded-2xl p-5 border border-outline-variant space-y-5">
@@ -1960,36 +2002,6 @@ export default function MatchDetailClient() {
             )}
           </div>
         )}
-
-        <div className="mt-6">
-          {canStart && !isCompleted ? (
-            <button
-              onClick={async () => {
-                const { error } = await activeSupabase
-                  .from("matches")
-                  .update({ status: "ongoing" })
-                  .eq("id", matchIdStr);
-                if (error) {
-                  toast.error("Failed to start match: " + error.message);
-                } else {
-                  router.push(`/match/${matchIdStr}/scoreboard`);
-                }
-              }}
-              className="w-full py-3.5 rounded-xl bg-text-primary hover:bg-white text-surface-container-lowest font-medium text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-            >
-              <span className="material-symbols-outlined text-[18px]">play_circle</span>
-              {t("match.startScoreboard")}
-            </button>
-          ) : isCompleted ? (
-            <div className="w-full py-3 rounded-xl bg-surface-container border border-outline-variant text-text-muted text-center text-xs font-medium">
-              {t("match.matchCompleted")}
-            </div>
-          ) : (
-            <div className="w-full py-3 rounded-xl bg-surface-container border border-outline-variant text-text-muted text-center text-xs font-medium px-4">
-              {t("match.waitingUmpireStart")}
-            </div>
-          )}
-        </div>
       </div>
 
       <RuleModal

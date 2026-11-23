@@ -75,37 +75,38 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-text-primary font-sans p-4 sm:p-8 pt-20 sm:pt-24">
+    <div className="min-h-screen bg-background text-text-primary font-sans p-4 sm:p-8">
       <main className="w-full max-w-4xl mx-auto">
         {/* Header */}
-        <header className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 mb-6 sm:mb-8 pb-4 border-b border-outline-variant">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-text-primary">
+        <header className="flex flex-row justify-between items-center sm:items-end gap-3 mb-5 sm:mb-7 pb-4 border-b border-outline-variant">
+          <div className="min-w-0">
+            <h1 className="text-xl sm:text-3xl font-semibold tracking-tight text-text-primary">
               {t("notifications.title")}
             </h1>
-            <p className="text-xs sm:text-sm text-text-muted mt-1">
+            <p className="text-xs sm:text-sm text-text-muted mt-0.5 sm:mt-1 truncate">
               {t("notifications.subtitle")}
             </p>
           </div>
 
           {notifications.length > 0 && (
-            <div className="flex items-center gap-2 self-start sm:self-auto">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               {notifications.some((n) => !n.read_at) && (
                 <button
                   type="button"
                   onClick={markAllAsRead}
-                  className="bg-surface-container-high hover:bg-surface-container-highest text-text-primary px-3.5 py-1.5 rounded-lg text-xs font-medium border border-outline-variant transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="bg-surface-container-high hover:bg-surface-container-highest text-text-primary px-2.5 sm:px-3.5 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium border border-outline-variant transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
-                  <span className="material-symbols-outlined text-[15px]">done_all</span>
-                  {t("notifications.markAllAsRead")}
+                  <span className="material-symbols-outlined text-[14px] sm:text-[15px]">done_all</span>
+                  <span className="hidden sm:inline">{t("notifications.markAllAsRead")}</span>
+                  <span className="sm:hidden">{t("notifications.markAsRead")}</span>
                 </button>
               )}
               <button
                 type="button"
                 onClick={deleteAllNotifications}
-                className="bg-transparent hover:bg-error/10 text-text-muted hover:text-error px-3.5 py-1.5 rounded-lg text-xs font-medium border border-outline-variant transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="bg-transparent hover:bg-error/10 text-text-muted hover:text-error px-2.5 sm:px-3.5 py-1.5 rounded-lg text-[11px] sm:text-xs font-medium border border-outline-variant transition-colors flex items-center gap-1.5 cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[15px]">delete_sweep</span>
+                <span className="material-symbols-outlined text-[14px] sm:text-[15px]">delete_sweep</span>
                 {t("notifications.clearAll")}
               </button>
             </div>

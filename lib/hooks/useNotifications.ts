@@ -155,25 +155,19 @@ export function useNotifications() {
               }
               toast.info(`New Notification: ${payload.new.title}`);
             } else if (payload.eventType === 'UPDATE') {
-              setNotifications(prev => 
-                prev.map(n => n.id === payload.new.id ? payload.new : n)
-              );
-              setUnreadCount(prev => {
-                if (payload.old.read_at === null && payload.new.read_at !== null) {
-                  return Math.max(0, prev - 1);
-                }
-                if (payload.old.read_at !== null && payload.new.read_at === null) {
-                  return prev + 1;
-                }
-                return prev;
+              setNotifications(prev => {
+                const exists = prev.some(n => n.id === payload.new.id);
+                const next = exists
+                  ? prev.map(n => n.id === payload.new.id ? payload.new : n)
+                  : [payload.new, ...prev.slice(0, 19)];
+                setUnreadCount(next.filter(n => !n.read_at).length);
+                return next;
               });
             } else if (payload.eventType === 'DELETE') {
               setNotifications(prev => {
-                const deleted = prev.find(n => n.id === payload.old.id);
-                if (deleted && !deleted.read_at) {
-                  setUnreadCount(c => Math.max(0, c - 1));
-                }
-                return prev.filter(n => n.id !== payload.old.id);
+                const next = prev.filter(n => n.id !== payload.old.id);
+                setUnreadCount(next.filter(n => !n.read_at).length);
+                return next;
               });
             }
           }

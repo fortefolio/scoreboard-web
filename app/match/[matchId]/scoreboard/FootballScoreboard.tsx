@@ -143,6 +143,14 @@ export default function FootballScoreboard({
       };
       toast.success(`GOLO! ${side === "home" ? teamHome : teamAway}`);
       await persistFootballState({ goals: newGoals }, eventData);
+    } else if (goals[side] > 0) {
+      const eventData = {
+        type: "correct_goal",
+        side,
+        period,
+        minute: Math.floor(elapsedSeconds / 60) + 1,
+      };
+      await persistFootballState({ goals: newGoals }, eventData);
     } else {
       await persistFootballState({ goals: newGoals });
     }
