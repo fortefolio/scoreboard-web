@@ -24,6 +24,9 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
 
       - name: Run Vitest
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'http://127.0.0.1:54321' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_ACJWlzQHlZjBrEguHvfOxg_3BJgxAaH' }}
         run: npm run test:run
 
       - name: Build production bundle
