@@ -57,7 +57,7 @@ export default function NotificationBell() {
         className="relative p-2 text-text-muted hover:text-text-primary transition-colors focus:outline-none cursor-pointer"
         aria-label="Notifications"
       >
-        <span className="material-symbols-outlined text-[20px]">notifications</span>
+        <span aria-hidden="true" className="material-symbols-outlined text-[20px]">notifications</span>
         {unreadCount > 0 && (
           <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-error text-white text-[10px] font-semibold flex items-center justify-center rounded-full border border-background">
             {unreadCount}

@@ -40,10 +40,52 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default function MatchDetailsPage() {
+export default async function MatchDetailsPage({ params }: Props) {
+  const { matchId } = await params;
+  const supabase = await getSupabaseServerClient();
+
+  const [matchRes, eventsRes] = await Promise.all([
+    supabase
+      .from("matches")
+      .select("*, tournaments(*)")
+      .eq("id", matchId)
+      .single(),
+    supabase
+      .from("match_events")
+      .select("*")
+      .eq("match_id", matchId)
+      .order("created_at", { ascending: true }),
+  ]);
+
+  let initialMatch: any = null;
+  const mData = matchRes.data;
+
+  if (mData && !matchRes.error) {
+    const ownerId = mData.organizer_id || mData.tournaments?.organizer_id;
+    const needOrganizerFetch = Boolean(ownerId && ownerId !== mData.umpire_id);
+
+    const [umpireRes, organizerRes] = await Promise.all([
+      mData.umpire_id
+        ? supabase.from("users").select("id, username").eq("id", mData.umpire_id).single()
+        : Promise.resolve({ data: null }),
+      needOrganizerFetch
+        ? supabase.from("users").select("id, username").eq("id", ownerId).single()
+        : Promise.resolve({ data: null }),
+    ]);
+
+    const umpireData = umpireRes.data ?? null;
+    const organizerData =
+      ownerId && ownerId === mData.umpire_id ? umpireData : (organizerRes.data ?? null);
+
+    initialMatch = { ...mData, umpire: umpireData, organizer: organizerData };
+  }
+
   return (
     <Suspense fallback={<div className="p-10 text-white bg-gray-950 min-h-screen text-center">Loading Match...</div>}>
-      <MatchDetailClient />
+      <MatchDetailClient
+        initialMatch={initialMatch}
+        initialEvents={eventsRes.data ?? []}
+      />
     </Suspense>
   );
 }

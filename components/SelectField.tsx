@@ -94,6 +94,7 @@ export default function SelectField({
           <span className="text-xs font-semibold text-text-primary flex items-center gap-1 leading-tight whitespace-nowrap">
             <span>{selectedOption ? selectedOption.label : placeholder}</span>
             <span
+              aria-hidden="true"
               className={`material-symbols-outlined text-[14px] text-text-muted transition-transform duration-150 ${
                 isOpen ? "rotate-180" : ""
               }`}
@@ -115,6 +116,7 @@ export default function SelectField({
         >
           <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
           <span
+            aria-hidden="true"
             className={`material-symbols-outlined text-[18px] text-text-muted shrink-0 transition-transform duration-150 ${
               isOpen ? "rotate-180" : ""
             }`}

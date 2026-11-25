@@ -222,7 +222,7 @@ export default function MatchCard({ match }: { match: any }) {
                       {isOngoingDisplay && (
                         <span className="font-medium text-text-secondary flex items-center gap-1">
                           {setScores.length > 0 && (
-                            <span className="text-text-muted/60">/</span>
+                            <span className="text-text-muted">/</span>
                           )}
                           {isRacketSport
                             ? `${currentGames[i]} (${renderPoints(i)})`

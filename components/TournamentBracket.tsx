@@ -98,7 +98,7 @@ const MatchCard = ({ match, tournament }: { match: any, tournament: any }) => {
             <span className="font-medium text-text-muted">Match {match.global_match_order}</span>
             {match.court && (
               <>
-                <span className="text-text-muted/40">•</span>
+                <span className="text-text-muted">•</span>
                 <span className="text-text-secondary font-medium">{match.court}</span>
               </>
             )}

@@ -118,22 +118,85 @@ const renderLivePoint = (match: any, idx: number) => {
   return match.scores?.current?.[idx === 0 ? "home" : "away"] ?? 0;
 };
 
-export default function MatchDetailClient() {
+function resolveMatchRules(mData: any) {
+  const isVolleyball = mData.sport_type === "Volleyball";
+  const isBasketball = mData.sport_type === "Basketball";
+  const isFootball = mData.sport_type === "Football";
+  const isTennis = mData.sport_type === "Tennis";
+  const isPadel = mData.sport_type === "Padel";
+
+  let baseDefaults: Record<string, any>;
+  if (isBasketball) {
+    baseDefaults = {
+      quarter_minutes: 10,
+      quarters_count: 4,
+      shot_clock_seconds: 24,
+      overtime_minutes: 5,
+      fouls_bonus: 5,
+    };
+  } else if (isFootball) {
+    baseDefaults = {
+      half_minutes: 45,
+      extra_time_minutes: 15,
+    };
+  } else if (isTennis || isPadel) {
+    baseDefaults = {
+      max_sets: 3,
+      set_type: "tiebreak",
+      match_format: "best_of_3",
+      points_per_set: 6,
+      no_ad: isPadel,
+    };
+  } else {
+    baseDefaults = {
+      max_sets: isVolleyball ? 5 : 3,
+      points_per_set: isVolleyball ? 25 : 21,
+      point_cap: null,
+    };
+  }
+
+  if (mData.tournament_id) {
+    const tournamentSettings = mData.tournaments?.settings || {};
+    const roundOverrides = tournamentSettings.overrides?.[mData.round_number] || {};
+    const tournamentDefault = tournamentSettings.default || {};
+
+    return {
+      ...baseDefaults,
+      ...tournamentDefault,
+      ...roundOverrides,
+    };
+  }
+
+  return {
+    ...baseDefaults,
+    ...(mData.settings || {}),
+  };
+}
+
+export default function MatchDetailClient({
+  initialMatch = null,
+  initialEvents = [],
+}: {
+  initialMatch?: any;
+  initialEvents?: any[];
+} = {}) {
   const { t, locale } = useTranslation();
   const { matchId } = useParams();
   const matchIdStr = (Array.isArray(matchId) ? matchId[0] : matchId) || "";
   const router = useRouter();
   const { user: authUser, supabase: authSupabase } = useAuth();
   const activeSupabase = authSupabase || supabase;
-  const [match, setMatch] = useState<any>(null);
-  const [rules, setRules] = useState<any>(null);
+  const [match, setMatch] = useState<any>(initialMatch);
+  const [rules, setRules] = useState<any>(() =>
+    initialMatch ? resolveMatchRules(initialMatch) : null
+  );
   const [user, setUser] = useState<any>(null);
   const currentUser = authUser || user;
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialMatch);
   const [isRuleModalOpen, setIsRuleModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [expandedSets, setExpandedSets] = useState<Record<number, boolean>>({ 1: true });
-  const [matchEvents, setMatchEvents] = useState<any[]>([]);
+  const [matchEvents, setMatchEvents] = useState<any[]>(initialEvents);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeDetailTab, setActiveDetailTab] = useState<"progress" | "rules" | "official">("progress");
   const [prevPath, setPrevPath] = useState<string | null>(null);
@@ -279,68 +342,14 @@ export default function MatchDetailClient() {
 
         const matchWithUmpire = { ...mData, umpire: umpireData, organizer: organizerData };
         setMatch(matchWithUmpire);
-        
-        // Resolve Rules Hierarchy (sport-aware)
-        const isVolleyball = mData.sport_type === 'Volleyball';
-        const isBasketball = mData.sport_type === 'Basketball';
-        const isFootball = mData.sport_type === 'Football';
-        const isTennis = mData.sport_type === 'Tennis';
-        const isPadel = mData.sport_type === 'Padel';
-
-        let baseDefaults: Record<string, any>;
-        if (isBasketball) {
-          baseDefaults = {
-            quarter_minutes: 10,
-            quarters_count: 4,
-            shot_clock_seconds: 24,
-            overtime_minutes: 5,
-            fouls_bonus: 5,
-          };
-        } else if (isFootball) {
-          baseDefaults = {
-            half_minutes: 45,
-            extra_time_minutes: 15,
-          };
-        } else if (isTennis || isPadel) {
-          baseDefaults = {
-            max_sets: 3,
-            set_type: 'tiebreak',
-            match_format: 'best_of_3',
-            points_per_set: 6,
-            no_ad: isPadel,
-          };
-        } else {
-          baseDefaults = {
-            max_sets: isVolleyball ? 5 : 3,
-            points_per_set: isVolleyball ? 25 : 21,
-            point_cap: null,
-          };
-        }
-
-        let resolvedRules;
-        if (mData.tournament_id) {
-          const tournamentSettings = mData.tournaments?.settings || {};
-          const roundOverrides = tournamentSettings.overrides?.[mData.round_number] || {};
-          const tournamentDefault = tournamentSettings.default || {};
-          
-          resolvedRules = {
-            ...baseDefaults,
-            ...tournamentDefault,
-            ...roundOverrides
-          };
-        } else {
-          resolvedRules = {
-            ...baseDefaults,
-            ...(mData.settings || {})
-          };
-        }
-
-        setRules(resolvedRules);
-        
+        setRules(resolveMatchRules(mData));
       }
       setLoading(false);
     };
-    fetchAll();
+
+    if (!initialMatch || initialMatch.id !== matchIdStr) {
+      fetchAll();
+    }
 
     // Set up real-time subscription (High-concurrency broadcast + table changes fallback)
     let channel: any = null;
@@ -768,7 +777,7 @@ export default function MatchDetailClient() {
                   </>
                 )}
                 {(match.scheduled_at || match.created_at) && (
-                  <span className="text-[11px] font-mono tabular-nums text-text-muted/80 whitespace-nowrap">
+                  <span className="text-[11px] font-mono tabular-nums text-text-muted whitespace-nowrap">
                     {new Date(match.scheduled_at || match.created_at).toLocaleDateString(undefined, {
                       day: "numeric",
                       month: "short",

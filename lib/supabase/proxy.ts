@@ -76,6 +76,20 @@ export async function updateSession(request: NextRequest) {
   });
 
   const pathname = request.nextUrl.pathname;
+  const hasSupabaseAuthCookie = request.cookies
+    .getAll()
+    .some((cookie) => cookie.name.startsWith("sb-"));
+
+  // Skip the server-side auth round-trip for unauthenticated guests on public landing/match routes.
+  if (!hasSupabaseAuthCookie && (pathname === "/" || pathname.startsWith("/match/"))) {
+    if (!response.headers.has("Cache-Control")) {
+      response.headers.set("Cache-Control", "private, no-cache, no-store, must-revalidate");
+    }
+    if (!response.headers.has("Vary")) {
+      response.headers.set("Vary", "Cookie");
+    }
+    return applySecurityHeaders(response);
+  }
 
   const {
     data: { user },
