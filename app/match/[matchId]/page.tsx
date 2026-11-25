@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function MatchDetailsPage({ params }: Props) {
+async function MatchDetailsLoader({ params }: Props) {
   const { matchId } = await params;
   const supabase = await getSupabaseServerClient();
 
@@ -81,11 +81,17 @@ export default async function MatchDetailsPage({ params }: Props) {
   }
 
   return (
+    <MatchDetailClient
+      initialMatch={initialMatch}
+      initialEvents={eventsRes.data ?? []}
+    />
+  );
+}
+
+export default function MatchDetailsPage({ params }: Props) {
+  return (
     <Suspense fallback={<div className="p-10 text-white bg-gray-950 min-h-screen text-center">Loading Match...</div>}>
-      <MatchDetailClient
-        initialMatch={initialMatch}
-        initialEvents={eventsRes.data ?? []}
-      />
+      <MatchDetailsLoader params={params} />
     </Suspense>
   );
 }
