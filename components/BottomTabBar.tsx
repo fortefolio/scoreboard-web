@@ -95,6 +95,7 @@ export default function BottomTabBar() {
         {/* Alerts / Notifications Tab */}
         <Link
           href={user ? "/notifications" : "/?auth=login"}
+          prefetch={false}
           scroll={false}
           className={`flex-1 flex flex-col items-center justify-center py-1.5 px-2 rounded-lg transition-colors relative ${
             isNotificationsActive

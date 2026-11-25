@@ -75,11 +75,11 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
+  const pathname = request.nextUrl.pathname;
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
 
   if (!user && isProtectedPath(pathname)) {
     const redirectUrl = request.nextUrl.clone();

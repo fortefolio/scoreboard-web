@@ -52,12 +52,14 @@ export default function Footer() {
             </Link>
             <Link
               href="/terms"
+              prefetch={false}
               className="hover:text-text-primary transition-colors"
             >
               {t("footer.terms")}
             </Link>
             <Link
               href="/settings"
+              prefetch={false}
               className="hover:text-text-primary transition-colors"
             >
               {t("footer.settings")}

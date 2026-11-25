@@ -46,6 +46,12 @@ This project uses `@supabase/ssr`. Do not regress to the patterns below.
 - Never deploy Web changes that assume destructive backend changes (`DROP`/`RENAME` column, mutated RPC/Realtime shapes) before old Mobile clients are migrated.
 - Coordinate breaking API/schema changes via Expand-and-Contract: deploy additive backend support first, ship Web (optionally behind a feature flag) + Mobile (`EAS Update` or store release), and only contract legacy backend fields after old mobile versions are retired (see `../scoreboard-backend/docs/04-zero-downtime-deployments.md`).
 
+## Performance & Data-Fetching Guardrails
+- **No per-item Supabase fetches in hooks:** Hooks used inside list items/cards (e.g. `useFollow`) must share a single module store or React context with in-flight promise deduplication—never rely on an optional `hook` prop when the hook still runs unconditionally inside the child.
+- **No sequential `await` waterfalls:** Run independent Supabase queries in `Promise.all(...)` or via PostgREST foreign-key joins. Client components must read `useAuth().user` instead of calling `supabase.auth.getUser()`.
+- **Explicit columns on list queries:** Avoid `select("*")` on multi-row feed/list queries when only summary fields are needed.
+- **Control `<Link>` prefetching:** Set `prefetch={false}` on secondary/authenticated nav links (`/settings`, `/notifications`, `/terms`, `/?auth=login`, etc.) so navbar/footer renders don't trigger middleware `getUser()` prefetch bursts.
+
 ## CSP & Production Smoke Checks (Cloudflare / OpenNext)
 - `next.config.ts` and `lib/supabase/proxy.ts` must keep `'unsafe-inline'` in `script-src` while `cacheComponents: true` / static prerendering is enabled; removing it blocks Next.js inline RSC hydration scripts (`self.__next_f.push(...)`) on prerendered pages even though `next build` succeeds.
 - After modifying `next.config.ts` headers, `middleware.ts`, or `lib/supabase/proxy.ts`, always run the Playwright production smoke check:

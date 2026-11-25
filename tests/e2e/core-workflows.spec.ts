@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { cleanupE2EUserByEmail } from "./cleanup";
 
 test.describe("Core Platform Workflows", () => {
   test("unauthenticated landing page renders matches/tournaments tabs and opens login modal", async ({ page }) => {
@@ -44,12 +45,12 @@ test.describe("Core Platform Workflows", () => {
       await orgPage.getByRole("button", { name: /New Match/i }).click();
       await orgPage.getByPlaceholder("Team Alpha").fill("E2E Lions");
       await orgPage.getByPlaceholder("Team Beta").fill("E2E Tigers");
-      await orgPage.getByRole("button", { name: /Tennis/i }).click();
-      await orgPage.getByRole("button", { name: /^Basketball$/i }).click();
-      await orgPage.getByRole("button", { name: /^Create Match$/i }).click();
+      await orgPage.getByRole("button", { name: /Tennis/i, expanded: false }).click();
+      await orgPage.getByRole("option", { name: /^Basketball$/i }).click();
+      await orgPage.getByRole("button", { name: /^Create Match$/i }).last().click();
 
       // 3. Navigate to created match overview
-      const matchLink = orgPage.getByText(/E2E Lions/i).first();
+      const matchLink = orgPage.getByText(/E2E Lions/i).filter({ visible: true }).first();
       await expect(matchLink).toBeVisible({ timeout: 10_000 });
       await matchLink.click();
       await expect(orgPage).toHaveURL(/\/match\/[^/]+$/, { timeout: 10_000 });
@@ -57,8 +58,8 @@ test.describe("Core Platform Workflows", () => {
 
       // 4. Spectator opens the same match overview in a separate unauthenticated context
       await specPage.goto(matchUrl);
-      await expect(specPage.getByText(/E2E Lions/i)).toBeVisible({ timeout: 15_000 });
-      await expect(specPage.getByText(/E2E Tigers/i)).toBeVisible();
+      await expect(specPage.getByRole("heading", { name: /E2E Lions/i })).toBeVisible({ timeout: 15_000 });
+      await expect(specPage.getByRole("heading", { name: /E2E Tigers/i })).toBeVisible();
 
       // 5. Organizer starts scoreboard and records +1 point
       const startBtn = orgPage.getByRole("button", { name: /Start Scoreboard|Open Scoreboard/i });
@@ -75,6 +76,7 @@ test.describe("Core Platform Workflows", () => {
     } finally {
       await organizerContext.close();
       await spectatorContext.close();
+      await cleanupE2EUserByEmail(email);
     }
   });
 });

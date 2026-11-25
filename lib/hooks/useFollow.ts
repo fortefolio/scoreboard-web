@@ -1,12 +1,37 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { useAuth } from "@/components/AuthProvider";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export type EntityType = "match" | "tournament" | "team" | "player" | "competition";
 
 const FOLLOWS_CHANGED_EVENT = "scoreboard:follows-changed";
+
+interface FollowStoreState {
+  userId: string | null;
+  followedMatchIds: Set<string>;
+  followedTournamentIds: Set<string>;
+  loading: boolean;
+  updatingIds: Set<string>;
+}
+
+let storeState: FollowStoreState = {
+  userId: null,
+  followedMatchIds: new Set(),
+  followedTournamentIds: new Set(),
+  loading: true,
+  updatingIds: new Set(),
+};
+
+let inFlightFetch: { userId: string; promise: Promise<void> } | null = null;
+const listeners = new Set<(state: FollowStoreState) => void>();
+
+function setStoreState(updater: (prev: FollowStoreState) => FollowStoreState) {
+  storeState = updater(storeState);
+  listeners.forEach((listener) => listener(storeState));
+}
 
 function notifyFollowsChanged(detail: {
   entityId: string;
@@ -18,33 +43,40 @@ function notifyFollowsChanged(detail: {
   }
 }
 
-export function useFollow() {
-  const { user, supabase: authSupabase } = useAuth();
-  const supabase = authSupabase || getSupabaseBrowserClient();
+async function fetchFollowsForUser(
+  userId: string | null,
+  supabase: SupabaseClient,
+  force = false
+): Promise<void> {
+  if (!userId) {
+    inFlightFetch = null;
+    setStoreState((prev) => ({
+      ...prev,
+      userId: null,
+      followedMatchIds: new Set(),
+      followedTournamentIds: new Set(),
+      loading: false,
+    }));
+    return;
+  }
 
-  const [followedMatchIds, setFollowedMatchIds] = useState<Set<string>>(new Set());
-  const [followedTournamentIds, setFollowedTournamentIds] = useState<Set<string>>(new Set());
-  const [loading, setLoading] = useState<boolean>(true);
-  const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
+  if (!force && inFlightFetch && inFlightFetch.userId === userId) {
+    return inFlightFetch.promise;
+  }
 
-  // Fetch initial follows
-  const fetchFollows = useCallback(async () => {
-    if (!user) {
-      setFollowedMatchIds(new Set());
-      setFollowedTournamentIds(new Set());
-      setLoading(false);
-      return;
-    }
+  setStoreState((prev) => ({ ...prev, userId, loading: true }));
 
+  let promise: Promise<void> | undefined;
+  promise = (async () => {
     try {
-      setLoading(true);
       const { data, error } = await supabase
         .from("follows")
         .select("entity_id, entity_type")
-        .eq("user_id", user.id);
+        .eq("user_id", userId);
 
       if (error) {
         console.warn("Error fetching follows:", error?.message || error);
+        setStoreState((prev) => ({ ...prev, loading: false }));
         return;
       }
 
@@ -59,90 +91,97 @@ export function useFollow() {
         }
       });
 
-      setFollowedMatchIds(matchIds);
-      setFollowedTournamentIds(tournamentIds);
+      setStoreState((prev) => ({
+        ...prev,
+        userId,
+        followedMatchIds: matchIds,
+        followedTournamentIds: tournamentIds,
+        loading: false,
+      }));
     } catch (err) {
       console.error("Failed to load follows:", err);
+      setStoreState((prev) => ({ ...prev, loading: false }));
     } finally {
-      setLoading(false);
+      if (inFlightFetch?.promise === promise) {
+        inFlightFetch = null;
+      }
     }
-  }, [user, supabase]);
+  })();
+
+  inFlightFetch = { userId, promise };
+  return promise;
+}
+
+export function useFollow() {
+  const { user, supabase: authSupabase } = useAuth();
+  const supabase = authSupabase || getSupabaseBrowserClient();
+  const [state, setState] = useState<FollowStoreState>(storeState);
 
   useEffect(() => {
-    fetchFollows();
-  }, [fetchFollows]);
-
-  // Synchronize follow state across all useFollow instances on the page
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const handleSync = (event: Event) => {
-      const detail = (event as CustomEvent<{
-        entityId: string;
-        entityType: "match" | "tournament";
-        following: boolean;
-      }>).detail;
-      if (!detail) return;
-
-      const setter =
-        detail.entityType === "match" ? setFollowedMatchIds : setFollowedTournamentIds;
-      setter((prev) => {
-        const has = prev.has(detail.entityId);
-        if (detail.following === has) return prev;
-        const next = new Set(prev);
-        if (detail.following) next.add(detail.entityId);
-        else next.delete(detail.entityId);
-        return next;
-      });
+    listeners.add(setState);
+    setState(storeState);
+    return () => {
+      listeners.delete(setState);
     };
-
-    window.addEventListener(FOLLOWS_CHANGED_EVENT, handleSync);
-    return () => window.removeEventListener(FOLLOWS_CHANGED_EVENT, handleSync);
   }, []);
+
+  useEffect(() => {
+    const nextUserId = user?.id ?? null;
+    if (storeState.userId !== nextUserId) {
+      fetchFollowsForUser(nextUserId, supabase);
+    } else if (!nextUserId && storeState.loading) {
+      fetchFollowsForUser(null, supabase);
+    }
+  }, [user?.id, supabase]);
+
+  const refreshFollows = useCallback(async () => {
+    await fetchFollowsForUser(user?.id ?? null, supabase, true);
+  }, [user?.id, supabase]);
 
   const isFollowing = useCallback(
     (entityId: string, entityType: "match" | "tournament"): boolean => {
       if (entityType === "match") {
-        return followedMatchIds.has(entityId);
+        return state.followedMatchIds.has(entityId);
       }
-      return followedTournamentIds.has(entityId);
+      return state.followedTournamentIds.has(entityId);
     },
-    [followedMatchIds, followedTournamentIds]
+    [state.followedMatchIds, state.followedTournamentIds]
   );
 
   const toggleFollow = useCallback(
     async (entityId: string, entityType: "match" | "tournament"): Promise<boolean> => {
       if (!user) {
-        // Not logged in
         return false;
       }
 
       const currentlyFollowing = isFollowing(entityId, entityType);
       const key = `${entityType}:${entityId}`;
 
-      // Optimistic update
-      setUpdatingIds((prev) => new Set(prev).add(key));
+      const applyFollowState = (following: boolean) => {
+        setStoreState((prev) => {
+          if (entityType === "match") {
+            const next = new Set(prev.followedMatchIds);
+            if (following) next.add(entityId);
+            else next.delete(entityId);
+            return { ...prev, followedMatchIds: next };
+          }
+          const next = new Set(prev.followedTournamentIds);
+          if (following) next.add(entityId);
+          else next.delete(entityId);
+          return { ...prev, followedTournamentIds: next };
+        });
+        notifyFollowsChanged({ entityId, entityType, following });
+      };
 
-      if (entityType === "match") {
-        setFollowedMatchIds((prev) => {
-          const next = new Set(prev);
-          if (currentlyFollowing) next.delete(entityId);
-          else next.add(entityId);
-          return next;
-        });
-      } else {
-        setFollowedTournamentIds((prev) => {
-          const next = new Set(prev);
-          if (currentlyFollowing) next.delete(entityId);
-          else next.add(entityId);
-          return next;
-        });
-      }
-      notifyFollowsChanged({ entityId, entityType, following: !currentlyFollowing });
+      setStoreState((prev) => {
+        const nextUpdating = new Set(prev.updatingIds);
+        nextUpdating.add(key);
+        return { ...prev, updatingIds: nextUpdating };
+      });
+      applyFollowState(!currentlyFollowing);
 
       try {
         if (currentlyFollowing) {
-          // Unfollow
           const { error } = await supabase
             .from("follows")
             .delete()
@@ -152,7 +191,6 @@ export function useFollow() {
 
           if (error) throw error;
         } else {
-          // Follow
           const { error } = await supabase.from("follows").insert({
             user_id: user.id,
             entity_id: entityId,
@@ -165,29 +203,13 @@ export function useFollow() {
         return !currentlyFollowing;
       } catch (err) {
         console.error(`Error toggling follow for ${entityType} ${entityId}:`, err);
-        // Revert optimistic update on failure
-        if (entityType === "match") {
-          setFollowedMatchIds((prev) => {
-            const next = new Set(prev);
-            if (currentlyFollowing) next.add(entityId);
-            else next.delete(entityId);
-            return next;
-          });
-        } else {
-          setFollowedTournamentIds((prev) => {
-            const next = new Set(prev);
-            if (currentlyFollowing) next.add(entityId);
-            else next.delete(entityId);
-            return next;
-          });
-        }
-        notifyFollowsChanged({ entityId, entityType, following: currentlyFollowing });
+        applyFollowState(currentlyFollowing);
         return currentlyFollowing;
       } finally {
-        setUpdatingIds((prev) => {
-          const next = new Set(prev);
-          next.delete(key);
-          return next;
+        setStoreState((prev) => {
+          const nextUpdating = new Set(prev.updatingIds);
+          nextUpdating.delete(key);
+          return { ...prev, updatingIds: nextUpdating };
         });
       }
     },
@@ -197,10 +219,10 @@ export function useFollow() {
   return {
     isFollowing,
     toggleFollow,
-    followedMatchIds,
-    followedTournamentIds,
-    loading,
-    updatingIds,
-    refreshFollows: fetchFollows,
+    followedMatchIds: state.followedMatchIds,
+    followedTournamentIds: state.followedTournamentIds,
+    loading: state.loading,
+    updatingIds: state.updatingIds,
+    refreshFollows,
   };
 }

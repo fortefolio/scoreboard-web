@@ -183,6 +183,7 @@ export default function NotificationBell() {
             <div className="p-3 bg-surface-container-high/30 border-t border-outline-variant text-center">
                <Link 
                  href="/notifications" 
+                 prefetch={false}
                  onClick={() => setIsOpen(false)}
                  className="text-xs text-text-secondary hover:text-text-primary font-medium transition-colors"
                >

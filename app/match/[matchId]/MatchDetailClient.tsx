@@ -210,29 +210,45 @@ export default function MatchDetailClient() {
   }, [match?.participants, match?.tournaments?.name]);
 
   useEffect(() => {
-    const fetchAll = async () => {
-      console.log("Fetching match for ID:", matchIdStr);
-      const { data: { user: currUser } } = await supabase.auth.getUser();
-      setUser(currUser);
+    if (!currentUser?.id) {
+      setSubscriptionTier("free");
+      return;
+    }
 
-      if (currUser) {
-        const { data: uTierData } = await supabase
-          .from("users")
-          .select("subscription_tier")
-          .eq("id", currUser.id)
-          .maybeSingle();
-        if (uTierData?.subscription_tier) {
-          setSubscriptionTier(uTierData.subscription_tier);
+    let cancelled = false;
+    supabase
+      .from("users")
+      .select("subscription_tier")
+      .eq("id", currentUser.id)
+      .maybeSingle()
+      .then(({ data }: { data: { subscription_tier?: string } | null }) => {
+        if (!cancelled && data?.subscription_tier) {
+          setSubscriptionTier(data.subscription_tier);
         }
-      }
+      });
 
-      // Fetch match and tournament first
-      const { data: mData, error: mError } = await supabase
-        .from("matches")
-        .select("*, tournaments(*)")
-        .eq("id", matchIdStr)
-        .single();
-      
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    const fetchAll = async () => {
+      const [matchRes, eventsRes] = await Promise.all([
+        supabase
+          .from("matches")
+          .select("*, tournaments(*)")
+          .eq("id", matchIdStr)
+          .single(),
+        supabase
+          .from("match_events")
+          .select("*")
+          .eq("match_id", matchIdStr)
+          .order("created_at", { ascending: true }),
+      ]);
+
+      const { data: mData, error: mError } = matchRes;
+
       if (mError) {
         console.error("Supabase Error fetching match:", mError);
         toast.error(`Error fetching match: ${mError.message}`);
@@ -240,38 +256,29 @@ export default function MatchDetailClient() {
         return;
       }
 
-      if (mData) {
-        let umpireData = null;
-        if (mData.umpire_id) {
-          const { data: uData } = await supabase
-            .from("users")
-            .select("id, username")
-            .eq("id", mData.umpire_id)
-            .single();
-          umpireData = uData;
-        }
+      if (eventsRes.data) {
+        setMatchEvents(eventsRes.data);
+      }
 
-        let organizerData = null;
+      if (mData) {
         const ownerId = mData.organizer_id || mData.tournaments?.organizer_id;
-        if (ownerId) {
-          const { data: oData } = await supabase
-            .from("users")
-            .select("id, username")
-            .eq("id", ownerId)
-            .single();
-          organizerData = oData;
-        }
+        const needOrganizerFetch = Boolean(ownerId && ownerId !== mData.umpire_id);
+
+        const [umpireRes, organizerRes] = await Promise.all([
+          mData.umpire_id
+            ? supabase.from("users").select("id, username").eq("id", mData.umpire_id).single()
+            : Promise.resolve({ data: null }),
+          needOrganizerFetch
+            ? supabase.from("users").select("id, username").eq("id", ownerId).single()
+            : Promise.resolve({ data: null }),
+        ]);
+
+        const umpireData = umpireRes.data ?? null;
+        const organizerData =
+          ownerId && ownerId === mData.umpire_id ? umpireData : (organizerRes.data ?? null);
 
         const matchWithUmpire = { ...mData, umpire: umpireData, organizer: organizerData };
         setMatch(matchWithUmpire);
-
-        // Fetch scoring events
-        const { data: evData } = await supabase
-          .from("match_events")
-          .select("*")
-          .eq("match_id", matchIdStr)
-          .order("created_at", { ascending: true });
-        if (evData) setMatchEvents(evData);
         
         // Resolve Rules Hierarchy (sport-aware)
         const isVolleyball = mData.sport_type === 'Volleyball';

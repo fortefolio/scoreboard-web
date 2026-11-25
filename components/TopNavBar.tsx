@@ -208,12 +208,14 @@ export default function TopNavBar() {
             <div className="flex gap-2 sm:gap-3 items-center">
                <Link
                  href="/?auth=login"
+                 prefetch={false}
                  className="text-text-secondary hover:text-text-primary px-3 py-1.5 rounded-lg font-medium text-xs transition-colors"
                >
                  {t("nav.signIn")}
                </Link>
                <Link
                  href="/?auth=signup"
+                 prefetch={false}
                  className="hidden sm:inline-flex bg-text-primary hover:bg-white text-surface-container-lowest px-3.5 py-1.5 rounded-lg font-medium text-xs transition-colors shadow-sm"
                >
                  {t("nav.getStarted")}
