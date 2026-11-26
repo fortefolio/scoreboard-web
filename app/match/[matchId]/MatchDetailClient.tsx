@@ -529,7 +529,6 @@ export default function MatchDetailClient({
     const p2 = formatTeamOrPlayerName(match?.participants?.[1]?.name) || "TBD";
     const shareData = {
       title: `${p1} vs ${p2}`,
-      text: `Follow the live score for ${match?.tournaments?.name || "this match"}!`,
       url: window.location.href,
     };
 
