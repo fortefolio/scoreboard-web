@@ -135,7 +135,7 @@ export async function GET(request: NextRequest) {
             style={{
               display: "flex",
               flexDirection: "column",
-              width: "400px",
+              width: "340px",
             }}
           >
             <div style={{ fontSize: "18px", color: "#7a8296", marginBottom: "10px" }}>
@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
             </div>
             <div
               style={{
-                fontSize: "44px",
+                fontSize: "42px",
                 fontWeight: 700,
                 color: "#eef0f5",
                 lineHeight: 1.15,
@@ -158,11 +158,13 @@ export async function GET(request: NextRequest) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              flexShrink: 0,
+              whiteSpace: "nowrap",
               backgroundColor: "#07080d",
               border: "1px solid #252b3b",
               borderRadius: "20px",
-              padding: "24px 40px",
-              fontSize: "76px",
+              padding: "24px 44px",
+              fontSize: "72px",
               fontWeight: 800,
               color: "#eef0f5",
             }}
@@ -175,7 +177,7 @@ export async function GET(request: NextRequest) {
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-end",
-              width: "400px",
+              width: "340px",
             }}
           >
             <div style={{ fontSize: "18px", color: "#7a8296", marginBottom: "10px" }}>
@@ -183,7 +185,7 @@ export async function GET(request: NextRequest) {
             </div>
             <div
               style={{
-                fontSize: "44px",
+                fontSize: "42px",
                 fontWeight: 700,
                 color: "#eef0f5",
                 textAlign: "right",

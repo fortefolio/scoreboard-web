@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
    */
   cacheComponents: true,
 
+  /* * Ensure all link-preview scrapers, SEO tools, and Lighthouse receive
+   * resolved <title>/<meta> tags in <head> instead of streamed metadata.
+   */
+  htmlLimitedBots: /.*/,
+
   /* * Allow 127.0.0.1 and localhost as dev origins so Playwright and local browser
    * can load HMR / RSC chunks without being blocked. No effect in prod.
    */
