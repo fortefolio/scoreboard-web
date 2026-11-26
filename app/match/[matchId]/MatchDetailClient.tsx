@@ -778,11 +778,15 @@ export default function MatchDetailClient({
                 )}
                 {(match.scheduled_at || match.created_at) && (
                   <span className="text-[11px] font-mono tabular-nums text-text-muted whitespace-nowrap">
-                    {new Date(match.scheduled_at || match.created_at).toLocaleDateString(undefined, {
-                      day: "numeric",
-                      month: "short",
-                      year: "numeric",
-                    })}
+                    {new Date(match.scheduled_at || match.created_at).toLocaleDateString(
+                      locale === "en" ? "en-GB" : locale,
+                      {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                        timeZone: "UTC",
+                      }
+                    )}
                   </span>
                 )}
               </div>

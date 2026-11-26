@@ -1,6 +1,9 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
+import { createClient } from "@supabase/supabase-js";
+import { supabaseEnv } from "@/lib/supabase/env";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
 import MatchDetailClient from "./MatchDetailClient";
 
@@ -10,7 +13,8 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { matchId } = await params;
-  const supabase = await getSupabaseServerClient();
+  const { url, anonKey } = supabaseEnv();
+  const supabase = createClient(url, anonKey);
 
   const { data: match } = await supabase
     .from('matches')
@@ -18,11 +22,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq('id', matchId)
     .single();
 
-  if (!match) return { title: 'Match Not Found' };
+  if (!match) {
+    return {
+      title: 'Match Not Found',
+      description: 'Follow live matches, tournaments, and scores on ScoreBoard.',
+    };
+  }
 
   const p1 = formatTeamOrPlayerName(match.participants?.[0]?.name) || "TBD";
   const p2 = formatTeamOrPlayerName(match.participants?.[1]?.name) || "TBD";
-  const sets = match.scores?.sets || [0, 0];
+  const parsedSets = extractSetsData(match.scores);
+  const sets =
+    parsedSets.length > 0
+      ? [countSetsWon(parsedSets, 0), countSetsWon(parsedSets, 1)]
+      : [match.scores?.current?.home ?? 0, match.scores?.current?.away ?? 0];
 
   const tournament = Array.isArray(match.tournaments) ? match.tournaments[0] : match.tournaments;
   const title = `${p1} vs ${p2} | ${tournament?.name || 'ScoreBoard'}`;
@@ -34,8 +47,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      url: `https://scoreboard.tennis/match/${matchId}`,
-      images: [`/api/og/match?id=${matchId}`], 
+      url: `https://score-board.net/match/${matchId}`,
+      images: [`/api/og/match?id=${matchId}`],
     },
   };
 }

@@ -26,7 +26,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://score-board.net.com'),
+  metadataBase: new URL('https://score-board.net'),
   title: {
     default: 'ScoreBoard',
     template: '%s | ScoreBoard',

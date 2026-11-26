@@ -152,7 +152,7 @@ export default function GroupedMatchList({
                       {showOrganizer && group.organizerUsername && (
                         <Link
                           href={`/user/${encodeURIComponent(group.organizerUsername)}`}
-                          className="hidden sm:inline-flex text-xs font-medium text-text-muted hover:text-text-primary hover:underline truncate"
+                          className="hidden sm:inline-flex items-center min-h-6 text-xs font-medium text-text-muted hover:text-text-primary hover:underline truncate"
                           title={`@${group.organizerUsername}`}
                         >
                           @{group.organizerUsername}

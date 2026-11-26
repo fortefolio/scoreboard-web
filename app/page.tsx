@@ -29,9 +29,19 @@ const MATCHES_PER_PAGE = 12;
 const TOURNAMENTS_PER_PAGE = 9;
 const GUEST_PREVIEW_LIMIT = 6;
 
+function HomeGuestFallback() {
+  return (
+    <div className="relative min-h-screen bg-transparent text-on-surface">
+      <div className="relative z-10 w-full py-4 sm:py-6 px-3 sm:px-8 max-w-7xl mx-auto">
+        <GuestLandingHero onGetStarted={() => {}} onExploreLive={() => {}} />
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+    <Suspense fallback={<HomeGuestFallback />}>
       <HomeContent />
     </Suspense>
   );
