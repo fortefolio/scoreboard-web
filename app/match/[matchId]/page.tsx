@@ -38,17 +38,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       : [match.scores?.current?.home ?? 0, match.scores?.current?.away ?? 0];
 
   const tournament = Array.isArray(match.tournaments) ? match.tournaments[0] : match.tournaments;
-  const title = `${p1} vs ${p2} | ${tournament?.name || 'ScoreBoard'}`;
-  const description = `Live Score: ${sets[0]} - ${sets[1]}. Follow the match in real-time on ScoreBoard.`;
+  const title = tournament?.name ? `${p1} vs ${p2} | ${tournament.name}` : `${p1} vs ${p2}`;
+  const description = `Live Score: ${sets[0]} - ${sets[1]}. Follow ${p1} vs ${p2}${tournament?.name ? ` (${tournament.name})` : ""} with real-time play-by-play scores and match stats on ScoreBoard.`;
+  const ogImageUrl = `/api/og/match?id=${matchId}`;
 
   return {
     title,
     description,
     openGraph: {
+      type: "website",
+      siteName: "ScoreBoard",
       title,
       description,
       url: `https://score-board.net/match/${matchId}`,
-      images: [`/api/og/match?id=${matchId}`],
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${p1} vs ${p2}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImageUrl],
     },
   };
 }

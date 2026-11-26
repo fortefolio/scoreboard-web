@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     type: 'website',
     siteName: 'ScoreBoard',
     images: [{
-      url: '/og-default.png',
+      url: '/backgrounds/hero-courtside.webp',
       width: 1200,
       height: 630,
       alt: 'ScoreBoard - Social live scoring platform',
@@ -46,6 +46,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'ScoreBoard',
     description: "DON'T JUST FOLLOW. BE PART OF THE GAME.",
+    images: ['/backgrounds/hero-courtside.webp'],
   },
 };
 
