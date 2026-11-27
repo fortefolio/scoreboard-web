@@ -3,8 +3,11 @@ import { NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { supabaseEnv } from "@/lib/supabase/env";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
-import { normalizeSportType } from "@/lib/sports";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
+
+type OgFont = { name: string; data: ArrayBuffer; style: "normal"; weight: 400 | 700 };
+
+let cachedFontsPromise: Promise<OgFont[]> | null = null;
 
 async function fetchAssetBuffer(path: string, baseUrl: string): Promise<ArrayBuffer | null> {
   try {
@@ -16,31 +19,23 @@ async function fetchAssetBuffer(path: string, baseUrl: string): Promise<ArrayBuf
   }
 }
 
-async function fetchGoogleFont(family: string, weight: number): Promise<ArrayBuffer | null> {
-  try {
-    const cssRes = await fetch(
-      `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&display=swap`,
-      { headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)" } }
-    );
-    if (!cssRes.ok) return null;
-    const css = await cssRes.text();
-    const match = css.match(/src:\s*url\(([^)]+)\)\s*format\(['"]?(?:truetype|opentype|woff2)['"]?\)/i);
-    if (!match?.[1]) return null;
-    const fontRes = await fetch(match[1]);
-    if (!fontRes.ok) return null;
-    return await fontRes.arrayBuffer();
-  } catch {
-    return null;
+function loadLocalFonts(baseUrl: string): Promise<OgFont[]> {
+  if (!cachedFontsPromise) {
+    cachedFontsPromise = Promise.all([
+      fetchAssetBuffer("/fonts/digital-7-mono.ttf", baseUrl),
+      fetchAssetBuffer("/fonts/digital-7.ttf", baseUrl),
+    ]).then(([digitalMonoBuf, digitalLogoBuf]) => {
+      const loaded: OgFont[] = [];
+      if (digitalMonoBuf) {
+        loaded.push({ name: "Digital7Mono", data: digitalMonoBuf, style: "normal", weight: 400 });
+      }
+      if (digitalLogoBuf) {
+        loaded.push({ name: "Digital7", data: digitalLogoBuf, style: "normal", weight: 400 });
+      }
+      return loaded;
+    });
   }
-}
-
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let binary = "";
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
+  return cachedFontsPromise;
 }
 
 export async function GET(request: NextRequest) {
@@ -91,32 +86,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const normalizedSport = normalizeSportType(sport);
-  const [interRegularBuf, interBoldBuf, digitalMonoBuf, digitalLogoBuf, bgBuf] = await Promise.all([
-    fetchGoogleFont("Inter", 400),
-    fetchGoogleFont("Inter", 700),
-    fetchAssetBuffer("/fonts/digital-7-mono.ttf", request.url),
-    fetchAssetBuffer("/fonts/digital-7.ttf", request.url),
-    fetchAssetBuffer(`/backgrounds/${normalizedSport}-landscape.webp`, request.url),
-  ]);
-
-  const bgDataUrl = bgBuf ? `data:image/webp;base64,${arrayBufferToBase64(bgBuf)}` : null;
-
-  const fonts: { name: string; data: ArrayBuffer; style: "normal"; weight: 400 | 700 }[] = [];
-  if (interRegularBuf) {
-    fonts.push({ name: "Inter", data: interRegularBuf, style: "normal", weight: 400 });
-  }
-  if (interBoldBuf) {
-    fonts.push({ name: "Inter", data: interBoldBuf, style: "normal", weight: 700 });
-  }
-  if (digitalMonoBuf) {
-    fonts.push({ name: "Digital7Mono", data: digitalMonoBuf, style: "normal", weight: 400 });
-  }
-  if (digitalLogoBuf) {
-    fonts.push({ name: "Digital7", data: digitalLogoBuf, style: "normal", weight: 400 });
-  }
-
-  const uiFont = interRegularBuf ? "Inter, sans-serif" : "sans-serif";
+  const fonts = await loadLocalFonts(request.url);
+  const hasDigitalMono = fonts.some((f) => f.name === "Digital7Mono");
+  const hasDigitalLogo = fonts.some((f) => f.name === "Digital7");
+  const uiFont = "sans-serif";
 
   return new ImageResponse(
     (
@@ -129,51 +102,14 @@ export async function GET(request: NextRequest) {
           flexDirection: "column",
           justifyContent: "space-between",
           backgroundColor: "#0b0d14",
+          backgroundImage:
+            "radial-gradient(circle at 50% 0%, rgba(79, 70, 229, 0.22), rgba(11, 13, 20, 0) 65%)",
           color: "#eef0f5",
           padding: "56px",
           fontFamily: uiFont,
           overflow: "hidden",
         }}
       >
-        {/* Sport-specific atmospheric background + dark scrim */}
-        {bgDataUrl ? (
-          <img
-            src={bgDataUrl}
-            alt=""
-            width={1200}
-            height={630}
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "1200px",
-              height: "630px",
-              objectFit: "cover",
-            }}
-          />
-        ) : null}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "1200px",
-            height: "630px",
-            backgroundColor: "rgba(11, 13, 20, 0.55)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "1200px",
-            height: "630px",
-            backgroundImage:
-              "linear-gradient(to bottom, rgba(11, 13, 20, 0.72), rgba(11, 13, 20, 0.25), rgba(11, 13, 20, 0.88))",
-          }}
-        />
-
         {/* Top bar */}
         <div
           style={{
@@ -186,7 +122,7 @@ export async function GET(request: NextRequest) {
           <div style={{ display: "flex", alignItems: "center" }}>
             <div
               style={{
-                fontFamily: digitalLogoBuf ? "Digital7" : uiFont,
+                fontFamily: hasDigitalLogo ? "Digital7" : uiFont,
                 fontSize: "40px",
                 letterSpacing: "2px",
                 color: "#eef0f5",
@@ -272,7 +208,7 @@ export async function GET(request: NextRequest) {
               border: "1px solid rgba(255, 255, 255, 0.12)",
               borderRadius: "20px",
               padding: "22px 44px",
-              fontFamily: digitalMonoBuf ? "Digital7Mono" : uiFont,
+              fontFamily: hasDigitalMono ? "Digital7Mono" : uiFont,
               fontSize: "84px",
               letterSpacing: "2px",
               color: "#eef0f5",
@@ -317,7 +253,7 @@ export async function GET(request: NextRequest) {
             color: "#a3a9b8",
           }}
         >
-          <div>Real-time telemetry &amp; live scorekeeping</div>
+          <div>Watch live scores &amp; match stats</div>
           <div>score-board.net</div>
         </div>
       </div>

@@ -39,7 +39,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const tournament = Array.isArray(match.tournaments) ? match.tournaments[0] : match.tournaments;
   const title = tournament?.name ? `${p1} vs ${p2} | ${tournament.name}` : `${p1} vs ${p2}`;
-  const description = `Live Score: ${sets[0]} - ${sets[1]}. Follow ${p1} vs ${p2}${tournament?.name ? ` (${tournament.name})` : ""} with real-time play-by-play scores and match stats on ScoreBoard.`;
+  const rawDescription = `Live Score: ${sets[0]} - ${sets[1]} · ${p1} vs ${p2}${tournament?.name ? ` (${tournament.name})` : ""}. Watch live scores on ScoreBoard.`;
+  const description =
+    rawDescription.length > 120 ? `${rawDescription.slice(0, 117)}...` : rawDescription;
   const ogImageUrl = `/api/og/match?id=${matchId}`;
 
   return {

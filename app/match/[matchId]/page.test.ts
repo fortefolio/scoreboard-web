@@ -45,7 +45,8 @@ describe("MatchDetailsPage generateMetadata", () => {
     });
 
     expect(meta.title).toBe("Alexander Zverev vs Carlos Alcaraz");
-    expect(meta.description).toContain("Live Score: 1 - 1.");
+    expect(meta.description).toContain("Live Score: 1 - 1");
+    expect(meta.description!.length).toBeLessThanOrEqual(120);
     expect(meta.description).not.toContain("[object Object]");
     expect(meta.openGraph).toMatchObject({
       type: "website",
