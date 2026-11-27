@@ -4,38 +4,39 @@ import { createClient } from "@supabase/supabase-js";
 import { supabaseEnv } from "@/lib/supabase/env";
 import { countSetsWon, extractSetsData } from "@/lib/scoring/sets";
 import { formatTeamOrPlayerName } from "@/lib/utils/formatName";
+import { DIGITAL_7_BASE64, DIGITAL_7_MONO_BASE64 } from "./fonts";
 
 type OgFont = { name: string; data: ArrayBuffer; style: "normal"; weight: 400 | 700 };
 
-let cachedFontsPromise: Promise<OgFont[]> | null = null;
-
-async function fetchAssetBuffer(path: string, baseUrl: string): Promise<ArrayBuffer | null> {
-  try {
-    const res = await fetch(new URL(path, baseUrl));
-    if (!res.ok) return null;
-    return await res.arrayBuffer();
-  } catch {
-    return null;
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
   }
+  return bytes.buffer;
 }
 
-function loadLocalFonts(baseUrl: string): Promise<OgFont[]> {
-  if (!cachedFontsPromise) {
-    cachedFontsPromise = Promise.all([
-      fetchAssetBuffer("/fonts/digital-7-mono.ttf", baseUrl),
-      fetchAssetBuffer("/fonts/digital-7.ttf", baseUrl),
-    ]).then(([digitalMonoBuf, digitalLogoBuf]) => {
-      const loaded: OgFont[] = [];
-      if (digitalMonoBuf) {
-        loaded.push({ name: "Digital7Mono", data: digitalMonoBuf, style: "normal", weight: 400 });
-      }
-      if (digitalLogoBuf) {
-        loaded.push({ name: "Digital7", data: digitalLogoBuf, style: "normal", weight: 400 });
-      }
-      return loaded;
-    });
+let cachedFonts: OgFont[] | null = null;
+
+function loadLocalFonts(): OgFont[] {
+  if (!cachedFonts) {
+    cachedFonts = [
+      {
+        name: "Digital7Mono",
+        data: base64ToArrayBuffer(DIGITAL_7_MONO_BASE64),
+        style: "normal",
+        weight: 400,
+      },
+      {
+        name: "Digital7",
+        data: base64ToArrayBuffer(DIGITAL_7_BASE64),
+        style: "normal",
+        weight: 400,
+      },
+    ];
   }
-  return cachedFontsPromise;
+  return cachedFonts;
 }
 
 export async function GET(request: NextRequest) {
@@ -86,9 +87,9 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const fonts = await loadLocalFonts(request.url);
-  const hasDigitalMono = fonts.some((f) => f.name === "Digital7Mono");
-  const hasDigitalLogo = fonts.some((f) => f.name === "Digital7");
+  const fonts = loadLocalFonts();
+  const hasDigitalMono = true;
+  const hasDigitalLogo = true;
   const uiFont = "sans-serif";
 
   return new ImageResponse(
