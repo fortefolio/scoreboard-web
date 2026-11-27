@@ -35,6 +35,30 @@ export function findSport(input?: string | null): SportDefinition | undefined {
   );
 }
 
+/**
+ * Normalizes a free-form sport label into a canonical background asset slug.
+ */
+export function normalizeSportType(sport?: string | null): SportSlug {
+  const s = (sport || "").toLowerCase().trim();
+
+  if (s.includes("padel")) return "padel";
+  if (
+    s.includes("beach volleyball") ||
+    s.includes("beach_volleyball") ||
+    s.includes("beachvolleyball")
+  ) {
+    return "beach_volleyball";
+  }
+  if (s.includes("volleyball")) return "volleyball";
+  if (s.includes("basketball") || s.includes("basket")) return "basketball";
+  if (s.includes("football") || s.includes("soccer") || s.includes("futebol")) {
+    return "football";
+  }
+  if (s.includes("tennis") || s.includes("ténis")) return "tennis";
+
+  return "tennis";
+}
+
 export function normalizeSportSlug(input?: string | null): SportSlug {
   const matched = findSport(input);
   if (matched) return matched.slug;

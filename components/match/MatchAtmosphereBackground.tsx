@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useScreenOrientation, ScreenOrientation } from "@/lib/hooks/useScreenOrientation";
-import { SUPPORTED_SPORT_SLUGS, type SportSlug } from "@/lib/sports";
+import { normalizeSportType, SUPPORTED_SPORT_SLUGS, type SportSlug } from "@/lib/sports";
 
+export { normalizeSportType };
 export type SportType = SportSlug;
 
 const ALL_SPORTS: readonly SportType[] = SUPPORTED_SPORT_SLUGS;
@@ -15,27 +16,6 @@ export interface MatchAtmosphereBackgroundProps {
   forcedOrientation?: ScreenOrientation;
   children?: React.ReactNode;
   className?: string;
-}
-
-export function normalizeSportType(sport?: string | null): SportType {
-  const s = (sport || "").toLowerCase().trim();
-
-  if (s.includes("padel")) return "padel";
-  if (
-    s.includes("beach volleyball") ||
-    s.includes("beach_volleyball") ||
-    s.includes("beachvolleyball")
-  ) {
-    return "beach_volleyball";
-  }
-  if (s.includes("volleyball")) return "volleyball";
-  if (s.includes("basketball") || s.includes("basket")) return "basketball";
-  if (s.includes("football") || s.includes("soccer") || s.includes("futebol")) {
-    return "football";
-  }
-  if (s.includes("tennis") || s.includes("ténis")) return "tennis";
-
-  return "tennis"; // Universal clean fallback
 }
 
 function MatchAtmosphereBackgroundComponent({
